@@ -1,7 +1,12 @@
 #ifndef LIBBFT_SRC_CPP_TIMER_HPP
 #define LIBBFT_SRC_CPP_TIMER_HPP
 
+// system includes 
+#include<sstream>
+
 // standard Timer for a TSM
+
+using namespace std; // TODO: remove
 
 namespace libbft {
 
@@ -11,9 +16,11 @@ public:
 private:
    // terrible timer (TODO: improve!)
    long mytime;
+   string name;
 
 public:
-   Timer()
+   Timer(string _name = "")
+     : name(_name)
    {
       start();
    }
@@ -37,6 +44,13 @@ public:
       // terrible, only seconds! should be micro and asynchronous...
       long newtime = time(NULL);
       return newtime - mytime;
+   }
+
+   string toString()
+   {
+      stringstream ss;
+      ss << "Timer {name='" << name <<"'}";
+      return ss.str();
    }
 };
 

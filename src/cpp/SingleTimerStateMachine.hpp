@@ -26,9 +26,21 @@ class SingleTimerStateMachine
 {
 public:
    // state machine timer
-   Timer timer;
+   Timer* timer;
 
    vector<State*> states;
+
+   SingleTimerStateMachine()
+   {
+      // generic Timer
+      timer = new Timer();
+   }
+
+   // specific timer
+   SingleTimerStateMachine(Timer* t)
+     : timer(t)
+   {
+   }
 
    void registerState(State* s)
    {
@@ -48,24 +60,39 @@ public:
       cout << "begin run()" << endl;
 
       cout << "will start timer" << endl;
-      timer.start();
+      timer->start();
 
-      cout << "will get first state" << endl;
+      // get first state
       State* current = states[index];
 
-      cout << "will loop" << endl;
+      // begin loop
+      cout << "begin loop at state: " << current->toString() << endl;
       while (!current->isFinal) {
          cout << "finding transition! ...";
-         Transition* go = current->tryGetTransition(timer);
+         Transition* go = current->tryGetTransition(*timer);
          if (go) {
             cout << "found valid transition! " << go->toString() << endl;
             current = go->to;
+            cout << "moved to state: " << current->toString() << endl;
          }
          cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
-         usleep(1000*100); // 100 milli (in microsecs)
+         usleep(1000 * 100); // 100 milli (in microsecs)
       }
 
       cout << "finished machine!" << endl;
+   }
+
+   string toString()
+   {
+      stringstream ss;
+      ss << "STSM {";
+      ss <<"Timer='" << timer->toString() << "';";
+      ss << "States=[";
+      for(unsigned i=0; i<states.size(); i++)
+         ss << states[i]->toString() << ";";
+      ss << "]";
+      ss << "}";
+      return ss.str();
    }
 };
 

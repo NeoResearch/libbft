@@ -46,7 +46,7 @@ public:
       ss << "state:{";
       ss << "name='" << name << "';";
       if (isFinal)
-         ss << "final";
+         ss << "FINAL";
       ss << ";";
       if (recursive) {
          ss << "transitions=[";

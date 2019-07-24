@@ -18,8 +18,6 @@ main()
 {
    cout << "begin test state machines!" << endl;
 
-   SingleTimerStateMachine machine;
-
    State* initial = new State(false, "Initial");
    State* final = new State(true, "Final");
 
@@ -32,11 +30,15 @@ main()
    //initial->transitions.push_back(alwaysTrue);
    initial->transitions.push_back(after1sec);
 
-   cout << "initial state: " << initial->toString() << endl;
-   cout << "final state: " << final->toString() << endl;
+   //cout << "initial state: " << initial->toString() << endl;
+   //cout << "final state: " << final->toString() << endl;
+
+   SingleTimerStateMachine machine(new Timer("C"));
 
    machine.registerState(initial);
    machine.registerState(final);
+
+   cout << "Machine => " << machine.toString() << endl;
 
    machine.run();
 
