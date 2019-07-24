@@ -6,7 +6,7 @@
 // lib
 
 #include "SingleTimerStateMachine.hpp"
-#include "State.hpp"
+#include "State.h"
 
 using namespace std;
 using namespace libbft;
@@ -20,9 +20,17 @@ main()
 
    SingleTimerStateMachine machine;
 
-   State* initial = new State(false);
-   State* final = new State(true);
-   initial->transitions.push_back(new Transition(final, "always true"));
+   State* initial = new State(false, "Initial");
+   State* final = new State(true, "Final");
+
+   Transition* alwaysTrue = new Transition(final, "always true");
+   alwaysTrue->timedFunction = [](Timer& t) -> bool { return true; };
+
+   Transition* after1sec = new Transition(final, "after1sec");
+   after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
+
+   //initial->transitions.push_back(alwaysTrue);
+   initial->transitions.push_back(after1sec);
 
    cout << "initial state: " << initial->toString() << endl;
    cout << "final state: " << final->toString() << endl;

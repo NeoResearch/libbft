@@ -5,6 +5,8 @@
 #include <iostream> // TODO: remove
 #include <vector>
 
+#include <unistd.h> // TODO: remove busy sleep
+
 // libbft includes
 
 // Prototype?
@@ -12,7 +14,7 @@
 // default timer
 #include "Timer.hpp"
 // default state
-#include "State.hpp"
+#include "State.h"
 // default timer
 #include "Timer.hpp"
 
@@ -53,12 +55,14 @@ public:
 
       cout << "will loop" << endl;
       while (!current->isFinal) {
-         cout << "finding transition!" << endl;
+         cout << "finding transition! ...";
          Transition* go = current->tryGetTransition(timer);
          if (go) {
             cout << "found valid transition! " << go->toString() << endl;
             current = go->to;
          }
+         cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
+         usleep(1000*100); // 100 milli (in microsecs)
       }
 
       cout << "finished machine!" << endl;
