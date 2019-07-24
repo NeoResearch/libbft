@@ -13,6 +13,7 @@ using namespace libbft;
 
 // main function for base testing purposes
 
+// empty data
 struct Data
 {
 };
@@ -54,8 +55,10 @@ struct dBFTData
    // block time (in seconds)
    int T;
 
-   dBFTData(int _v, int _H, int _T) :
-   v(_v), H(_H), T(_T)
+   dBFTData(int _v, int _H, int _T)
+     : v(_v)
+     , H(_H)
+     , T(_T)
    {
    }
 };
@@ -96,7 +99,10 @@ main()
 {
    cout << "begin test state machines!" << endl;
 
+   // simple example: wait one second and quit
    simpleExample();
+
+   // Neo dbft modeling as example
    dbft();
 
    cout << "finished successfully!" << endl;
