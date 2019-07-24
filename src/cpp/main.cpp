@@ -51,6 +51,13 @@ struct dBFTData
    int v;
    // blockchain height
    int H;
+   // block time (in seconds)
+   int T;
+
+   dBFTData(int _v, int _H, int _T) :
+   v(_v), H(_H), T(_T)
+   {
+   }
 };
 
 void
@@ -78,7 +85,10 @@ dbft()
 
    cout << "Machine => " << machine.toString() << endl;
 
-   machine.run(initial);
+   // v = 0, H = 1000, T = 3 (secs)
+   dBFTData data(0, 1000, 15);
+
+   machine.run(initial, &data);
 }
 
 int
