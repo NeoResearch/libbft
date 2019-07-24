@@ -22,10 +22,10 @@ public:
    Timer(string _name = "")
      : name(_name)
    {
-      start();
+      initialize();
    }
 
-   void start()
+   void initialize()
    {
       // terrible, only seconds! should be micro and asynchronous...
       mytime = time(NULL);

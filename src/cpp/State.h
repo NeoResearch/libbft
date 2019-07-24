@@ -4,6 +4,9 @@
 // system includes
 #include <sstream>
 #include <vector>
+// simulate non-deterministic nature
+#include <algorithm>
+#include <random>
 
 // standard Transition
 #include "Timer.hpp"
@@ -33,9 +36,16 @@ public:
 
    Transition* tryGetTransition(Timer& timer)
    {
-      for (unsigned i = 0; i < transitions.size(); i++) {
-         if (transitions[i]->isValid(timer))
-            return transitions[i];
+      // should be non-deterministic and asynchronous... 
+      // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
+      vector<Transition*> _transitions = transitions;
+
+      auto rng = std::default_random_engine{};
+      std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
+
+      for (unsigned i = 0; i < _transitions.size(); i++) {
+         if (_transitions[i]->isValid(timer))
+            return _transitions[i];
       }
       return nullptr;
    }

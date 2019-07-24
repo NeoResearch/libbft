@@ -57,10 +57,16 @@ public:
          return;
       }
 
+      cout << endl;
+      cout << "===========" << endl;
       cout << "begin run()" << endl;
+      cout << "===========" << endl;
 
-      cout << "will start timer" << endl;
-      timer->start();
+      cout << "will initialize timer" << endl;
+      timer->initialize();
+
+      cout << "will reset timer" << endl;
+      timer->reset();
 
       // get first state
       State* current = states[index];
@@ -68,27 +74,30 @@ public:
       // begin loop
       cout << "begin loop at state: " << current->toString() << endl;
       while (!current->isFinal) {
-         cout << "finding transition! ...";
+         //cout << "finding transition! ...";
          Transition* go = current->tryGetTransition(*timer);
          if (go) {
-            cout << "found valid transition! " << go->toString() << endl;
+            cout << "-> found valid transition! " << go->toString() << endl;
             current = go->to;
             cout << "moved to state: " << current->toString() << endl;
          }
-         cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
+         //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
          usleep(1000 * 100); // 100 milli (in microsecs)
       }
 
+      cout << endl;
+      cout << "=================" << endl;
       cout << "finished machine!" << endl;
+      cout << "=================" << endl;
    }
 
    string toString()
    {
       stringstream ss;
       ss << "STSM {";
-      ss <<"Timer='" << timer->toString() << "';";
+      ss << "Timer='" << timer->toString() << "';";
       ss << "States=[";
-      for(unsigned i=0; i<states.size(); i++)
+      for (unsigned i = 0; i < states.size(); i++)
          ss << states[i]->toString() << ";";
       ss << "]";
       ss << "}";
