@@ -57,7 +57,7 @@ void
 dbft()
 {
    State<dBFTData>* initial = new State<dBFTData>(false, "Initial");
-   State<dBFTData>* final = new State<dBFTData>(true, "Final");
+   State<dBFTData>* final = new State<dBFTData>(true, "BlockSent");
 
    Transition<dBFTData>* alwaysTrue = new Transition<dBFTData>(final, "always true");
    alwaysTrue->timedFunction = [](Timer& t) -> bool { return true; };

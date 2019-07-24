@@ -2,6 +2,7 @@
 #define LIBBFT_SRC_CPP_STATE_HPP
 
 // system includes
+#include<iostream> // TODO: remove
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -33,6 +34,12 @@ public:
      : name(_name)
      , isFinal(_isFinal)
    {
+   }
+
+   // really useful or not?
+   void onEnter(Param* P)
+   {
+      cout << "enter state: " << this->toString() << endl;
    }
 
    Transition<Param>* tryGetTransition(Timer& timer, Param* p = nullptr)

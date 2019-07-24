@@ -51,7 +51,7 @@ public:
 
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
-   virtual void run(State<Param>* first = nullptr)
+   virtual void run(State<Param>* first = nullptr, Param* p = nullptr)
    {
       State<Param>* current = first;
       if (!current) {
@@ -75,6 +75,9 @@ public:
       cout << "will reset timer" << endl;
       timer->reset();
 
+      // visit first state (really useful?)
+      current->onEnter(p);
+
       // begin loop
       cout << "begin loop at state: " << current->toString() << endl;
       while (!current->isFinal) {
@@ -84,6 +87,7 @@ public:
             cout << "-> found valid transition! " << go->toString() << endl;
             current = go->to;
             cout << "moved to state: " << current->toString() << endl;
+            current->onEnter(p);
          }
          //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
          usleep(1000 * 100); // 100 milli (in microsecs)
