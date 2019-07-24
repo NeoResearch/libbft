@@ -10,7 +10,7 @@
 
 // standard Transition
 #include "Timer.hpp"
-#include "Transition.h"
+#include "Transition.hpp"
 
 // standard State
 
@@ -20,10 +20,11 @@ using namespace std; // TODO: remove
 
 namespace libbft {
 
+template<class Param = nullptr_t>
 class State
 {
 public:
-   vector<Transition*> transitions;
+   vector<Transition<Param>*> transitions;
 
    string name;
    bool isFinal;
@@ -34,17 +35,17 @@ public:
    {
    }
 
-   Transition* tryGetTransition(Timer& timer)
+   Transition<Param>* tryGetTransition(Timer& timer, Param* p = nullptr)
    {
       // should be non-deterministic and asynchronous... 
       // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
-      vector<Transition*> _transitions = transitions;
+      vector<Transition<Param>*> _transitions = transitions;
 
       auto rng = std::default_random_engine{};
       std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
 
       for (unsigned i = 0; i < _transitions.size(); i++) {
-         if (_transitions[i]->isValid(timer))
+         if (_transitions[i]->isValid(timer, p))
             return _transitions[i];
       }
       return nullptr;

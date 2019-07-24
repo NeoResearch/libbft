@@ -22,13 +22,14 @@ using namespace std; // TODO: remove
 
 namespace libbft {
 
+template<class Param = nullptr_t>
 class SingleTimerStateMachine
 {
 public:
    // state machine timer
    Timer* timer;
 
-   vector<State*> states;
+   vector<State<Param>*> states;
 
    SingleTimerStateMachine()
    {
@@ -42,17 +43,17 @@ public:
    {
    }
 
-   void registerState(State* s)
+   void registerState(State<Param>* s)
    {
       // something else?
       states.push_back(s);
    }
 
    // execute the state machine (should be asynchonous for the future)
-   // index is the index of initial state
-   virtual void run(State* first = nullptr)
+   // TODO: should be non-null?
+   virtual void run(State<Param>* first = nullptr)
    {
-      State* current = first;
+      State<Param>* current = first;
       if (!current) {
          if (states.size() == 0) {
             cout << "not enough states to start from!" << endl;
@@ -78,7 +79,7 @@ public:
       cout << "begin loop at state: " << current->toString() << endl;
       while (!current->isFinal) {
          //cout << "finding transition! ...";
-         Transition* go = current->tryGetTransition(*timer);
+         Transition<Param>* go = current->tryGetTransition(*timer);
          if (go) {
             cout << "-> found valid transition! " << go->toString() << endl;
             current = go->to;

@@ -13,18 +13,22 @@ using namespace libbft;
 
 // main function for base testing purposes
 
+struct Data
+{
+};
+
 int
 main()
 {
    cout << "begin test state machines!" << endl;
 
-   State* initial = new State(false, "Initial");
-   State* final = new State(true, "Final");
+   State<Data>* initial = new State<Data>(false, "Initial");
+   State<Data>* final = new State<Data>(true, "Final");
 
-   Transition* alwaysTrue = new Transition(final, "always true");
+   Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
    alwaysTrue->timedFunction = [](Timer& t) -> bool { return true; };
 
-   Transition* after1sec = new Transition(final, "after1sec");
+   Transition<Data>* after1sec = new Transition<Data>(final, "after1sec");
    after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
 
    //initial->transitions.push_back(alwaysTrue);
@@ -33,7 +37,7 @@ main()
    //cout << "initial state: " << initial->toString() << endl;
    //cout << "final state: " << final->toString() << endl;
 
-   SingleTimerStateMachine machine(new Timer("C"));
+   SingleTimerStateMachine<Data> machine(new Timer("C"));
 
    machine.registerState(initial);
    machine.registerState(final);
