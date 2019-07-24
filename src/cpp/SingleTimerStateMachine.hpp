@@ -50,11 +50,17 @@ public:
 
    // execute the state machine (should be asynchonous for the future)
    // index is the index of initial state
-   virtual void run(int index = 0)
+   virtual void run(State* first = nullptr)
    {
-      if (index >= states.size()) {
-         cout << "not enough states! size=" << states.size() << endl;
-         return;
+      State* current = first;
+      if (!current) {
+         if (states.size() == 0) {
+            cout << "not enough states to start from!" << endl;
+            return;
+         } else {
+            // get first available state as 'first'
+            current = states[0];
+         }
       }
 
       cout << endl;
@@ -67,9 +73,6 @@ public:
 
       cout << "will reset timer" << endl;
       timer->reset();
-
-      // get first state
-      State* current = states[index];
 
       // begin loop
       cout << "begin loop at state: " << current->toString() << endl;

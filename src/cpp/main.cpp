@@ -40,7 +40,7 @@ main()
 
    cout << "Machine => " << machine.toString() << endl;
 
-   machine.run();
+   machine.run(initial);
 
    cout << "finished successfully!" << endl;
 
