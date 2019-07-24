@@ -17,11 +17,9 @@ struct Data
 {
 };
 
-int
-main()
+void
+simpleExample()
 {
-   cout << "begin test state machines!" << endl;
-
    State<Data>* initial = new State<Data>(false, "Initial");
    State<Data>* final = new State<Data>(true, "Final");
 
@@ -45,6 +43,15 @@ main()
    cout << "Machine => " << machine.toString() << endl;
 
    machine.run(initial);
+}
+
+int
+main()
+{
+   cout << "begin test state machines!" << endl;
+
+   simpleExample();
+   //simpleExample();
 
    cout << "finished successfully!" << endl;
 
