@@ -103,11 +103,12 @@ dbft()
         return (d->H + d->v) % d->R == d->i;
      })));
 
-   // initial -> primary
-   //initial.addTransition(
-   //  (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
-   //     return (d->H + d->v) % d->R == d->i;
-   //  })));
+   // backup ->reqSentOrRecv
+   auto toReqSentOrRecv1 = 
+   initial.addTransition(
+     (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+        return (d->H + d->v) % d->R == d->i;
+     })));
 
    SingleTimerStateMachine<dBFTData> machine(new Timer("C"));
 
