@@ -67,6 +67,8 @@ struct dBFTData
 void
 dbft()
 {
+   // declaring dBFT states
+
    State<dBFTData> initial(false, "Initial");
    State<dBFTData> backup(false, "Backup");
    State<dBFTData> primary(false, "Primary");
@@ -74,6 +76,13 @@ dbft()
    State<dBFTData> commitSent(false, "CommitSent");
    State<dBFTData> viewChanging(false, "ViewChanging");
    State<dBFTData> blockSent(true, "BlockSent");
+
+   // creating dBFT transitions
+
+   initial.addTransition((new Transition<dBFTData>(&backup))->add(
+     Condition<dBFTData>("not (H+v) mod R = i", [](const Timer& t, dBFTData*) -> bool {
+        return true;
+     })));
 
    Transition<dBFTData> alwaysTrue(&blockSent, "always true");
    alwaysTrue.add(Condition<dBFTData>("true", [](const Timer& t, dBFTData*) -> bool {

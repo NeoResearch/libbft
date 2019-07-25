@@ -28,6 +28,7 @@ class SingleTimerStateMachine
 public:
    // state machine timer
    Timer* timer;
+   const double MaxTime{ 5.0 }; // 5 seconds until freeze
 
    vector<State<Param>*> states;
 
@@ -71,7 +72,15 @@ public:
 
       // begin loop
       cout << "begin loop at state: " << current->toString() << endl;
+      Timer watchdog;
+      watchdog.initialize();
+      watchdog.reset();
+
       while (!current->isFinal) {
+         if (watchdog.elapsedTime() > MaxTime) {
+            cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
+            return;
+         }
          //cout << "finding transition! ...";
          Transition<Param>* go = current->tryGetTransition(*timer);
          if (go) {
@@ -79,6 +88,7 @@ public:
             current = go->execute(*timer, p);
             cout << "moved to state: " << current->toString() << endl;
             current->onEnter(p);
+            watchdog.reset();
          }
          //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
          usleep(1000 * 100); // 100 milli (in microsecs)

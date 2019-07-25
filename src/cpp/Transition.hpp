@@ -67,14 +67,16 @@ public:
    {
    }
 
-   void add(Condition<Param> c)
+   Transition* add(Condition<Param> c)
    {
       conditions.push_back(c);
+      return this; // allow chaining effect
    }
 
-   void add(Action<Param> a)
+   Transition* add(Action<Param> a)
    {
       actions.push_back(a);
+      return this; // allow chaining effect
    }
 
    string

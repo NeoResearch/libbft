@@ -43,6 +43,11 @@ public:
       transitions.push_back(t);
    }
 
+   //void addTransition(const Transition<Param>& t)
+   //{
+   //   transitions.push_back(new Transition<Param>(t));
+   //}
+
    // really useful or not?
    void onEnter(Param* P)
    {
