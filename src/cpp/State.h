@@ -54,6 +54,11 @@ public:
       cout << "enter state: " << this->toString() << endl;
    }
 
+   void onLeave(Param* P)
+   {
+      cout << "leave state: " << this->toString() << endl;
+   }
+
    Transition<Param>* tryGetTransition(Timer& timer, Param* p)
    {
       //cout << "Trying to Get Transition" << endl;

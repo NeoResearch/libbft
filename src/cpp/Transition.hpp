@@ -8,6 +8,7 @@
 // libbft
 //#include "State.h" // forward declaration
 #include "Timer.hpp"
+////#include "Event.hpp"
 
 // standard Transition
 // Every transition may or may not be a timed transition
@@ -111,6 +112,12 @@ public:
       for (unsigned i = 0; i < actions.size(); i++)
          actions[i].timedAction(timer, p);
       return to;
+   }
+
+   // after executed
+   void onExecute(Param* P)
+   {
+      //for (unsigned i = 0; i < events.size(); i++)
    }
 };
 

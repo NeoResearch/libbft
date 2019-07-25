@@ -44,7 +44,7 @@ simpleExample()
 
    cout << "Machine => " << machine.toString() << endl;
 
-   machine.run(*initial);
+   machine.run(initial);
 }
 
 struct dBFTContext
@@ -91,6 +91,8 @@ dbft()
    // creating dBFT transitions
    // -------------------------
 
+   SingleTimerStateMachine<dBFTContext> machine(new Timer("C"));
+
    // initial -> backup
    initial.addTransition(
      (new Transition<dBFTContext>(&backup))->add(Condition<dBFTContext>("not (H+v) mod R = i", [](const Timer& t, dBFTContext* d) -> bool {
@@ -106,13 +108,15 @@ dbft()
      })));
 
    // backup -> reqSentOrRecv
+   /*
    auto toReqSentOrRecv1 = new Transition<dBFTContext>(&primary);
    initial.addTransition(
-     toReqSentOrRecv1->add(Condition<dBFTContext>("(H+v) mod R = i", [](const Timer& t, dBFTContext* d) -> bool {
+     toReqSentOrRecv1->add(Event<dBFTContext>("OnPrepareRequest", "OnPrepareRequest", [](const Timer& t, dBFTContext* d) -> bool {
         return (d->H + d->v) % d->R == d->i;
      })));
+   */
 
-   SingleTimerStateMachine<dBFTContext> machine(new Timer("C"));
+   
 
    machine.registerState(&initial);
    machine.registerState(&blockSent);
@@ -122,7 +126,7 @@ dbft()
    // v = 0, H = 1000, T = 3 (secs), R = 1 (one node network), i = 0 (first id.. should move to lambdas?)
    dBFTContext data(0, 1000, 3, 1, 0);
 
-   machine.run(initial, &data);
+   machine.run(&initial, &data);
 }
 
 int

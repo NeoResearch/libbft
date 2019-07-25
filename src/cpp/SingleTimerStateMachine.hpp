@@ -26,11 +26,14 @@ template<class Param = nullptr_t>
 class SingleTimerStateMachine
 {
 public:
-   // state machine timer
+   // state machine timer // TODO: really keep it global?
    Timer* timer;
    const double MaxTime{ 5.0 }; // 5 seconds until freeze
 
+   // states for the state machine
    vector<State<Param>*> states;
+   // global transitions: may come from any state (including a null state)
+   vector<Transition<Param>*> globalTransitions;
 
    SingleTimerStateMachine()
    {
@@ -50,11 +53,52 @@ public:
       states.push_back(s);
    }
 
+   void registerGlobal(Transition<Param>* t)
+   {
+      // something else?
+      globalTransitions.push_back(t);
+   }
+
+   virtual Transition<Param>* findGlobalTransition(Param* p)
+   {
+      // TODO: shuffle global?
+      vector<Transition<Param>*> _transitions = globalTransitions;
+      for (unsigned i = 0; i < _transitions.size(); i++) {
+         cout << "i=" << i << endl;
+         if (_transitions[i]->isValid(*timer, p))
+            return _transitions[i];
+      }
+      return nullptr;
+   }
+
+   // get next state (current may be null, waiting for global transition)
+   // may return the same state, if nothing happened
+   virtual State<Param>* getNextState(State<Param>* current, Param* p)
+   {
+      // find global transition
+      Transition<Param>* gt = findGlobalTransition(p);
+      if (gt) {
+         // found global transition
+         cout << "-> found valid global transition! " << gt->toString() << endl;
+         current = gt->execute(*timer, p);
+      }
+
+      //cout << "finding transition! ...";
+      if (current) {
+         Transition<Param>* go = current->tryGetTransition(*timer, p);
+         if (go) {
+            cout << "-> found valid transition! " << go->toString() << endl;
+            current = go->execute(*timer, p);
+         }
+      }
+      return current;
+   }
+
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
-   virtual void run(State<Param>& first, Param* p = nullptr)
+   virtual void run(State<Param>* current, Param* p = nullptr)
    {
-      State<Param>* current = &first;
+      // current state may be null, waiting for a globalTransition
 
       cout << endl;
       cout << "===========" << endl;
@@ -76,20 +120,22 @@ public:
       watchdog.initialize();
       watchdog.reset();
 
-      while (!current->isFinal) {
+      // while current is null, or not final
+      while (!current || !current->isFinal) {
+         // check watchdog timer
          if (watchdog.elapsedTime() > MaxTime) {
             cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
             return;
          }
-         //cout << "finding transition! ...";
-         Transition<Param>* go = current->tryGetTransition(*timer, p);
-         if (go) {
-            cout << "-> found valid transition! " << go->toString() << endl;
-            current = go->execute(*timer, p);
-            cout << "moved to state: " << current->toString() << endl;
-            current->onEnter(p);
+
+         State<Param>* next = getNextState(current, p);
+         if (next != current) {
+            cout << "moved to state: " << next->toString() << endl;
             watchdog.reset();
+            next->onEnter(p); // really useful?
+            current = next;
          }
+
          //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
          usleep(1000 * 100); // 100 milli (in microsecs)
       }
