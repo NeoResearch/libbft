@@ -54,8 +54,9 @@ public:
       cout << "enter state: " << this->toString() << endl;
    }
 
-   Transition<Param>* tryGetTransition(Timer& timer, Param* p = nullptr)
+   Transition<Param>* tryGetTransition(Timer& timer, Param* p)
    {
+      //cout << "Trying to Get Transition" << endl;
       // should be non-deterministic and asynchronous...
       // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
       vector<Transition<Param>*> _transitions = transitions;
@@ -64,6 +65,7 @@ public:
       std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
 
       for (unsigned i = 0; i < _transitions.size(); i++) {
+         cout << "i=" << i << endl;
          if (_transitions[i]->isValid(timer, p))
             return _transitions[i];
       }

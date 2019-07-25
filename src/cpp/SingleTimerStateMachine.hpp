@@ -82,7 +82,7 @@ public:
             return;
          }
          //cout << "finding transition! ...";
-         Transition<Param>* go = current->tryGetTransition(*timer);
+         Transition<Param>* go = current->tryGetTransition(*timer, p);
          if (go) {
             cout << "-> found valid transition! " << go->toString() << endl;
             current = go->execute(*timer, p);

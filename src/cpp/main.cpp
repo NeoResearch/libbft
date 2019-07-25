@@ -24,15 +24,15 @@ simpleExample()
    State<Data>* initial = new State<Data>(false, "Initial");
    State<Data>* final = new State<Data>(true, "Final");
 
+   // unused (demonstration)
    Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
    alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*) -> bool { return true; }));
+   //initial->addTransition(alwaysTrue); // (unused)
 
-   Transition<Data>* after1sec = new Transition<Data>(final, "after1sec");
-   after1sec->add(Condition<Data>("C >= 1", [](const Timer& t, Data*) -> bool { return t.elapsedTime() >= 1.0; }));
-   //after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
-
-   //initial->transitions.push_back(alwaysTrue);
-   initial->addTransition(after1sec);
+   initial->addTransition(
+     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& t, Data* d) -> bool {
+        return t.elapsedTime() >= 1.0;
+     })));
 
    //cout << "initial state: " << initial->toString() << endl;
    //cout << "final state: " << final->toString() << endl;
@@ -92,22 +92,23 @@ dbft()
    // initial -> backup
    initial.addTransition(
      (new Transition<dBFTData>(&backup))->add(Condition<dBFTData>("not (H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+        cout << "lambda1" << endl;
         return !((d->H + d->v) % d->R == d->i);
      })));
 
    // initial -> primary
    initial.addTransition(
      (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+        cout << "lambda2" << endl;
         return (d->H + d->v) % d->R == d->i;
      })));
 
    // initial -> primary
-   initial.addTransition(
-     (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
-        return (d->H + d->v) % d->R == d->i;
-     })));
+   //initial.addTransition(
+   //  (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+   //     return (d->H + d->v) % d->R == d->i;
+   //  })));
 
-   
    SingleTimerStateMachine<dBFTData> machine(new Timer("C"));
 
    machine.registerState(&initial);

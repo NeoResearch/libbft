@@ -97,7 +97,7 @@ public:
       return ss.str();
    }
 
-   virtual bool isValid(const Timer& timer, Param* p = nullptr)
+   virtual bool isValid(const Timer& timer, Param* p)
    {
       for (unsigned i = 0; i < conditions.size(); i++)
          if (!conditions[i].timedFunction(timer, p))
