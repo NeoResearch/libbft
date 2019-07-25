@@ -25,10 +25,11 @@ simpleExample()
    State<Data>* final = new State<Data>(true, "Final");
 
    Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
-   alwaysTrue->timedFunction = [](Timer& t) -> bool { return true; };
+   alwaysTrue->add(Condition("true", [](const Timer& t) -> bool { return true; }));
 
    Transition<Data>* after1sec = new Transition<Data>(final, "after1sec");
-   after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
+   after1sec->add(Condition("C >= 1", [](const Timer& t) -> bool { return t.elapsedTime() >= 1.0; }));
+   //after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
 
    //initial->transitions.push_back(alwaysTrue);
    initial->transitions.push_back(after1sec);
@@ -70,10 +71,10 @@ dbft()
    State<dBFTData>* final = new State<dBFTData>(true, "BlockSent");
 
    Transition<dBFTData>* alwaysTrue = new Transition<dBFTData>(final, "always true");
-   alwaysTrue->timedFunction = [](Timer& t) -> bool { return true; };
+   alwaysTrue->add(Condition("true", [](const Timer& t) -> bool { return true; }));
 
    Transition<dBFTData>* after1sec = new Transition<dBFTData>(final, "after1sec");
-   after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
+   after1sec->add(Condition("C >= 1", [](const Timer& t) -> bool { return t.elapsedTime() >= 1.0; }));
 
    //initial->transitions.push_back(alwaysTrue);
    initial->transitions.push_back(after1sec);

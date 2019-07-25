@@ -2,7 +2,7 @@
 #define LIBBFT_SRC_CPP_STATE_HPP
 
 // system includes
-#include<iostream> // TODO: remove
+#include <iostream> // TODO: remove
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -44,7 +44,7 @@ public:
 
    Transition<Param>* tryGetTransition(Timer& timer, Param* p = nullptr)
    {
-      // should be non-deterministic and asynchronous... 
+      // should be non-deterministic and asynchronous...
       // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
       vector<Transition<Param>*> _transitions = transitions;
 

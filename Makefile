@@ -2,7 +2,7 @@ all:  base
 	./bin/app_test
 
 base:
-	g++ -std=c++17 -Ofast src/cpp/main.cpp src/cpp/Transition.cpp -o bin/app_test
+	g++ -std=c++17 -Ofast src/cpp/main.cpp -o bin/app_test
 
 test:
 	@echo "Performing basic tests now"

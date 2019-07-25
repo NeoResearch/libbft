@@ -39,14 +39,14 @@ public:
    }
 
    // time in seconds
-   double elapsedTime()
+   double elapsedTime() const
    {
       // terrible, only seconds! should be micro and asynchronous...
       long newtime = time(NULL);
       return newtime - mytime;
    }
 
-   string toString()
+   string toString() const
    {
       stringstream ss;
       ss << "Timer {name='" << name <<"'}";
