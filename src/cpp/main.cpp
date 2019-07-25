@@ -55,11 +55,17 @@ struct dBFTData
    int H;
    // block time (in seconds)
    int T;
+   // number of nodes (TODO: better solution for this?)
+   int R;
+   // current node (TODO: better solution for this?)
+   int i;
 
-   dBFTData(int _v, int _H, int _T)
+   dBFTData(int _v, int _H, int _T, int _R, int _i)
      : v(_v)
      , H(_H)
      , T(_T)
+     , R(_R)
+     , i(_i)
    {
    }
 };
@@ -67,7 +73,9 @@ struct dBFTData
 void
 dbft()
 {
+   // ---------------------
    // declaring dBFT states
+   // ---------------------
 
    State<dBFTData> initial(false, "Initial");
    State<dBFTData> backup(false, "Backup");
@@ -77,29 +85,29 @@ dbft()
    State<dBFTData> viewChanging(false, "ViewChanging");
    State<dBFTData> blockSent(true, "BlockSent");
 
+   // -------------------------
    // creating dBFT transitions
+   // -------------------------
 
-   initial.addTransition((new Transition<dBFTData>(&backup))->add(
-     Condition<dBFTData>("not (H+v) mod R = i", [](const Timer& t, dBFTData*) -> bool {
-        return true;
+   // initial -> backup
+   initial.addTransition(
+     (new Transition<dBFTData>(&backup))->add(Condition<dBFTData>("not (H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+        return !((d->H + d->v) % d->R == d->i);
      })));
 
-   Transition<dBFTData> alwaysTrue(&blockSent, "always true");
-   alwaysTrue.add(Condition<dBFTData>("true", [](const Timer& t, dBFTData*) -> bool {
-      return true;
-   }));
+   // initial -> primary
+   initial.addTransition(
+     (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+        return (d->H + d->v) % d->R == d->i;
+     })));
 
-   Transition<dBFTData> after1sec(&blockSent, "after1sec");
-   after1sec.add(Condition<dBFTData>("C >= 1", [](const Timer& t, dBFTData*) -> bool {
-      return t.elapsedTime() >= 1.0;
-   }));
+   // initial -> primary
+   initial.addTransition(
+     (new Transition<dBFTData>(&primary))->add(Condition<dBFTData>("(H+v) mod R = i", [](const Timer& t, dBFTData* d) -> bool {
+        return (d->H + d->v) % d->R == d->i;
+     })));
 
-   //initial->transitions.push_back(alwaysTrue);
-   initial.addTransition(&after1sec);
-
-   //cout << "initial state: " << initial->toString() << endl;
-   //cout << "final state: " << final->toString() << endl;
-
+   
    SingleTimerStateMachine<dBFTData> machine(new Timer("C"));
 
    machine.registerState(&initial);
@@ -107,8 +115,8 @@ dbft()
 
    cout << "Machine => " << machine.toString() << endl;
 
-   // v = 0, H = 1000, T = 3 (secs)
-   dBFTData data(0, 1000, 15);
+   // v = 0, H = 1000, T = 3 (secs), R = 1 (one node network), i = 0 (first id.. should move to lambdas?)
+   dBFTData data(0, 1000, 3, 1, 0);
 
    machine.run(initial, &data);
 }
