@@ -21,12 +21,13 @@ template<class Param>
 class State;
 
 // Condition has a name and boolean function (should not affect any param or Timer)
+template<class Param = nullptr_t>
 struct Condition
 {
    std::string name = "true";
-   std::function<bool(const Timer&)> timedFunction = [](const Timer& t) -> bool { return true; };
+   std::function<bool(const Timer&, Param*)> timedFunction = [](const Timer& t, Param* p) -> bool { return true; };
 
-   Condition(std::string _name, std::function<bool(const Timer&)> _timedFunction)
+   Condition(std::string _name, std::function<bool(const Timer&, Param*)> _timedFunction)
      : name(_name)
      , timedFunction(_timedFunction)
    {
@@ -34,12 +35,13 @@ struct Condition
 };
 
 // Action is a Condition that always returns true (can affect params and Timer)
+template<class Param = nullptr_t>
 struct Action
 {
    std::string name = "true";
-   std::function<void(Timer&)> timedAction = [](Timer& t) -> void {};
+   std::function<void(Timer&, Param*)> timedAction = [](Timer& t, Param* p) -> void {};
 
-   Action(std::string _name, std::function<void(Timer&)> _timedAction)
+   Action(std::string _name, std::function<void(Timer&, Param*)> _timedAction)
      : name(_name)
      , timedAction(_timedAction)
    {
@@ -52,8 +54,8 @@ class Transition
 private:
    State<Param>* to;
    string name;
-   std::vector<Condition> conditions;
-   std::vector<Action> actions;
+   std::vector<Condition<Param>> conditions;
+   std::vector<Action<Param>> actions;
 
 public:
    //std::function<bool(Timer&)> timedFunction = [](Timer& t) -> bool { return true; };
@@ -65,12 +67,12 @@ public:
    {
    }
 
-   void add(Condition c)
+   void add(Condition<Param> c)
    {
       conditions.push_back(c);
    }
 
-   void add(Action a)
+   void add(Action<Param> a)
    {
       actions.push_back(a);
    }
@@ -93,19 +95,19 @@ public:
       return ss.str();
    }
 
-   virtual bool isValid(const Timer& timer, const Param* p = nullptr)
+   virtual bool isValid(const Timer& timer, Param* p = nullptr)
    {
       for (unsigned i = 0; i < conditions.size(); i++)
-         if (!conditions[i].timedFunction(timer))
+         if (!conditions[i].timedFunction(timer, p))
             return false;
       return true;
    }
 
    // execute transition and return next State
-   virtual State<Param>* execute(Timer& timer)
+   virtual State<Param>* execute(Timer& timer, Param* p)
    {
       for (unsigned i = 0; i < actions.size(); i++)
-         actions[i].timedAction(timer);
+         actions[i].timedAction(timer, p);
       return to;
    }
 };

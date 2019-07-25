@@ -76,7 +76,7 @@ public:
          Transition<Param>* go = current->tryGetTransition(*timer);
          if (go) {
             cout << "-> found valid transition! " << go->toString() << endl;
-            current = go->execute(*timer);
+            current = go->execute(*timer, p);
             cout << "moved to state: " << current->toString() << endl;
             current->onEnter(p);
          }
