@@ -51,18 +51,9 @@ public:
 
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
-   virtual void run(State<Param>* first = nullptr, Param* p = nullptr)
+   virtual void run(State<Param>& first, Param* p = nullptr)
    {
-      State<Param>* current = first;
-      if (!current) {
-         if (states.size() == 0) {
-            cout << "not enough states to start from!" << endl;
-            return;
-         } else {
-            // get first available state as 'first'
-            current = states[0];
-         }
-      }
+      State<Param>* current = &first;
 
       cout << endl;
       cout << "===========" << endl;

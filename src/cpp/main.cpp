@@ -32,7 +32,7 @@ simpleExample()
    //after1sec->timedFunction = [](Timer& t) -> bool { return t.elapsedTime() >= 1.0; };
 
    //initial->transitions.push_back(alwaysTrue);
-   initial->transitions.push_back(after1sec);
+   initial->addTransition(after1sec);
 
    //cout << "initial state: " << initial->toString() << endl;
    //cout << "final state: " << final->toString() << endl;
@@ -44,7 +44,7 @@ simpleExample()
 
    cout << "Machine => " << machine.toString() << endl;
 
-   machine.run(initial);
+   machine.run(*initial);
 }
 
 struct dBFTData
@@ -67,25 +67,34 @@ struct dBFTData
 void
 dbft()
 {
-   State<dBFTData>* initial = new State<dBFTData>(false, "Initial");
-   State<dBFTData>* final = new State<dBFTData>(true, "BlockSent");
+   State<dBFTData> initial(false, "Initial");
+   State<dBFTData> backup(false, "Backup");
+   State<dBFTData> primary(false, "Primary");
+   State<dBFTData> reqSentOrRecv(false, "RequestSentOrReceived");
+   State<dBFTData> commitSent(false, "CommitSent");
+   State<dBFTData> viewChanging(false, "ViewChanging");
+   State<dBFTData> blockSent(true, "BlockSent");
 
-   Transition<dBFTData>* alwaysTrue = new Transition<dBFTData>(final, "always true");
-   alwaysTrue->add(Condition("true", [](const Timer& t) -> bool { return true; }));
+   Transition<dBFTData> alwaysTrue(&blockSent, "always true");
+   alwaysTrue.add(Condition("true", [](const Timer& t) -> bool {
+      return true;
+   }));
 
-   Transition<dBFTData>* after1sec = new Transition<dBFTData>(final, "after1sec");
-   after1sec->add(Condition("C >= 1", [](const Timer& t) -> bool { return t.elapsedTime() >= 1.0; }));
+   Transition<dBFTData> after1sec(&blockSent, "after1sec");
+   after1sec.add(Condition("C >= 1", [](const Timer& t) -> bool {
+      return t.elapsedTime() >= 1.0;
+   }));
 
    //initial->transitions.push_back(alwaysTrue);
-   initial->transitions.push_back(after1sec);
+   initial.addTransition(&after1sec);
 
    //cout << "initial state: " << initial->toString() << endl;
    //cout << "final state: " << final->toString() << endl;
 
    SingleTimerStateMachine<dBFTData> machine(new Timer("C"));
 
-   machine.registerState(initial);
-   machine.registerState(final);
+   machine.registerState(&initial);
+   machine.registerState(&blockSent);
 
    cout << "Machine => " << machine.toString() << endl;
 

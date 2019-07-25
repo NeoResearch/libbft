@@ -24,8 +24,10 @@ namespace libbft {
 template<class Param = nullptr_t>
 class State
 {
-public:
+private:
    vector<Transition<Param>*> transitions;
+
+public:
 
    string name;
    bool isFinal;
@@ -34,6 +36,11 @@ public:
      : name(_name)
      , isFinal(_isFinal)
    {
+   }
+
+   void addTransition(Transition<Param>* t)
+   {
+      transitions.push_back(t);
    }
 
    // really useful or not?
