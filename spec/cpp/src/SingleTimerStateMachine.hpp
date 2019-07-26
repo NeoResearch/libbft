@@ -13,11 +13,9 @@
 // Prototype?
 #include "TimedStateMachine.hpp"
 // default timer
-#include "Timer.hpp"
+#include "timing/Timer.hpp"
 // default state
 #include "State.h"
-// default timer
-#include "Timer.hpp"
 
 using namespace std; // TODO: remove
 
