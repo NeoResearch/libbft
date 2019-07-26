@@ -128,7 +128,7 @@ create_dBFTMachine(int id)
 }
 
 void
-dbft_backup()
+dbft_backup_multi()
 {
    auto machine0 = create_dBFTMachine(0);
 
@@ -140,8 +140,19 @@ dbft_backup()
    MultiContext<dBFTContext> ctx;
    ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
 
+   MultiSTSM<dBFTContext> multiMachine;
+   multiMachine.registerMachine(machine0);
+
+   // global transition scheduled to start machine 0 ("OnStart") after 1 second
+   multiMachine.schedule(
+     (new Timer())->init(1.0),                                      // 1 second
+     0,                                                             // machine 0
+     new Transition<MultiContext<dBFTContext>>(machine0->states[0]) // no rules, always 'true'
+                                                                    // should reset clock of machine zero here with an Action, I suppose...
+   );
+
    // run for 5.0 seconds max
-   machine0->run(machine0->states[0], 5.0, &ctx);
+   multiMachine.run(nullptr, 5.0, &ctx);
 }
 
 void
@@ -172,7 +183,7 @@ main()
    // Neo dbft modeling as example
    dbft_primary();
 
-   dbft_backup();
+   dbft_backup_multi();
 
    cout << "finished successfully!" << endl;
 
