@@ -144,14 +144,14 @@ dbft_backup_multi()
    multiMachine.registerMachine(machine0);
 
    // global transition scheduled to start machine 0 ("OnStart") after 1 second
-   multiMachine.schedule(
-     (new Timer())->init(1.0),                                      // 1 second
+   multiMachine.scheduleGlobal(
+     (new Timer())->init(1.0),                                      // 1 second to expire
      0,                                                             // machine 0
-     new Transition<MultiContext<dBFTContext>>(machine0->states[0]) // no rules, always 'true'
-                                                                    // should reset clock of machine zero here with an Action, I suppose...
+     new Transition<MultiContext<dBFTContext>>(machine0->states[0]) // no other conditions, always 'true'
+                                                                    // should perhaps reset clock of machine zero here with an Action, I suppose...
    );
 
-   // run for 5.0 seconds max
+   // run for 5.0 seconds max (watchdog limit)
    multiMachine.run(nullptr, 5.0, &ctx);
 }
 

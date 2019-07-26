@@ -111,12 +111,12 @@ public:
    vector<ScheduledTransition<MultiContext<Param>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
-   void schedule(ScheduledTransition<MultiContext<Param>> sch)
+   void scheduleGlobal(ScheduledTransition<MultiContext<Param>> sch)
    {
       scheduledTransitions.push_back(sch);
    }
 
-   void schedule(Timer* when, int machine, Transition<MultiContext<Param>>* t)
+   void scheduleGlobal(Timer* when, int machine, Transition<MultiContext<Param>>* t)
    {
       scheduledTransitions.push_back(ScheduledTransition<MultiContext<Param>>(t, when, machine));
    }
