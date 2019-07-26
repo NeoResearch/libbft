@@ -51,6 +51,22 @@ struct MultiContext
    {
       vm[to].events.push_back(new Event<MachineContext<Param>>(event, event, from));
    }
+
+   bool hasEvent(string type, int at)
+   {
+      for (unsigned i = 0; i < vm[at].events.size(); i++)
+         if (vm[at].events[i]->getType() == type)
+            return true;
+      return false;
+   }
+
+   void processEvent(string type, int at)
+   {
+      for (unsigned i = 0; i < vm[at].events.size(); i++)
+         if (vm[at].events[i]->getType() == type) {
+            vm[at].events.erase(vm[at].events.begin() + i);
+         }
+   }
 };
 
 // TODO: inherits from single or from prototype? prototype would be much better...

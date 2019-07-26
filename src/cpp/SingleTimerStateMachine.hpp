@@ -157,6 +157,7 @@ public:
    {
       stringstream ss;
       ss << "STSM {";
+      ss << "#id = " << me << ";";
       ss << "Timer='" << timer->toString() << "';";
       ss << "States=[";
       for (unsigned i = 0; i < states.size(); i++)

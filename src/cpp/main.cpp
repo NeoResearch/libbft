@@ -105,18 +105,19 @@ create_dBFTMachine(int id)
    // initial -> primary
    initial->addTransition(
      (new Transition<MultiContext<dBFTContext>>(primary))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
-        cout << "lambda2" << endl;
+        cout << "lambda2 H=" << d->vm[me].params->H << " v=" << d->vm[me].params->v << " me=" << me << endl;
         return (d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me;
      })));
 
    // backup -> reqSentOrRecv
-   /*
-   auto toReqSentOrRecv1 = new Transition<dBFTContext>(&primary);
-   initial.addTransition(
-     toReqSentOrRecv1->add(Event<dBFTContext>("OnPrepareRequest", "OnPrepareRequest", [](const Timer& t, dBFTContext* d) -> bool {
-        return (d->H + d->v) % d->R == d->i;
+   auto toReqSentOrRecv1 = new Transition<MultiContext<dBFTContext>>(reqSentOrRecv);
+   backup->addTransition(
+     toReqSentOrRecv1->add(Condition<MultiContext<dBFTContext>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
+        cout << "waiting for event OnPrepareRequest at " << me << endl;
+        bool e = d->hasEvent("OnPrepareRequest", me);
+        cout << "e=" << e << endl;
+        return e;
      })));
-   */
 
    machine->registerState(initial);
    machine->registerState(blockSent);
@@ -125,14 +126,30 @@ create_dBFTMachine(int id)
 }
 
 void
-dbft0()
+dbft_backup()
 {
    auto machine0 = create_dBFTMachine(0);
 
    cout << "Machine => " << machine0->toString() << endl;
 
-   // v = 0, H = 1000, T = 3 (secs), R = 1 (one node network)
-   dBFTContext data(0, 1000, 3, 1);
+   // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network)
+   dBFTContext data(0, 1501, 3, 2); // 1501 -> backup (R=2)
+
+   MultiContext<dBFTContext> ctx;
+   ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
+
+   machine0->run(machine0->states[0], &ctx);
+}
+
+void
+dbft_primary()
+{
+   auto machine0 = create_dBFTMachine(0);
+
+   cout << "Machine => " << machine0->toString() << endl;
+
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
+   dBFTContext data(0, 1500, 3, 1); // 1500 -> primary (R=1)
 
    MultiContext<dBFTContext> ctx;
    ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
@@ -149,7 +166,9 @@ main()
    simpleExample();
 
    // Neo dbft modeling as example
-   dbft0();
+   dbft_primary();
+
+   dbft_backup();
 
    cout << "finished successfully!" << endl;
 
