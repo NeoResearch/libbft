@@ -1,8 +1,8 @@
 projects_folder=spec
 
-all: cpp go
+all: cpp
 	valgrind ./$(projects_folder)/cpp/build/app_test
-	(cd ~/go/src/github.com/libbft && dep ensure && go run main.go)
+#	(cd ~/go/src/github.com/libbft && dep ensure && go run main.go)
 
 cpp:
 	(mkdir -p $(projects_folder)/cpp/build && cd $(projects_folder)/cpp/build && cmake .. && make)
