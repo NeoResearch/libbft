@@ -29,7 +29,6 @@ class SingleTimerStateMachine
 public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
-   const double MaxTime{ 5.0 }; // 5 seconds until freeze
    int me {0};
 
    // states for the state machine
@@ -113,7 +112,7 @@ public:
 
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
-   virtual void run(State<Param>* current, Param* p = nullptr)
+   virtual void run(State<Param>* current, double MaxTime = 5.0, Param* p = nullptr)
    {
       // current state may be null, waiting for a globalTransition
 
@@ -124,14 +123,14 @@ public:
 
       this->initialize();
 
-      Timer watchdog;
+      Timer watchdog(MaxTime);
       watchdog.initialize();
       watchdog.reset();
 
       // while current is null, or not final
       while (!this->localIsFinal(current)) {
          // check watchdog timer
-         if (watchdog.elapsedTime() > MaxTime) {
+         if (watchdog.expired()) {
             cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
             return;
          }
