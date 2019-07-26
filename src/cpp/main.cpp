@@ -74,7 +74,7 @@ struct dBFTContext
 };
 
 SingleTimerStateMachine<MultiContext<dBFTContext>>*
-getdBFTMachine(int id)
+create_dBFTMachine(int id)
 {
    // ---------------------
    // declaring dBFT states
@@ -127,7 +127,7 @@ getdBFTMachine(int id)
 void
 dbft0()
 {
-   auto machine0 = getdBFTMachine(0);
+   auto machine0 = create_dBFTMachine(0);
 
    cout << "Machine => " << machine0->toString() << endl;
 
