@@ -107,7 +107,7 @@ public:
 
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
-   virtual void run(State<MultiContext<Param>>* mst, MultiContext<Param>* p = nullptr)
+   virtual void run(State<MultiContext<Param>>* mst, double MaxTime = 5.0, MultiContext<Param>* p = nullptr)
    {
       if (mst) {
          cout << "ERROR! CANNOT HAVE AN INITIAL MULTISTATE" << endl;
@@ -125,7 +125,7 @@ public:
       this->initialize();
 
       // begin loop
-      Timer watchdog;
+      Timer watchdog(this->MaxTime);
       watchdog.initialize();
       watchdog.reset();
 
@@ -137,7 +137,7 @@ public:
       // while current is null, or not final
       while (!this->multiIsFinal(states)) {
          // check watchdog timer
-         if (watchdog.elapsedTime() > this->MaxTime) {
+         if (watchdog.expired()) {
             cout << "Multi StateMachine FAILED MAXTIME = " << this->MaxTime << endl;
             return;
          }

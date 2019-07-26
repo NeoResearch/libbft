@@ -39,13 +39,14 @@ simpleExample()
    //cout << "initial state: " << initial->toString() << endl;
    //cout << "final state: " << final->toString() << endl;
 
-   SingleTimerStateMachine<Data> machine(new Timer("C"));
+   SingleTimerStateMachine<Data> machine(new Timer(-1.0, "C"));
 
    machine.registerState(initial);
    machine.registerState(final);
 
    cout << "Machine => " << machine.toString() << endl;
 
+   // run for 5.0 seconds max (default)
    machine.run(initial);
 }
 
@@ -92,7 +93,7 @@ create_dBFTMachine(int id)
    // creating dBFT transitions
    // -------------------------
 
-   auto machine = new SingleTimerStateMachine<MultiContext<dBFTContext>>(new Timer("C"));
+   auto machine = new SingleTimerStateMachine<MultiContext<dBFTContext>>(new Timer(-1.0, "C"));
    machine->me = id;
 
    // initial -> backup
@@ -138,7 +139,8 @@ dbft_backup()
    MultiContext<dBFTContext> ctx;
    ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
 
-   machine0->run(machine0->states[0], &ctx);
+   // run for 5.0 seconds max
+   machine0->run(machine0->states[0], 5.0, &ctx); 
 }
 
 void
@@ -154,7 +156,8 @@ dbft_primary()
    MultiContext<dBFTContext> ctx;
    ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
 
-   machine0->run(machine0->states[0], &ctx);
+   // run for 5.0 seconds max
+   machine0->run(machine0->states[0], 5.0, &ctx);
 }
 
 int
