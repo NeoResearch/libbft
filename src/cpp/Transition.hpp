@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LIBBFT_SRC_CPP_TRANSITION_HPP
 #define LIBBFT_SRC_CPP_TRANSITION_HPP
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LIBBFT_SRC_CPP_MULTI_STSM_HPP
 #define LIBBFT_SRC_CPP_MULTI_STSM_HPP
 
