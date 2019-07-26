@@ -11,7 +11,7 @@
 #include <random>
 
 // standard Transition
-#include "Timer.hpp"
+#include "timing/Timer.hpp"
 #include "Transition.hpp"
 
 // standard State
@@ -71,7 +71,6 @@ public:
       std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
 
       for (unsigned i = 0; i < _transitions.size(); i++) {
-         cout << "i=" << i << endl;
          if (_transitions[i]->isValid(timer, p, me))
             return _transitions[i];
       }

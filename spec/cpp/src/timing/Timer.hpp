@@ -5,6 +5,9 @@
 // system includes
 #include <sstream>
 
+// libbft includes
+#include "Clock.hpp"
+
 // standard Timer for a TSM
 
 using namespace std; // TODO: remove
@@ -13,41 +16,47 @@ namespace libbft {
 
 class Timer
 {
-public:
 private:
-   // terrible timer (TODO: improve!)
-   long mytime;
+   // beware if clock precision is terrible
+   Clock* clock;
+   // nice precision timer
+   double mytime;
+   // object name
    string name;
-
+   // countdown timer (if value is positive)
    double countdown{ -1.0 };
 
 public:
-   Timer(string _name = "")
+   Timer(string _name = "", Clock* _clock = nullptr)
      : name(_name)
+     , clock(_clock)
    {
       init();
    }
 
    Timer* init(double _countdown = -1.0)
    {
+      // update countdown
       countdown = _countdown;
-      // terrible, only seconds! should be micro and asynchronous...
-      mytime = time(NULL);
+      if (!clock)
+         clock = new Clock(); // beware if it's a terrible clock
+      // this should be a precision time
+      mytime = clock->getTime();
       return this; // allow chaining effect
    }
 
 public:
    void reset()
    {
-      // terrible, only seconds! should be micro and asynchronous...
-      mytime = time(NULL);
+      // this should be a precision time
+      mytime = clock->getTime();
    }
 
    // time in seconds (for counting-up)
    double elapsedTime() const
    {
-      // terrible, only seconds! should be micro and asynchronous...
-      long newtime = time(NULL);
+      // this should be a precision time
+      double newtime = clock->getTime();
       return newtime - mytime;
    }
 

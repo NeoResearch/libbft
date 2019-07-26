@@ -8,7 +8,7 @@
 
 // libbft
 //#include "State.h" // forward declaration
-#include "Timer.hpp"
+#include "timing/Timer.hpp"
 ////#include "Event.hpp"
 
 // standard Transition
@@ -125,6 +125,6 @@ public:
 } // libbft
 
 // forward declaration
-#include "State.h"
+#include "State.hpp"
 
 #endif // LIBBFT_SRC_CPP_TRANSITION_HPP

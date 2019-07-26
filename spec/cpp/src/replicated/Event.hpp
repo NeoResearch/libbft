@@ -11,12 +11,7 @@
 #include <random>
 
 // standard Transition
-#include "State.h"
-#include "Timer.hpp"
-
-// standard State
-
-// every state is a Timed state (states that allow timed transitions)
+//#include "State.h"
 
 using namespace std; // TODO: remove
 
