@@ -100,7 +100,8 @@ public:
 
          bool updated = updateState(current, p);
          if (updated) {
-            cout << "moved to state: " << current->toString() << endl;
+            //cout << "moved to state: " << current->toString() << endl;
+            // TODO: try this using operator<<
             watchdog.reset();
             //current->onEnter(p); // really useful?
             //current = next;

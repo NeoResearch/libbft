@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LIBBFT_SRC_CPP_MULTI_STSM_HPP
-#define LIBBFT_SRC_CPP_MULTI_STSM_HPP
+#ifndef LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
+#define LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 
 // system includes
 #include <iostream> // TODO: remove
@@ -12,8 +12,8 @@
 // libbft includes
 
 // Prototype?
-#include "Event.hpp"
 #include "../SingleTimerStateMachine.hpp"
+#include "Event.hpp"
 
 using namespace std; // TODO: remove
 
@@ -109,9 +109,11 @@ struct Scheduled
    }
 };
 
-// TODO: inherits from single or from prototype? prototype would be much better...
+template<class Param>
+using MultiState = vector<State<MultiContext<Param>>*>;
+
 template<class Param = nullptr_t>
-class MultiSTSM //: public SingleTimerStateMachine<MultiContext<Param>>
+class MultiSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
    // includes several internal machines
@@ -152,14 +154,14 @@ public:
    }
 
    // initialize timer, etc
-   virtual void initialize()
+   virtual void initialize() override
    {
       cout << "initializing multimachine" << endl;
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize();
    }
 
-   bool allFinal(vector<State<MultiContext<Param>>*> states)
+   bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
       for (unsigned i = 0; i < states.size(); i++) {
          if (!states[i] || !states[i]->isFinal)
@@ -169,7 +171,7 @@ public:
    }
 
    // perhaps just processGlobalTransitions here (both scheduled and non-scheduled)
-   bool processScheduledGlobalTransitions(vector<State<MultiContext<Param>>*>& states, MultiContext<Param>* p)
+   bool processScheduledGlobalTransitions(MultiState<Param>& states, MultiContext<Param>* p)
    {
       bool r = false;
       for (unsigned i = 0; i < scheduledTransitions.size(); i++) {
@@ -212,6 +214,21 @@ public:
       return r;
    }
 
+   virtual bool updateState(MultiState<Param>*& states, MultiContext<Param>* p) override
+   {
+      bool ret = false;
+      for (unsigned i = 0; i < machines.size(); i++) {
+         // evaluate situation on each machine
+         bool r = machines[i]->updateState(states->at(i), p);
+         if (r) {
+            cout << "machine " << i << " moved to state: " << states->at(i)->toString() << endl;
+            states->at(i)->onEnter(p); // really useful?
+            ret = true;
+         }
+      }
+      return ret;
+   }
+
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
    // this class should not inherit directly from Single, but from some prototype.. parameter 'mst' should not be here
@@ -225,9 +242,9 @@ public:
       // 'mst' multistate will always be empty (only keeping eye on local states)
 
       cout << endl;
-      cout << "========================" << endl;
-      cout << "begin multimachine run()" << endl;
-      cout << "========================" << endl;
+      cout << "====================================" << endl;
+      cout << "begin replicated state machine run()" << endl;
+      cout << "====================================" << endl;
 
       // initialize all machines
       this->initialize();
@@ -237,13 +254,13 @@ public:
       watchdog.init(MaxTime);
       watchdog.reset();
 
-      vector<State<MultiContext<Param>>*> states(machines.size(), nullptr);
+      MultiState<Param> states(machines.size(), nullptr);
 
       // to simulate non-deterministic behavior
       //auto rng = std::default_random_engine{};
 
       // while current is null, or not final
-      while (!allFinal(states)) {
+      while (!isFinal(states, p)) {
          // check watchdog timer
          if (watchdog.expired()) {
             cout << "Multi StateMachine FAILED MAXTIME = " << MaxTime << endl;
@@ -269,14 +286,11 @@ public:
          //std::shuffle(std::begin(_machines), std::end(_machines), rng);
 
          // for now is fully deterministic, due to states (TODO: make random, but remember to preserve order between 'states' and 'machines')
-         for (unsigned i = 0; i < machines.size(); i++) {
-            // evaluate situation on each machine
-            bool r = machines[i]->updateState(states[i], p);
-            if (r) {
-               cout << "machine " << i << " moved to state: " << states[i]->toString() << endl;
-               watchdog.reset();
-               states[i]->onEnter(p); // really useful?
-            }
+         MultiState<Param>* pstates = &states; // should not change pointer base here
+         bool r = updateState(pstates, p);
+         if (r) {
+            cout << "replicated machine updated state" << endl;
+            watchdog.reset();
          }
 
          //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
@@ -284,15 +298,15 @@ public:
       }
 
       cout << endl;
-      cout << "======================" << endl;
-      cout << "finished multimachine!" << endl;
-      cout << "======================" << endl;
+      cout << "==================================" << endl;
+      cout << "finished replicated state machine!" << endl;
+      cout << "==================================" << endl;
    }
 
    string toString()
    {
       stringstream ss;
-      ss << "MultiSTSM [";
+      ss << "ReplicatedSTSM [";
       for (unsigned i = 0; i < machines.size(); i++)
          ss << machines[i]->toString() << ";";
       ss << "]";
@@ -302,4 +316,4 @@ public:
 
 } // libbft
 
-#endif // LIBBFT_SRC_CPP_MULTI_STSM_HPP
+#endif // LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
