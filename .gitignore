@@ -2,7 +2,7 @@ bin/
 .idea/
 .vscode/
 
-src/cpp/cmake-build-debug/
-src/cpp/build/
+spec/cpp/cmake-build-debug/
+spec/cpp/build/
 
-src/go/vendor/
+spec/go/vendor/

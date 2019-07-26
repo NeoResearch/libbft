@@ -1,20 +1,22 @@
+projects_folder=spec
+
 all: cpp go
-	valgrind ./src/cpp/build/app_test
-	valgrind go run main.go
+	valgrind ./$(projects_folder)/cpp/build/app_test
+	(cd ~/go/src/github.com/libbft && dep ensure && go run main.go)
 
 cpp:
-	(mkdir -p src/cpp/build && cd src/cpp/build && cmake .. && make)
+	(mkdir -p $(projects_folder)/cpp/build && cd $(projects_folder)/cpp/build && cmake .. && make)
 
-go: src/go/*
+go:
 	(cd ~/go/src/github.com/libbft && dep ensure && go build *.go)
 
 csharp:
-	(cd src/csharp && dotnet build)
+	(cd $(projects_folder)/csharp && dotnet build)
 
 test: cpp
 	@echo "Performing basic tests now"
 	@echo
-	(cd src/cpp/build/tests && make test)
+	(cd $(projects_folder)/cpp/build/tests && make test)
 	@echo
 	@echo "Generating coverage (see tests/reports/)"
 	@echo
@@ -26,4 +28,4 @@ test: cpp
 	#(cd tests && make test-hard)
 
 clean:
-	rm src/cpp/build/*.so
+	(cd $(projects_folder)/cpp/build && make clean)
