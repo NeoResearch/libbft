@@ -21,17 +21,18 @@ private:
    double countdown{ -1.0 };
 
 public:
-   Timer(double _countdown = -1.0, string _name = "")
+   Timer(string _name = "")
      : name(_name)
-     , countdown(_countdown)
    {
-      initialize();
+      init();
    }
 
-   void initialize()
+   Timer* init(double _countdown = -1.0)
    {
+      countdown = _countdown;
       // terrible, only seconds! should be micro and asynchronous...
       mytime = time(NULL);
+      return this; // allow chaining effect
    }
 
 public:

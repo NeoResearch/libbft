@@ -125,8 +125,8 @@ public:
       this->initialize();
 
       // begin loop
-      Timer watchdog(this->MaxTime);
-      watchdog.initialize();
+      Timer watchdog;
+      watchdog.init(this->MaxTime);
       watchdog.reset();
 
       vector<State<MultiContext<Param>>*> states(machines.size(), nullptr);

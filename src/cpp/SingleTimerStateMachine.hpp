@@ -98,7 +98,7 @@ public:
    virtual void initialize()
    {
       cout << "will initialize timer" << endl;
-      timer->initialize();
+      timer->init();
 
       cout << "will reset timer" << endl;
       timer->reset();
@@ -122,8 +122,8 @@ public:
 
       this->initialize();
 
-      Timer watchdog(MaxTime);
-      watchdog.initialize();
+      Timer watchdog;
+      watchdog.init(MaxTime);
       watchdog.reset();
 
       // while current is null, or not final
