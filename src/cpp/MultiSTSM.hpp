@@ -10,17 +10,35 @@
 // libbft includes
 
 // Prototype?
+#include "Event.hpp"
 #include "SingleTimerStateMachine.hpp"
 
 using namespace std; // TODO: remove
 
 namespace libbft {
 
+template<class Param>
+struct MultiContext;
+
+template<class Param = nullptr_t>
+struct MachineContext
+{
+   Param* params;
+   SingleTimerStateMachine<MultiContext<Param>>* machine;
+   vector<Event<Param>*> events;
+
+   MachineContext(Param* _params, SingleTimerStateMachine<MultiContext<Param>>* _machine)
+     : params(_params)
+     , machine(_machine)
+   {
+   }
+};
+
 template<class Param = nullptr_t>
 struct MultiContext
 {
-   vector<Param*> params;
-   vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
+   // vector of machines
+   vector<MachineContext<Param>> vm;
 };
 
 // TODO: inherits from single or from prototype? prototype would be much better...

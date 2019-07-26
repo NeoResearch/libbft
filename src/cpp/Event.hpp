@@ -40,6 +40,11 @@ public:
       return type;
    }
 
+   virtual string getName() const
+   {
+      return name;
+   }
+
    virtual string toString() const
    {
       stringstream ss;
@@ -48,6 +53,7 @@ public:
    }
 };
 
+/*
 template<class Param = nullptr_t>
 class EventHandler
 {
@@ -81,6 +87,7 @@ public:
       return ss.str();
    }
 };
+*/
 
 } // libbft
 

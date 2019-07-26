@@ -5,9 +5,10 @@
 
 // lib
 
+#include "Event.hpp"
+#include "MultiSTSM.hpp"
 #include "SingleTimerStateMachine.hpp"
 #include "State.h"
-#include "MultiSTSM.hpp"
 
 using namespace std;
 using namespace libbft;
@@ -59,6 +60,8 @@ struct dBFTContext
    // number of nodes (TODO: better solution for this?)
    int R;
 
+   // cached events
+
    // add ConsensusContext information here
 
    dBFTContext(int _v, int _H, int _T, int _R)
@@ -70,9 +73,10 @@ struct dBFTContext
    }
 };
 
-SingleTimerStateMachine<MultiContext<dBFTContext>>* getdBFTMachine(int id)
+SingleTimerStateMachine<MultiContext<dBFTContext>>*
+getdBFTMachine(int id)
 {
-// ---------------------
+   // ---------------------
    // declaring dBFT states
    // ---------------------
 
@@ -95,14 +99,14 @@ SingleTimerStateMachine<MultiContext<dBFTContext>>* getdBFTMachine(int id)
    initial->addTransition(
      (new Transition<MultiContext<dBFTContext>>(backup))->add(Condition<MultiContext<dBFTContext>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
         cout << "lambda1" << endl;
-        return !((d->params[me]->H + d->params[me]->v) % d->params[me]->R == me);
+        return !((d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me);
      })));
 
    // initial -> primary
    initial->addTransition(
      (new Transition<MultiContext<dBFTContext>>(primary))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
         cout << "lambda2" << endl;
-        return (d->params[me]->H + d->params[me]->v) % d->params[me]->R == me;
+        return (d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me;
      })));
 
    // backup -> reqSentOrRecv
@@ -114,32 +118,26 @@ SingleTimerStateMachine<MultiContext<dBFTContext>>* getdBFTMachine(int id)
      })));
    */
 
-   
-
    machine->registerState(initial);
    machine->registerState(blockSent);
 
    return machine;
 }
 
-
 void
-dbft()
+dbft0()
 {
-   auto machine = getdBFTMachine(0);
+   auto machine0 = getdBFTMachine(0);
 
-   cout << "Machine => " << machine->toString() << endl;
+   cout << "Machine => " << machine0->toString() << endl;
 
    // v = 0, H = 1000, T = 3 (secs), R = 1 (one node network)
    dBFTContext data(0, 1000, 3, 1);
 
    MultiContext<dBFTContext> ctx;
-   ctx.params.push_back(&data);
-   ctx.machines.push_back(machine);
+   ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
 
-   auto initial = machine->states[0];
-
-   machine->run(initial, &ctx);
+   machine0->run(machine0->states[0], &ctx);
 }
 
 int
@@ -151,7 +149,7 @@ main()
    simpleExample();
 
    // Neo dbft modeling as example
-   dbft();
+   dbft0();
 
    cout << "finished successfully!" << endl;
 
