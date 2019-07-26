@@ -145,11 +145,18 @@ dbft_backup_multi()
 
    // global transition scheduled to start machine 0 ("OnStart") after 1 second
    multiMachine.scheduleGlobal(
-     (new Timer())->init(1.0),                                      // 1 second to expire
-     0,                                                             // machine 0
-     new Transition<MultiContext<dBFTContext>>(machine0->states[0]) // no other conditions, always 'true'
-                                                                    // should perhaps reset clock of machine zero here with an Action, I suppose...
-   );
+     (new Timer())->init(1.0), // 1 second to expire
+     0,                        // machine 0
+     // no other conditions, always 'true'
+     (new Transition<MultiContext<dBFTContext>>(machine0->states[0]))
+       ->add(Action<MultiContext<dBFTContext>>(
+         "C := 0 | v := 0",
+         [](Timer& C, MultiContext<dBFTContext>* d, int me) -> void {
+            cout << " => action: C := 0" << endl;
+            C.reset();
+            cout << " => action: v := 0" << endl;
+            d->vm[me].params->v = 0;
+         })));
 
    // run for 5.0 seconds max (watchdog limit)
    multiMachine.run(nullptr, 5.0, &ctx);
