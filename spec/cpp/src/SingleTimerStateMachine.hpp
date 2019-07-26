@@ -127,7 +127,7 @@ public:
          // check watchdog timer
          if (watchdog.expired()) {
             cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
-            return;
+            break;
          }
 
          State<Param>* next = getNextState(current, p);
