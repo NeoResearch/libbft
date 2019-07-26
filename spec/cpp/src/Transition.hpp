@@ -125,6 +125,6 @@ public:
 } // libbft
 
 // forward declaration
-#include "State.h"
+#include "State.hpp"
 
 #endif // LIBBFT_SRC_CPP_TRANSITION_HPP

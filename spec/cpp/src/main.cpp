@@ -5,10 +5,10 @@
 
 // lib
 
-#include "Event.hpp"
-#include "MultiSTSM.hpp"
+#include "replicated/Event.hpp"
+#include "replicated/ReplicatedSTSM.hpp"
 #include "SingleTimerStateMachine.hpp"
-#include "State.h"
+#include "State.hpp"
 
 using namespace std;
 using namespace libbft;

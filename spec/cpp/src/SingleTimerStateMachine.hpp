@@ -15,7 +15,7 @@
 // default timer
 #include "timing/Timer.hpp"
 // default state
-#include "State.h"
+#include "State.hpp"
 
 using namespace std; // TODO: remove
 

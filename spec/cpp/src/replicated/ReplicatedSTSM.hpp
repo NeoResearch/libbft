@@ -13,7 +13,7 @@
 
 // Prototype?
 #include "Event.hpp"
-#include "SingleTimerStateMachine.hpp"
+#include "../SingleTimerStateMachine.hpp"
 
 using namespace std; // TODO: remove
 
