@@ -2,3 +2,5 @@
 git submodule update --remote --init --recursive
 git pull --recurse-submodules
 sudo apt-get install valgrind
+
+ln -s $(pwd)/src/go/ ~/go/src/github.com/libbft
