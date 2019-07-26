@@ -22,28 +22,23 @@ using namespace std; // TODO: remove
 namespace libbft {
 
 template<class Param = nullptr_t>
-class SingleTimerStateMachine
+class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
-   int me{ 0 };
 
    // states for the state machine
    vector<State<Param>*> states;
    // global transitions: may come from any state (including a null state)
    vector<Transition<Param>*> globalTransitions;
 
-   SingleTimerStateMachine()
-   {
-      // generic Timer
-      timer = new Timer();
-   }
-
    // specific timer
-   SingleTimerStateMachine(Timer* t)
-     : timer(t)
+   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* clock = nullptr)
+     : timer(t), TimedStateMachine<State<Param>, Param>(clock, me)
    {
+      if(!timer)
+         timer = new Timer("", clock);
    }
 
    void registerState(State<Param>* s)
@@ -63,33 +58,43 @@ public:
       // TODO: shuffle global?
       vector<Transition<Param>*> _transitions = globalTransitions;
       for (unsigned i = 0; i < _transitions.size(); i++) {
-         if (_transitions[i]->isValid(*timer, p, me))
+         if (_transitions[i]->isValid(*timer, p, this->me))
             return _transitions[i];
       }
       return nullptr;
    }
 
+   virtual bool isFinal(const State<Param>& current, Param* p)
+   {
+      return current.isFinal;
+   }
+
    // get next state (current may be null, waiting for global transition)
    // may return the same state, if nothing happened
-   virtual State<Param>* getNextState(State<Param>* current, Param* p)
+   virtual bool updateState(State<Param>*& outcurrent, Param* p)
    {
+      State<Param>* current = outcurrent;
+      bool r = false;
       // find global transition
       Transition<Param>* gt = findGlobalTransition(p);
       if (gt) {
          // found global transition
          cout << "-> found valid global transition! " << gt->toString() << endl;
-         current = gt->execute(*timer, p, me);
+         current = gt->execute(*timer, p, this->me);
+         r = true;
       }
 
       //cout << "finding transition! ...";
       if (current) {
-         Transition<Param>* go = current->tryGetTransition(*timer, p, me);
+         Transition<Param>* go = current->tryGetTransition(*timer, p, this->me);
          if (go) {
             cout << "-> found valid transition! " << go->toString() << endl;
-            current = go->execute(*timer, p, me);
+            current = go->execute(*timer, p, this->me);
+            r = true;
          }
       }
-      return current;
+      outcurrent = current;
+      return r;
    }
 
    // initialize timer, etc
@@ -120,19 +125,18 @@ public:
       watchdog.reset();
 
       // while current is null, or not final
-      while (!current || !current->isFinal) {
+      while (!isFinal(*current, p)) {
          // check watchdog timer
          if (watchdog.expired()) {
             cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
             break;
          }
 
-         State<Param>* next = getNextState(current, p);
-         if (next != current) {
-            cout << "moved to state: " << next->toString() << endl;
+         bool r = this->updateState(current, p);
+         if (r) {
+            cout << "moved to state: " << current->toString() << endl;
             watchdog.reset();
-            next->onEnter(p); // really useful?
-            current = next;
+            current->onEnter(p); // really useful?
          }
 
          //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
@@ -149,7 +153,7 @@ public:
    {
       stringstream ss;
       ss << "STSM {";
-      ss << "#id = " << me << ";";
+      ss << "#id = " << this->me << ";";
       ss << "Timer='" << timer->toString() << "';";
       ss << "States=[";
       for (unsigned i = 0; i < states.size(); i++)

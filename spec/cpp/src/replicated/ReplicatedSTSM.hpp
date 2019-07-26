@@ -111,7 +111,7 @@ struct Scheduled
 
 // TODO: inherits from single or from prototype? prototype would be much better...
 template<class Param = nullptr_t>
-class MultiSTSM : public SingleTimerStateMachine<MultiContext<Param>>
+class MultiSTSM //: public SingleTimerStateMachine<MultiContext<Param>>
 {
 public:
    // includes several internal machines
@@ -271,11 +271,10 @@ public:
          // for now is fully deterministic, due to states (TODO: make random, but remember to preserve order between 'states' and 'machines')
          for (unsigned i = 0; i < machines.size(); i++) {
             // evaluate situation on each machine
-            State<MultiContext<Param>>* next_i = machines[i]->getNextState(states[i], p);
-            if (next_i != states[i]) {
-               cout << "machine " << i << " moved to state: " << next_i->toString() << endl;
+            bool r = machines[i]->updateState(states[i], p);
+            if (r) {
+               cout << "machine " << i << " moved to state: " << states[i]->toString() << endl;
                watchdog.reset();
-               states[i] = next_i;
                states[i]->onEnter(p); // really useful?
             }
          }
