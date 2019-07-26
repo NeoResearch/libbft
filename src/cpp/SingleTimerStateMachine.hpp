@@ -29,7 +29,7 @@ class SingleTimerStateMachine
 public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
-   int me {0};
+   int me{ 0 };
 
    // states for the state machine
    vector<State<Param>*> states;
@@ -105,11 +105,6 @@ public:
       timer->reset();
    }
 
-   bool localIsFinal(State<Param>* current)
-   {
-      return current && current->isFinal;
-   }
-
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
    virtual void run(State<Param>* current, double MaxTime = 5.0, Param* p = nullptr)
@@ -128,7 +123,7 @@ public:
       watchdog.reset();
 
       // while current is null, or not final
-      while (!this->localIsFinal(current)) {
+      while (!current || !current->isFinal) {
          // check watchdog timer
          if (watchdog.expired()) {
             cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
