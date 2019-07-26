@@ -1,13 +1,19 @@
-all:  base
-	valgrind ./bin/app_test
+all: cpp
+	valgrind ./src/cpp/build/app_test
 
-base:
-	g++ -std=c++17 -g -Ofast src/cpp/main.cpp -o bin/app_test
+cpp:
+	(mkdir -p src/cpp/build && cd src/cpp/build && cmake .. && make)
+
+go:
+	(cd src/go && go build)
+
+csharp:
+	(cd src/csharp && dotnet build)
 
 test:
 	@echo "Performing basic tests now"
 	@echo
-	(cd tests && make test)
+	(cd src/cpp/build/tests && make test)
 	@echo
 	@echo "Generating coverage (see tests/reports/)"
 	@echo
@@ -18,4 +24,4 @@ test:
 	@echo
 	#(cd tests && make test-hard)
 clean:
-	rm build/*.so 
+	rm src/cpp/build/*.so
