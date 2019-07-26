@@ -1,6 +1,6 @@
 projects_folder=spec
 
-all: cpp go
+all: cpp
 	valgrind ./$(projects_folder)/cpp/build/app_test
 	(cd ~/go/src/github.com/libbft && dep ensure && go run main.go)
 
