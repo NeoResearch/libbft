@@ -6,8 +6,8 @@
 #include <iostream> // TODO: remove
 #include <vector>
 
-#include <unistd.h> // TODO: remove busy sleep
 #include <assert.h> // TODO: remove
+#include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
 
@@ -92,6 +92,8 @@ struct MultiContext
    }
 };
 
+// Scheduled class: launches a 'thing' (type T) after clock has expired
+// simple class to hold information, could be an std::array perhaps, if named
 template<class T>
 struct Scheduled
 {
@@ -99,7 +101,6 @@ struct Scheduled
    Timer* timer;
    int machine;
 
-   // from = -1, if really global
    Scheduled(T* _thing, Timer* _timer, int _machine)
      : thing(_thing)
      , timer(_timer)
@@ -197,8 +198,8 @@ public:
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
          if (scheduledEvents[i].timer->expired()) // expired timer
          {
-            int to = scheduledEvents[i].machine; // get target machine
-            if(to == -1) // broadcast
+            int to = scheduledEvents[i].machine;           // get target machine
+            if (to == -1)                                  // broadcast
                p->broadcast(scheduledEvents[i].thing, -1); // from -1 (from system)
             else
                p->sendTo(scheduledEvents[i].thing, to);
@@ -267,7 +268,7 @@ public:
          // simulate non-deterministic behavior
          //std::shuffle(std::begin(_machines), std::end(_machines), rng);
 
-         // for now is fully deterministic, due to states (TODO: make random)
+         // for now is fully deterministic, due to states (TODO: make random, but remember to preserve order between 'states' and 'machines')
          for (unsigned i = 0; i < machines.size(); i++) {
             // evaluate situation on each machine
             State<MultiContext<Param>>* next_i = machines[i]->getNextState(states[i], p);
