@@ -1,5 +1,8 @@
 bin/
 .idea/
 .vscode/
+
 src/cpp/cmake-build-debug/
 src/cpp/build/
+
+src/go/vendor/
