@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <unistd.h> // TODO: remove busy sleep
+#include <assert.h> // TODO: remove
 
 // libbft includes
 
@@ -28,10 +29,10 @@ struct MachineContext
    SingleTimerStateMachine<MultiContext<Param>>* machine;
    vector<Event<MultiContext<Param>>*> events;
 
-   void addEvent(Event<MultiContext<Param>>* e)
-   {
-      events.push_back(e);
-   }
+   //void addEvent(Event<MultiContext<Param>>* e)
+   //{
+   //   events.push_back(e);
+   //}
 
    MachineContext(Param* _params, SingleTimerStateMachine<MultiContext<Param>>* _machine)
      : params(_params)
@@ -46,16 +47,32 @@ struct MultiContext
    // vector of machines
    vector<MachineContext<Param>> vm;
 
+   // from may be -1, if broadcasted from system
    void broadcast(string event, int from)
+   {
+      broadcast(new Event<MultiContext<Param>>(event, event, from), from);
+   }
+
+   // from may be -1, if broadcasted from system
+   void broadcast(Event<MultiContext<Param>>* event, int from)
    {
       for (unsigned i = 0; vm.size(); i++)
          if (i != from)
-            sendTo(event, from, i);
+            sendTo(event, i); // this may break with memory leaks (TODO: use shared_ptr, or copy-based final class)
    }
 
+   // 'to' should be valid (0 <= to <= R)
+   void sendTo(Event<MultiContext<Param>>* event, int to)
+   {
+      assert((to >= 0) && (to < vm.size()));
+      vm[to].events.push_back(event);
+   }
+
+   // 'from' may be -1, if broadcasted from system
+   // 'to' should be valid (0 <= to <= R)
    void sendTo(string event, int from, int to)
    {
-      vm[to].events.push_back(new Event<MachineContext<Param>>(event, event, from));
+      sendTo(new Event<MultiContext<Param>>(event, event, from), to);
    }
 
    bool hasEvent(string type, int at)
@@ -180,8 +197,11 @@ public:
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
          if (scheduledEvents[i].timer->expired()) // expired timer
          {
-            int m = scheduledEvents[i].machine; // get target machine
-            p->vm[m].addEvent(scheduledEvents[i].thing);
+            int to = scheduledEvents[i].machine; // get target machine
+            if(to == -1) // broadcast
+               p->broadcast(scheduledEvents[i].thing, -1); // from -1 (from system)
+            else
+               p->sendTo(scheduledEvents[i].thing, to);
             // removing processed event
             scheduledEvents.erase(scheduledEvents.begin() + i);
             i--; // bad practice... use iterators on loop, instead
