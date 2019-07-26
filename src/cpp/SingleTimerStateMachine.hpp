@@ -29,6 +29,7 @@ public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
    const double MaxTime{ 5.0 }; // 5 seconds until freeze
+   int me {0};
 
    // states for the state machine
    vector<State<Param>*> states;
@@ -65,7 +66,7 @@ public:
       vector<Transition<Param>*> _transitions = globalTransitions;
       for (unsigned i = 0; i < _transitions.size(); i++) {
          cout << "i=" << i << endl;
-         if (_transitions[i]->isValid(*timer, p))
+         if (_transitions[i]->isValid(*timer, p, me))
             return _transitions[i];
       }
       return nullptr;
@@ -80,18 +81,33 @@ public:
       if (gt) {
          // found global transition
          cout << "-> found valid global transition! " << gt->toString() << endl;
-         current = gt->execute(*timer, p);
+         current = gt->execute(*timer, p, me);
       }
 
       //cout << "finding transition! ...";
       if (current) {
-         Transition<Param>* go = current->tryGetTransition(*timer, p);
+         Transition<Param>* go = current->tryGetTransition(*timer, p, me);
          if (go) {
             cout << "-> found valid transition! " << go->toString() << endl;
-            current = go->execute(*timer, p);
+            current = go->execute(*timer, p, me);
          }
       }
       return current;
+   }
+
+   // initialize timer, etc
+   virtual void initialize()
+   {
+      cout << "will initialize timer" << endl;
+      timer->initialize();
+
+      cout << "will reset timer" << endl;
+      timer->reset();
+   }
+
+   bool localIsFinal(State<Param>* current)
+   {
+      return current && current->isFinal;
    }
 
    // execute the state machine (should be asynchonous for the future)
@@ -105,23 +121,14 @@ public:
       cout << "begin run()" << endl;
       cout << "===========" << endl;
 
-      cout << "will initialize timer" << endl;
-      timer->initialize();
+      this->initialize();
 
-      cout << "will reset timer" << endl;
-      timer->reset();
-
-      // visit first state (really useful?)
-      current->onEnter(p);
-
-      // begin loop
-      cout << "begin loop at state: " << current->toString() << endl;
       Timer watchdog;
       watchdog.initialize();
       watchdog.reset();
 
       // while current is null, or not final
-      while (!current || !current->isFinal) {
+      while (!this->localIsFinal(current)) {
          // check watchdog timer
          if (watchdog.elapsedTime() > MaxTime) {
             cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;

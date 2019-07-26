@@ -7,6 +7,7 @@
 
 #include "SingleTimerStateMachine.hpp"
 #include "State.h"
+#include "MultiSTSM.hpp"
 
 using namespace std;
 using namespace libbft;
@@ -26,11 +27,11 @@ simpleExample()
 
    // unused (demonstration)
    Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
-   alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*) -> bool { return true; }));
+   alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*, int) -> bool { return true; }));
    //initial->addTransition(alwaysTrue); // (unused)
 
    initial->addTransition(
-     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& t, Data* d) -> bool {
+     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& t, Data* d, int) -> bool {
         return t.elapsedTime() >= 1.0;
      })));
 
@@ -57,54 +58,51 @@ struct dBFTContext
    int T;
    // number of nodes (TODO: better solution for this?)
    int R;
-   // current node (TODO: better solution for this?)
-   int i;
 
    // add ConsensusContext information here
 
-   dBFTContext(int _v, int _H, int _T, int _R, int _i)
+   dBFTContext(int _v, int _H, int _T, int _R)
      : v(_v)
      , H(_H)
      , T(_T)
      , R(_R)
-     , i(_i)
    {
    }
 };
 
-void
-dbft()
+SingleTimerStateMachine<MultiContext<dBFTContext>>* getdBFTMachine(int id)
 {
-   // ---------------------
+// ---------------------
    // declaring dBFT states
    // ---------------------
 
-   State<dBFTContext> initial(false, "Initial");
-   State<dBFTContext> backup(false, "Backup");
-   State<dBFTContext> primary(false, "Primary");
-   State<dBFTContext> reqSentOrRecv(false, "RequestSentOrReceived");
-   State<dBFTContext> commitSent(false, "CommitSent");
-   State<dBFTContext> viewChanging(false, "ViewChanging");
-   State<dBFTContext> blockSent(true, "BlockSent");
+   auto initial = new State<MultiContext<dBFTContext>>(false, "Initial");
+   auto backup = new State<MultiContext<dBFTContext>>(false, "Backup");
+   auto primary = new State<MultiContext<dBFTContext>>(false, "Primary");
+   auto reqSentOrRecv = new State<MultiContext<dBFTContext>>(false, "RequestSentOrReceived");
+   auto commitSent = new State<MultiContext<dBFTContext>>(false, "CommitSent");
+   auto viewChanging = new State<MultiContext<dBFTContext>>(false, "ViewChanging");
+   auto blockSent = new State<MultiContext<dBFTContext>>(true, "BlockSent");
 
    // -------------------------
    // creating dBFT transitions
    // -------------------------
 
-   SingleTimerStateMachine<dBFTContext> machine(new Timer("C"));
+   auto machine = new SingleTimerStateMachine<MultiContext<dBFTContext>>(new Timer("C"));
+   machine->me = id;
 
    // initial -> backup
-   initial.addTransition(
-     (new Transition<dBFTContext>(&backup))->add(Condition<dBFTContext>("not (H+v) mod R = i", [](const Timer& t, dBFTContext* d) -> bool {
+   initial->addTransition(
+     (new Transition<MultiContext<dBFTContext>>(backup))->add(Condition<MultiContext<dBFTContext>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
         cout << "lambda1" << endl;
-        return !((d->H + d->v) % d->R == d->i);
+        return !((d->params[me]->H + d->params[me]->v) % d->params[me]->R == me);
      })));
 
    // initial -> primary
-   initial.addTransition(
-     (new Transition<dBFTContext>(&primary))->add(Condition<dBFTContext>("(H+v) mod R = i", [](const Timer& t, dBFTContext* d) -> bool {
+   initial->addTransition(
+     (new Transition<MultiContext<dBFTContext>>(primary))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
         cout << "lambda2" << endl;
-        return (d->H + d->v) % d->R == d->i;
+        return (d->params[me]->H + d->params[me]->v) % d->params[me]->R == me;
      })));
 
    // backup -> reqSentOrRecv
@@ -118,15 +116,30 @@ dbft()
 
    
 
-   machine.registerState(&initial);
-   machine.registerState(&blockSent);
+   machine->registerState(initial);
+   machine->registerState(blockSent);
 
-   cout << "Machine => " << machine.toString() << endl;
+   return machine;
+}
 
-   // v = 0, H = 1000, T = 3 (secs), R = 1 (one node network), i = 0 (first id.. should move to lambdas?)
-   dBFTContext data(0, 1000, 3, 1, 0);
 
-   machine.run(&initial, &data);
+void
+dbft()
+{
+   auto machine = getdBFTMachine(0);
+
+   cout << "Machine => " << machine->toString() << endl;
+
+   // v = 0, H = 1000, T = 3 (secs), R = 1 (one node network)
+   dBFTContext data(0, 1000, 3, 1);
+
+   MultiContext<dBFTContext> ctx;
+   ctx.params.push_back(&data);
+   ctx.machines.push_back(machine);
+
+   auto initial = machine->states[0];
+
+   machine->run(initial, &ctx);
 }
 
 int

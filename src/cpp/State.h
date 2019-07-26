@@ -59,7 +59,7 @@ public:
       cout << "leave state: " << this->toString() << endl;
    }
 
-   Transition<Param>* tryGetTransition(Timer& timer, Param* p)
+   Transition<Param>* tryGetTransition(Timer& timer, Param* p, int me)
    {
       //cout << "Trying to Get Transition" << endl;
       // should be non-deterministic and asynchronous...
@@ -71,7 +71,7 @@ public:
 
       for (unsigned i = 0; i < _transitions.size(); i++) {
          cout << "i=" << i << endl;
-         if (_transitions[i]->isValid(timer, p))
+         if (_transitions[i]->isValid(timer, p, me))
             return _transitions[i];
       }
       return nullptr;
