@@ -10,8 +10,8 @@
 #include <random>
 
 // standard Transition
-#include "Timer.hpp"
 #include "State.h"
+#include "Timer.hpp"
 
 // standard State
 
@@ -27,11 +27,13 @@ class Event
 private:
    std::string type;
    std::string name;
+   int from;
 
 public:
-   Event(string _type, string _name = "")
+   Event(string _type, string _name = "", int _from = -1)
      : type(_type)
      , name(_name)
+     , from(_from)
    {
    }
 
@@ -43,6 +45,11 @@ public:
    virtual string getName() const
    {
       return name;
+   }
+
+   virtual int getFrom() const
+   {
+      return from;
    }
 
    virtual string toString() const

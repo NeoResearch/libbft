@@ -39,6 +39,18 @@ struct MultiContext
 {
    // vector of machines
    vector<MachineContext<Param>> vm;
+
+   void broadcast(string event, int from)
+   {
+      for (unsigned i = 0; vm.size(); i++)
+         if (i != from)
+            sendTo(event, from, i);
+   }
+
+   void sendTo(string event, int from, int to)
+   {
+      vm[to].events.push_back(new Event<MachineContext<Param>>(event, event, from));
+   }
 };
 
 // TODO: inherits from single or from prototype? prototype would be much better...
