@@ -116,9 +116,21 @@ create_dBFTMachine(int id)
    backup->addTransition(
      toReqSentOrRecv1->add(Condition<MultiContext<dBFTContext>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
         cout << "waiting for event OnPrepareRequest at " << me << endl;
-        bool e = d->hasEvent("OnPrepareRequest", me);
-        cout << "e=" << e << endl;
-        return e;
+        return d->hasEvent("OnPrepareRequest", me);
+     })));
+
+   // reqSentOrRecv -> commitSent
+   reqSentOrRecv->addTransition(
+     (new Transition<MultiContext<dBFTContext>>(commitSent))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
+        cout << "nothing to do... assuming all preparations were received!" << endl;
+        return true;
+     })));
+
+   // commitSent -> blockSent
+   commitSent->addTransition(
+     (new Transition<MultiContext<dBFTContext>>(blockSent))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
+        cout << "nothing to do... assuming all commits were received!" << endl;
+        return true;
      })));
 
    machine->registerState(initial);
@@ -144,7 +156,7 @@ dbft_backup_multi()
    multiMachine.registerMachine(machine0);
 
    // global transition scheduled to start machine 0 ("OnStart") after 1 second
-   multiMachine.scheduleGlobal(
+   multiMachine.scheduleGlobalTransition(
      (new Timer())->init(1.0), // 1 second to expire
      0,                        // machine 0
      // no other conditions, always 'true'
@@ -157,6 +169,12 @@ dbft_backup_multi()
             cout << " => action: v := 0" << endl;
             d->vm[me].params->v = 0;
          })));
+
+   // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
+   multiMachine.scheduleEvent(
+     (new Timer())->init(3.0), // 3 second to expire
+     0,                        // machine 0
+     new Event<MultiContext<dBFTContext>>("OnPrepareRequest", "OnPrepareRequest"));
 
    // run for 5.0 seconds max (watchdog limit)
    multiMachine.run(nullptr, 5.0, &ctx);

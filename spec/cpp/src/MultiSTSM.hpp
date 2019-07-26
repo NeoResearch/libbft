@@ -26,7 +26,12 @@ struct MachineContext
 {
    Param* params;
    SingleTimerStateMachine<MultiContext<Param>>* machine;
-   vector<Event<Param>*> events;
+   vector<Event<MultiContext<Param>>*> events;
+
+   void addEvent(Event<MultiContext<Param>>* e)
+   {
+      events.push_back(e);
+   }
 
    MachineContext(Param* _params, SingleTimerStateMachine<MultiContext<Param>>* _machine)
      : params(_params)
@@ -70,25 +75,16 @@ struct MultiContext
    }
 };
 
-template<class MParam = nullptr_t>
-struct ScheduledEvent
+template<class T>
+struct Scheduled
 {
-   Event<MParam>* event;
-   Timer* timer;
-   int from;
-   int to;
-};
-
-template<class MParam = nullptr_t>
-struct ScheduledTransition
-{
-   Transition<MParam>* transition;
+   T* thing;
    Timer* timer;
    int machine;
 
    // from = -1, if really global
-   ScheduledTransition(Transition<MParam>* _transition, Timer* _timer, int _machine)
-     : transition(_transition)
+   Scheduled(T* _thing, Timer* _timer, int _machine)
+     : thing(_thing)
      , timer(_timer)
      , machine(_machine)
    {
@@ -104,21 +100,26 @@ public:
    vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
    // includes several internal machines
-   vector<ScheduledEvent<MultiContext<Param>>> scheduledEvents;
+   vector<Scheduled<Event<MultiContext<Param>>>> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
    // create again with other name...
-   vector<ScheduledTransition<MultiContext<Param>>> scheduledTransitions;
+   vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
-   void scheduleGlobal(ScheduledTransition<MultiContext<Param>> sch)
+   void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)
    {
       scheduledTransitions.push_back(sch);
    }
 
-   void scheduleGlobal(Timer* when, int machine, Transition<MultiContext<Param>>* t)
+   void scheduleGlobalTransition(Timer* when, int machine, Transition<MultiContext<Param>>* t)
    {
-      scheduledTransitions.push_back(ScheduledTransition<MultiContext<Param>>(t, when, machine));
+      scheduledTransitions.push_back(Scheduled(t, when, machine));
+   }
+
+   void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
+   {
+      scheduledEvents.push_back(Scheduled(e, when, machine));
    }
 
 public:
@@ -149,17 +150,18 @@ public:
       return true;
    }
 
-   bool processScheduledTransitions(vector<State<MultiContext<Param>>*>& states, MultiContext<Param>* p)
+   // perhaps just processGlobalTransitions here (both scheduled and non-scheduled)
+   bool processScheduledGlobalTransitions(vector<State<MultiContext<Param>>*>& states, MultiContext<Param>* p)
    {
       bool r = false;
       for (unsigned i = 0; i < scheduledTransitions.size(); i++) {
          if (scheduledTransitions[i].timer->expired()) // expired timer
          {
             int m = scheduledTransitions[i].machine; // get target machine
-            if (scheduledTransitions[i].transition->isValid(*(machines[m]->timer), p, m)) {
+            if (scheduledTransitions[i].thing->isValid(*(machines[m]->timer), p, m)) {
                // isValid() transition
-               cout << "processing scheduled transition on Machine " << m << ": " << scheduledTransitions[i].transition->toString() << endl;
-               State<MultiContext<Param>>* next = scheduledTransitions[i].transition->execute(*(machines[m]->timer), p, m);
+               cout << "processing scheduled transition on Machine " << m << ": " << scheduledTransitions[i].thing->toString() << endl;
+               State<MultiContext<Param>>* next = scheduledTransitions[i].thing->execute(*(machines[m]->timer), p, m);
                cout << "updating state on machine " << m << " to " << next->toString() << endl;
                states[m] = next;
                // removing processed transition (or keep it?)
@@ -167,6 +169,23 @@ public:
                i--; // bad practice... use iterators on loop, instead
                r = true;
             }
+         }
+      }
+      return r;
+   }
+
+   bool processScheduledEvents(MultiContext<Param>* p)
+   {
+      bool r = false;
+      for (unsigned i = 0; i < scheduledEvents.size(); i++) {
+         if (scheduledEvents[i].timer->expired()) // expired timer
+         {
+            int m = scheduledEvents[i].machine; // get target machine
+            p->vm[m].addEvent(scheduledEvents[i].thing);
+            // removing processed event
+            scheduledEvents.erase(scheduledEvents.begin() + i);
+            i--; // bad practice... use iterators on loop, instead
+            r = true;
          }
       }
       return r;
@@ -210,8 +229,15 @@ public:
             return;
          }
 
-         // look for a scheduled / global transition (or event)
-         bool b = processScheduledTransitions(states, p);
+         // process events
+         bool re = processScheduledEvents(p);
+         if (re) {
+            cout << "SOME EVENT HAPPENED!" << endl;
+            watchdog.reset();
+         }
+
+         // look for a scheduled global transition (or event)
+         bool b = processScheduledGlobalTransitions(states, p);
          if (b) {
             cout << "SOME GLOBAL TRANSITION HAPPENED!" << endl;
             watchdog.reset();
@@ -228,8 +254,8 @@ public:
             if (next_i != states[i]) {
                cout << "machine " << i << " moved to state: " << next_i->toString() << endl;
                watchdog.reset();
-               states[i]->onEnter(p); // really useful?
                states[i] = next_i;
+               states[i]->onEnter(p); // really useful?
             }
          }
 
