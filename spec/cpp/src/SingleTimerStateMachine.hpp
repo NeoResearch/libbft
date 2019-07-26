@@ -64,14 +64,14 @@ public:
       return nullptr;
    }
 
-   virtual bool isFinal(const State<Param>& current, Param* p)
+   virtual bool isFinal(const State<Param>& current, Param* p) override
    {
       return current.isFinal;
    }
 
    // get next state (current may be null, waiting for global transition)
    // may return the same state, if nothing happened
-   virtual bool updateState(State<Param>*& outcurrent, Param* p)
+   virtual bool updateState(State<Param>*& outcurrent, Param* p) override
    {
       State<Param>* current = outcurrent;
       bool r = false;
