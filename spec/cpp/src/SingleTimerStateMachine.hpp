@@ -6,6 +6,7 @@
 #include <iostream> // TODO: remove
 #include <vector>
 
+#include <assert.h> // TODO: remove
 #include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
@@ -28,28 +29,41 @@ public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
 
+   // watchdog timer
+   Timer* watchdog{ nullptr };
+
    // states for the state machine
    vector<State<Param>*> states;
    // global transitions: may come from any state (including a null state)
    vector<Transition<Param>*> globalTransitions;
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* clock = nullptr)
-     : timer(t), TimedStateMachine<State<Param>, Param>(clock, me)
+   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr)
+     : timer(t)
+     , TimedStateMachine<State<Param>, Param>(_clock, me)
    {
-      if(!timer)
-         timer = new Timer("", clock);
+      // timer must exist
+      if (!timer)
+         timer = new Timer("", this->clock);
+   }
+
+   State<Param>* getStateByName(string name)
+   {
+      for (unsigned i = 0; i < states.size(); i++)
+         if (states[i]->name == name)
+            return states[i];
+      return nullptr; // not found
    }
 
    void registerState(State<Param>* s)
    {
-      // something else?
+      assert(s != nullptr);
       states.push_back(s);
    }
 
    void registerGlobal(Transition<Param>* t)
    {
-      // something else?
+      assert(t != nullptr);
       globalTransitions.push_back(t);
    }
 
@@ -62,6 +76,14 @@ public:
             return _transitions[i];
       }
       return nullptr;
+   }
+
+   virtual void onEnterState(State<Param>& current, Param* p) override
+   {
+      cout << "entering state: " << current.toString() << endl;
+
+      if (watchdog)
+         watchdog->reset();
    }
 
    virtual bool isFinal(const State<Param>& current, Param* p) override
@@ -97,9 +119,23 @@ public:
       return r;
    }
 
-   // initialize timer, etc
-   virtual void initialize()
+   // MaxTime -1.0 means infinite time
+   // positive time is real expiration time
+   void setWatchdog(double MaxTime)
    {
+      watchdog = (new Timer())->init(MaxTime);
+   }
+
+   // initialize timer, etc
+   virtual void initialize() override
+   {
+      cout << "OnInitialize() Single MACHINE!" << endl;
+
+      if (watchdog)
+         watchdog->reset();
+      else
+         cout << "No watchdog configured!" << endl;
+
       cout << "will initialize timer" << endl;
       timer->init();
 
@@ -107,46 +143,15 @@ public:
       timer->reset();
    }
 
-   // execute the state machine (should be asynchonous for the future)
-   // TODO: should be non-null?
-   virtual void run(State<Param>* current, double MaxTime = 5.0, Param* p = nullptr)
+   virtual bool beforeUpdateState(State<Param>& current, Param* p) override
    {
-      // current state may be null, waiting for a globalTransition
-
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
-
-      this->initialize();
-
-      Timer watchdog;
-      watchdog.init(MaxTime);
-      watchdog.reset();
-
-      // while current is null, or not final
-      while (!isFinal(*current, p)) {
-         // check watchdog timer
-         if (watchdog.expired()) {
-            cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
-            break;
-         }
-
-         bool r = this->updateState(current, p);
-         if (r) {
-            cout << "moved to state: " << current->toString() << endl;
-            watchdog.reset();
-            current->onEnter(p); // really useful?
-         }
-
-         //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
-         usleep(1000 * 100); // 100 milli (in microsecs)
+      if (watchdog && watchdog->expired()) {
+         cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
+         return true;
       }
 
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
+      // nothing to do?
+      return false;
    }
 
    string toString()

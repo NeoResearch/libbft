@@ -127,6 +127,16 @@ public:
    vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
+   // watchdog timer
+   Timer* watchdog{ nullptr };
+
+   // MaxTime -1.0 means infinite time
+   // positive time is real expiration time
+   void setWatchdog(double MaxTime)
+   {
+      watchdog = (new Timer())->init(MaxTime);
+   }
+
    void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)
    {
       scheduledTransitions.push_back(sch);
@@ -157,6 +167,10 @@ public:
    virtual void initialize() override
    {
       cout << "initializing multimachine" << endl;
+      if (watchdog)
+         watchdog->reset();
+      else
+         cout << "No watchdog configured!" << endl;
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize();
    }
@@ -222,85 +236,46 @@ public:
          bool r = machines[i]->updateState(states->at(i), p);
          if (r) {
             cout << "machine " << i << " moved to state: " << states->at(i)->toString() << endl;
-            states->at(i)->onEnter(p); // really useful?
+            //states->at(i)->onEnter(p); // really useful?
             ret = true;
          }
       }
       return ret;
    }
 
-   // execute the state machine (should be asynchonous for the future)
-   // TODO: should be non-null?
-   // this class should not inherit directly from Single, but from some prototype.. parameter 'mst' should not be here
-   virtual void run(State<MultiContext<Param>>* mst, double MaxTime = 5.0, MultiContext<Param>* p = nullptr)
+   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
-      if (mst) {
-         cout << "ERROR! CANNOT HAVE AN INITIAL MULTISTATE" << endl;
-         return;
+      cout << "updating multi state! STATES:" << endl;
+      for (unsigned i = 0; i < current.size(); i++) {
+         cout << "Machine " << i << " => " << current[i]->toString() << endl;
       }
 
-      // 'mst' multistate will always be empty (only keeping eye on local states)
+      if (watchdog)
+         watchdog->reset();
+   }
 
-      cout << endl;
-      cout << "====================================" << endl;
-      cout << "begin replicated state machine run()" << endl;
-      cout << "====================================" << endl;
-
-      // initialize all machines
-      this->initialize();
-
-      // begin loop
-      Timer watchdog;
-      watchdog.init(MaxTime);
-      watchdog.reset();
-
-      MultiState<Param> states(machines.size(), nullptr);
-
-      // to simulate non-deterministic behavior
-      //auto rng = std::default_random_engine{};
-
-      // while current is null, or not final
-      while (!isFinal(states, p)) {
-         // check watchdog timer
-         if (watchdog.expired()) {
-            cout << "Multi StateMachine FAILED MAXTIME = " << MaxTime << endl;
-            return;
-         }
-
-         // process events
-         bool re = processScheduledEvents(p);
-         if (re) {
-            cout << "SOME EVENT HAPPENED!" << endl;
-            watchdog.reset();
-         }
-
-         // look for a scheduled global transition (or event)
-         bool b = processScheduledGlobalTransitions(states, p);
-         if (b) {
-            cout << "SOME GLOBAL TRANSITION HAPPENED!" << endl;
-            watchdog.reset();
-         }
-
-         //auto _machines = this->machines; // copy to shuffle
-         // simulate non-deterministic behavior
-         //std::shuffle(std::begin(_machines), std::end(_machines), rng);
-
-         // for now is fully deterministic, due to states (TODO: make random, but remember to preserve order between 'states' and 'machines')
-         MultiState<Param>* pstates = &states; // should not change pointer base here
-         bool r = updateState(pstates, p);
-         if (r) {
-            cout << "replicated machine updated state" << endl;
-            watchdog.reset();
-         }
-
-         //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
-         usleep(1000 * 100); // 100 milli (in microsecs)
+   virtual bool beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
+   {
+      // check watchdog
+      if (watchdog && watchdog->expired()) {
+         cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
+         return true;
       }
 
-      cout << endl;
-      cout << "==================================" << endl;
-      cout << "finished replicated state machine!" << endl;
-      cout << "==================================" << endl;
+      // process events
+      bool re = processScheduledEvents(p);
+      if (re) {
+         cout << "SOME EVENT HAPPENED!" << endl;
+         //watchdog.reset(); // TODO: make watchdog part of this specific class
+      }
+
+      // look for a scheduled global transition (or event)
+      bool b = processScheduledGlobalTransitions(states, p);
+      if (b) {
+         cout << "SOME GLOBAL TRANSITION HAPPENED!" << endl;
+         //watchdog.reset(); // TODO: make watchdog part of this specific class
+      }
+      return false;
    }
 
    string toString()

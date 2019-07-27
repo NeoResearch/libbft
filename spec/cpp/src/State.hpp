@@ -50,15 +50,15 @@ public:
    //}
 
    // really useful or not?
-   void onEnter(Param* P)
-   {
-      cout << "enter state: " << this->toString() << endl;
-   }
+   //void onEnter(Param* P)
+   //{
+   //   cout << "enter state: " << this->toString() << endl;
+   //}
 
-   void onLeave(Param* P)
-   {
-      cout << "leave state: " << this->toString() << endl;
-   }
+   //void onLeave(Param* P)
+   //{
+   //   cout << "leave state: " << this->toString() << endl;
+   //}
 
    Transition<Param>* tryGetTransition(Timer& timer, Param* p, int me)
    {

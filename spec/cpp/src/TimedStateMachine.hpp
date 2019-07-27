@@ -5,9 +5,6 @@
 // default clock
 #include "timing/Clock.hpp"
 
-// default timer (this timer is only used for watchdog logic, not machine logic)
-#include "timing/Timer.hpp"
-
 using namespace std; // TODO: remove
 
 namespace libbft {
@@ -22,46 +19,32 @@ public:
    // an identifier for itself
    int me{ 0 };
 
-   // states for the state machine
-   //vector<StateType*> states;
-   // global transitions: may come from any state (including a null state)
-   //vector<TransitionType*> globalTransitions;
-
-   // Is it worth dealing with transitions here??
-
+   // a Timed State Machine requires a global clock, and a unique personal identifier
    TimedStateMachine(Clock* _clock = nullptr, int _me = 0)
      : clock(_clock)
      , me(_me)
    {
-      if(!clock)
+      // clock must exist
+      if (!clock)
          clock = new Clock();
    }
 
-   //void registerState(StateType* s)
-   //{
-   // something else?
-   //   states.push_back(s);
-   //}
+   // triggers this, after state machine enters this state
+   virtual void onEnterState(StateType& current, Param* p) = 0;
 
-   //void registerGlobal(TransitionType* t)
-   //{
-   // something else?
-   //   globalTransitions.push_back(t);
-   //}
+   // do global processing (return 'true' means 'break' process)
+   // TODO: may use a global processing FLAG here, to break
+   virtual bool beforeUpdateState(StateType& current, Param* p) = 0;
 
-   /*
-   // TODO: keep it here?
-   virtual Transition<Param>* findGlobalTransition(Param* p)
+   // do global after-processing (return 'true' means 'break' process)
+   // TODO: may use a global processing FLAG here, to break
+   virtual bool afterUpdateState(StateType& current, Param* p, bool updated)
    {
-      // TODO: shuffle global?
-      vector<Transition<Param>*> _transitions = globalTransitions;
-      for (unsigned i = 0; i < _transitions.size(); i++) {
-         if (_transitions[i]->isValid(*timer, p, me))
-            return _transitions[i];
-      }
-      return nullptr;
+      // sleeping a little bit if not updated (avoid wasting resources)
+      if (!updated)
+         usleep(1000 * 100); // 100 milli (in microsecs)
+      return false;          // do not 'break'
    }
-   */
 
    // get next state (null state is not allowed)
    // may return the same state, if nothing happened
@@ -74,7 +57,7 @@ public:
 
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
-   virtual void run1(StateType& initial, double MaxTime = -1.0, Param* p = nullptr)
+   virtual void run(StateType& initial, Param* p = nullptr)
    {
       StateType* current = &initial;
 
@@ -85,30 +68,23 @@ public:
 
       this->initialize();
 
-      Timer watchdog;
-      // -1.0 means infinite time here
-      watchdog.init(MaxTime);
-      watchdog.reset();
+      onEnterState(*current, p);
 
       // while current is  not final
       while (!isFinal(*current, p)) {
-         // check watchdog timer
-         if (watchdog.expired()) {
-            cout << "TimedStateMachine FAILED MAXTIME = " << MaxTime << endl;
+
+         // preprocess stuff (watchdogs? global transitions?)
+         if (beforeUpdateState(*current, p))
             break;
-         }
 
          bool updated = updateState(current, p);
          if (updated) {
-            //cout << "moved to state: " << current->toString() << endl;
-            // TODO: try this using operator<<
-            watchdog.reset();
-            //current->onEnter(p); // really useful?
-            //current = next;
+            onEnterState(*current, p);
          }
 
-         //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
-         usleep(1000 * 100); // 100 milli (in microsecs)
+         // post-process stuff (what?)
+         if (afterUpdateState(*current, p, updated))
+            break;
       }
 
       cout << endl;

@@ -45,6 +45,11 @@ public:
       return this; // allow chaining effect
    }
 
+   double getCountdown() const
+   {
+      return countdown;
+   }
+
 public:
    void reset()
    {
