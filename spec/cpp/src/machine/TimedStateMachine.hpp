@@ -3,7 +3,7 @@
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 
 // default clock
-#include "timing/Clock.hpp"
+#include "../timing/Clock.hpp"
 
 using namespace std; // TODO: remove
 
@@ -53,20 +53,19 @@ public:
    virtual bool isFinal(const StateType& current, Param* p) = 0;
 
    // initialize runtime states and timers, etc
-   virtual void initialize() = 0;
+   // if initial state is not given, it must provide one here
+   virtual StateType* initialize(StateType* current, Param* p) = 0;
 
-   // execute the state machine (should be asynchonous for the future)
-   // TODO: should be non-null?
-   virtual void run(StateType& initial, Param* p = nullptr)
+   // launch when machine is finished
+   virtual void OnFinished(const StateType& final, Param* p) = 0;
+
+   // execute the state machine (returns final state, or nullptr if on failure)
+   virtual StateType* run(StateType* initial = nullptr, Param* p = nullptr)
    {
-      StateType* current = &initial;
-
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
-
-      this->initialize();
+      StateType* current = this->initialize(initial, p);
+      // if no state given, abort
+      if(!current)
+         return nullptr;
 
       onEnterState(*current, p);
 
@@ -75,29 +74,29 @@ public:
 
          // preprocess stuff (watchdogs? global transitions?)
          if (beforeUpdateState(*current, p))
-            break;
+            return nullptr;
 
          bool updated = updateState(current, p);
          if (updated) {
             onEnterState(*current, p);
          }
 
-         // post-process stuff (what?)
+         // post-process stuff (sleep if not evolving, etc)
          if (afterUpdateState(*current, p, updated))
-            break;
+            return nullptr;
       }
 
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
+      OnFinished(*current, p);
+
+      return current;
    }
 
-   string toString()
+   virtual string toString()
    {
       stringstream ss;
       ss << "TSM {";
       ss << "#id = " << me << ";";
+      ss << "clock = " << clock->toString() << ";";
       ss << "}";
       return ss.str();
    }

@@ -5,10 +5,12 @@
 
 // lib
 
-#include "SingleTimerStateMachine.hpp"
-#include "State.hpp"
 #include "replicated/Event.hpp"
 #include "replicated/ReplicatedSTSM.hpp"
+#include "single/SingleTimerStateMachine.hpp"
+#include "single/State.hpp"
+
+#include "dbft2/dBFT2Machine.hpp"
 
 using namespace std;
 using namespace libbft;
@@ -48,116 +50,28 @@ simpleExample()
    cout << "Machine => " << machine.toString() << endl;
 
    // run for 5.0 seconds max (default)
-   machine.run(*initial);
-}
-
-struct dBFTContext
-{
-   // view number
-   int v;
-   // blockchain height
-   int H;
-   // block time (in seconds)
-   int T;
-   // number of nodes (TODO: better solution for this?)
-   int R;
-
-   // cached events
-
-   // add ConsensusContext information here
-
-   dBFTContext(int _v, int _H, int _T, int _R)
-     : v(_v)
-     , H(_H)
-     , T(_T)
-     , R(_R)
-   {
-   }
-};
-
-SingleTimerStateMachine<MultiContext<dBFTContext>>*
-create_dBFTMachine(int id)
-{
-   // ---------------------
-   // declaring dBFT states
-   // ---------------------
-
-   auto initial = new State<MultiContext<dBFTContext>>(false, "Initial");
-   auto backup = new State<MultiContext<dBFTContext>>(false, "Backup");
-   auto primary = new State<MultiContext<dBFTContext>>(false, "Primary");
-   auto reqSentOrRecv = new State<MultiContext<dBFTContext>>(false, "RequestSentOrReceived");
-   auto commitSent = new State<MultiContext<dBFTContext>>(false, "CommitSent");
-   auto viewChanging = new State<MultiContext<dBFTContext>>(false, "ViewChanging");
-   auto blockSent = new State<MultiContext<dBFTContext>>(true, "BlockSent");
-
-   // -------------------------
-   // creating dBFT transitions
-   // -------------------------
-
-   auto machine = new SingleTimerStateMachine<MultiContext<dBFTContext>>(new Timer("C"));
-   machine->me = id;
-
-   // initial -> backup
-   initial->addTransition(
-     (new Transition<MultiContext<dBFTContext>>(backup))->add(Condition<MultiContext<dBFTContext>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
-        cout << "lambda1" << endl;
-        return !((d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me);
-     })));
-
-   // initial -> primary
-   initial->addTransition(
-     (new Transition<MultiContext<dBFTContext>>(primary))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
-        cout << "lambda2 H=" << d->vm[me].params->H << " v=" << d->vm[me].params->v << " me=" << me << endl;
-        return (d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me;
-     })));
-
-   // backup -> reqSentOrRecv
-   auto toReqSentOrRecv1 = new Transition<MultiContext<dBFTContext>>(reqSentOrRecv);
-   backup->addTransition(
-     toReqSentOrRecv1->add(Condition<MultiContext<dBFTContext>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
-        cout << "waiting for event OnPrepareRequest at " << me << endl;
-        return d->hasEvent("OnPrepareRequest", me);
-     })));
-
-   // reqSentOrRecv -> commitSent
-   reqSentOrRecv->addTransition(
-     (new Transition<MultiContext<dBFTContext>>(commitSent))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
-        cout << "nothing to do... assuming all preparations were received!" << endl;
-        return true;
-     })));
-
-   // commitSent -> blockSent
-   commitSent->addTransition(
-     (new Transition<MultiContext<dBFTContext>>(blockSent))->add(Condition<MultiContext<dBFTContext>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFTContext>* d, int me) -> bool {
-        cout << "nothing to do... assuming all commits were received!" << endl;
-        return true;
-     })));
-
-   machine->registerState(initial);
-   machine->registerState(blockSent);
-
-   return machine;
+   machine.run(); // initial state is given by default first
 }
 
 void
-dbft_backup_multi()
+dbft_test_backup_multi()
 {
    auto machine0 = create_dBFTMachine(0);
 
    // insert pre-initial state
-   auto preinitial = new State<MultiContext<dBFTContext>>(false, "PreInitial");
+   auto preinitial = new State<MultiContext<dBFT2Context>>(false, "PreInitial");
 
-   machine0->states.insert(machine0->states.begin()+0, preinitial);
+   machine0->states.insert(machine0->states.begin() + 0, preinitial);
 
    cout << "Machine => " << machine0->toString() << endl;
 
    // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network)
-   dBFTContext data(0, 1501, 3, 2); // 1501 -> backup (R=2)
+   dBFT2Context data(0, 1501, 3, 2); // 1501 -> backup (R=2)
 
-   MultiContext<dBFTContext> ctx;
-   ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
+   MultiContext<dBFT2Context> ctx;
+   ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
 
-   MultiSTSM<dBFTContext> multiMachine;
+   ReplicatedSTSM<dBFT2Context> multiMachine;
    multiMachine.registerMachine(machine0);
 
    // global transition scheduled to start machine 0 ("OnStart") after 1 second
@@ -165,10 +79,10 @@ dbft_backup_multi()
      (new Timer())->init(1.0), // 1 second to expire
      0,                        // machine 0
      // no other conditions, always 'true'
-     (new Transition<MultiContext<dBFTContext>>(machine0->getStateByName("Initial")))
-       ->add(Action<MultiContext<dBFTContext>>(
+     (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Initial")))
+       ->add(Action<MultiContext<dBFT2Context>>(
          "C := 0 | v := 0",
-         [](Timer& C, MultiContext<dBFTContext>* d, int me) -> void {
+         [](Timer& C, MultiContext<dBFT2Context>* d, int me) -> void {
             cout << " => action: C := 0" << endl;
             C.reset();
             cout << " => action: v := 0" << endl;
@@ -179,32 +93,32 @@ dbft_backup_multi()
    multiMachine.scheduleEvent(
      (new Timer())->init(3.0), // 3 second to expire
      0,                        // machine 0
-     new Event<MultiContext<dBFTContext>>("OnPrepareRequest", "OnPrepareRequest"));
+     new Event<MultiContext<dBFT2Context>>("OnPrepareRequest", "OnPrepareRequest"));
 
-   MultiState<dBFTContext> minitial(1, nullptr);
+   MultiState<dBFT2Context> minitial(1, nullptr);
    minitial[0] = machine0->getStateByName("PreInitial");
 
    // run for 5.0 seconds max (watchdog limit)
    multiMachine.setWatchdog(5.0);
-   multiMachine.run(minitial, &ctx);
+   multiMachine.run(&minitial, &ctx);
 }
 
 void
-dbft_primary()
+dbft_test_primary()
 {
    auto machine0 = create_dBFTMachine(0);
 
    cout << "Machine => " << machine0->toString() << endl;
 
    // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFTContext data(0, 1500, 3, 1); // 1500 -> primary (R=1)
+   dBFT2Context data(0, 1500, 3, 1); // 1500 -> primary (R=1)
 
-   MultiContext<dBFTContext> ctx;
-   ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
+   MultiContext<dBFT2Context> ctx;
+   ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
 
    // run for 5.0 seconds max
    machine0->setWatchdog(5.0);
-   machine0->run(*machine0->states[0], &ctx);
+   machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
 int
@@ -216,9 +130,9 @@ main()
    simpleExample();
 
    // Neo dbft modeling as example
-   dbft_primary();
+   dbft_test_primary();
 
-   dbft_backup_multi();
+   dbft_test_backup_multi();
 
    cout << "finished successfully!" << endl;
 

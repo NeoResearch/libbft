@@ -12,9 +12,9 @@
 // libbft includes
 
 // Prototype?
-#include "TimedStateMachine.hpp"
+#include "../machine/TimedStateMachine.hpp"
 // default timer
-#include "timing/Timer.hpp"
+#include "../timing/Timer.hpp"
 // default state
 #include "State.hpp"
 
@@ -26,16 +26,26 @@ template<class Param = nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public:
-   // state machine timer // TODO: really keep it global?
+   // state machine timer
    Timer* timer;
+   // states for the state machine
+   vector<State<Param>*> states;
+   // global transitions: may come from any state
+   vector<Transition<Param>*> globalTransitions;
 
+private:
    // watchdog timer
    Timer* watchdog{ nullptr };
 
-   // states for the state machine
-   vector<State<Param>*> states;
-   // global transitions: may come from any state (including a null state)
-   vector<Transition<Param>*> globalTransitions;
+public:
+   // MaxTime -1.0 means infinite time
+   // positive time is real expiration time
+   void setWatchdog(double MaxTime)
+   {
+      if (watchdog)
+         delete watchdog;
+      watchdog = (new Timer())->init(MaxTime);
+   }
 
    // specific timer
    SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr)
@@ -67,6 +77,7 @@ public:
       globalTransitions.push_back(t);
    }
 
+   // unused method... TODO: put somewhere
    virtual Transition<Param>* findGlobalTransition(Param* p)
    {
       // TODO: shuffle global?
@@ -119,16 +130,18 @@ public:
       return r;
    }
 
-   // MaxTime -1.0 means infinite time
-   // positive time is real expiration time
-   void setWatchdog(double MaxTime)
+   // initialize timer, etc, and also, setup first state (if not given)
+   virtual State<Param>* initialize(State<Param>* current, Param* p) override
    {
-      watchdog = (new Timer())->init(MaxTime);
-   }
+      // check if there's initial state available
+      if(!current && states.size() == 0)
+         return nullptr;
 
-   // initialize timer, etc
-   virtual void initialize() override
-   {
+      cout << endl;
+      cout << "===========" << endl;
+      cout << "begin run()" << endl;
+      cout << "===========" << endl;
+
       cout << "OnInitialize() Single MACHINE!" << endl;
 
       if (watchdog)
@@ -141,6 +154,19 @@ public:
 
       cout << "will reset timer" << endl;
       timer->reset();
+
+      if(!current)
+         current = states[0];
+      return current;
+   }
+
+   // launch when machine is finished
+   virtual void OnFinished(const State<Param>& final, Param* p) override
+   {
+      cout << endl;
+      cout << "=================" << endl;
+      cout << "finished machine!" << endl;
+      cout << "=================" << endl;
    }
 
    virtual bool beforeUpdateState(State<Param>& current, Param* p) override
@@ -154,7 +180,7 @@ public:
       return false;
    }
 
-   string toString()
+   virtual string toString() override
    {
       stringstream ss;
       ss << "STSM {";

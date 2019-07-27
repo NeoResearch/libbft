@@ -12,7 +12,8 @@
 // libbft includes
 
 // Prototype?
-#include "../SingleTimerStateMachine.hpp"
+#include "../machine/TimedStateMachine.hpp"
+#include "../single/SingleTimerStateMachine.hpp"
 #include "Event.hpp"
 
 using namespace std; // TODO: remove
@@ -113,7 +114,7 @@ template<class Param>
 using MultiState = vector<State<MultiContext<Param>>*>;
 
 template<class Param = nullptr_t>
-class MultiSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
+class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
    // includes several internal machines
@@ -153,7 +154,7 @@ public:
    }
 
 public:
-   MultiSTSM()
+   ReplicatedSTSM()
    {
    }
 
@@ -163,19 +164,39 @@ public:
       machines.push_back(m);
    }
 
-   // initialize timer, etc
-   virtual void initialize() override
+   // initialize timer, etc, and also, setup first state (if not given)
+   virtual MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
    {
+      // check if there's initial state available
+      if (!current)
+         current = new MultiState<Param>(machines.size(), nullptr);
+
+      cout << endl;
+      cout << "===========" << endl;
+      cout << "begin run()" << endl;
+      cout << "===========" << endl;
+
       cout << "initializing multimachine" << endl;
       if (watchdog)
          watchdog->reset();
       else
          cout << "No watchdog configured!" << endl;
       for (unsigned i = 0; i < machines.size(); i++)
-         machines[i]->initialize();
+         machines[i]->initialize(current->at(i), p);
+
+      return current;
    }
 
-   bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
+   // launch when machine is finished
+   virtual void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
+   {
+      cout << endl;
+      cout << "=================" << endl;
+      cout << "finished machine!" << endl;
+      cout << "=================" << endl;
+   }
+
+   virtual bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
       for (unsigned i = 0; i < states.size(); i++) {
          if (!states[i] || !states[i]->isFinal)
@@ -243,7 +264,7 @@ public:
       return ret;
    }
 
-   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
+   virtual void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
       cout << "updating multi state! STATES:" << endl;
       for (unsigned i = 0; i < current.size(); i++) {
@@ -278,7 +299,7 @@ public:
       return false;
    }
 
-   string toString()
+   virtual string toString() override
    {
       stringstream ss;
       ss << "ReplicatedSTSM [";
