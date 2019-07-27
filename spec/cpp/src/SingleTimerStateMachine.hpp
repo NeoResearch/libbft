@@ -28,14 +28,18 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
-
-   // watchdog timer
-   Timer* watchdog{ nullptr };
-
    // states for the state machine
    vector<State<Param>*> states;
-   // global transitions: may come from any state (including a null state)
+   // global transitions: may come from any state
    vector<Transition<Param>*> globalTransitions;
+   // watchdog timer
+   Timer* watchdog{ nullptr };
+   // MaxTime -1.0 means infinite time
+   // positive time is real expiration time
+   void setWatchdog(double MaxTime)
+   {
+      watchdog = (new Timer())->init(MaxTime);
+   }
 
    // specific timer
    SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr)
@@ -67,6 +71,7 @@ public:
       globalTransitions.push_back(t);
    }
 
+   // unused method... TODO: put somewhere
    virtual Transition<Param>* findGlobalTransition(Param* p)
    {
       // TODO: shuffle global?
@@ -117,13 +122,6 @@ public:
       }
       outcurrent = current;
       return r;
-   }
-
-   // MaxTime -1.0 means infinite time
-   // positive time is real expiration time
-   void setWatchdog(double MaxTime)
-   {
-      watchdog = (new Timer())->init(MaxTime);
    }
 
    // initialize timer, etc
