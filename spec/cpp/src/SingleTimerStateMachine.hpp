@@ -26,18 +26,24 @@ template<class Param = nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public:
-   // state machine timer // TODO: really keep it global?
+   // state machine timer
    Timer* timer;
    // states for the state machine
    vector<State<Param>*> states;
    // global transitions: may come from any state
    vector<Transition<Param>*> globalTransitions;
+
+private:
    // watchdog timer
    Timer* watchdog{ nullptr };
+
+public:
    // MaxTime -1.0 means infinite time
    // positive time is real expiration time
    void setWatchdog(double MaxTime)
    {
+      if (watchdog)
+         delete watchdog;
       watchdog = (new Timer())->init(MaxTime);
    }
 
@@ -127,6 +133,11 @@ public:
    // initialize timer, etc
    virtual void initialize() override
    {
+      cout << endl;
+      cout << "===========" << endl;
+      cout << "begin run()" << endl;
+      cout << "===========" << endl;
+
       cout << "OnInitialize() Single MACHINE!" << endl;
 
       if (watchdog)
@@ -139,6 +150,15 @@ public:
 
       cout << "will reset timer" << endl;
       timer->reset();
+   }
+
+   // launch when machine is finished
+   virtual void OnFinished(const State<Param>& final, Param* p) override
+   {
+      cout << endl;
+      cout << "=================" << endl;
+      cout << "finished machine!" << endl;
+      cout << "=================" << endl;
    }
 
    virtual bool beforeUpdateState(State<Param>& current, Param* p) override

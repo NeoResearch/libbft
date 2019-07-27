@@ -55,16 +55,14 @@ public:
    // initialize runtime states and timers, etc
    virtual void initialize() = 0;
 
+   // launch when machine is finished
+   virtual void OnFinished(const StateType& final, Param* p) = 0;
+
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
    virtual void run(StateType& initial, Param* p = nullptr)
    {
       StateType* current = &initial;
-
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
 
       this->initialize();
 
@@ -87,10 +85,7 @@ public:
             break;
       }
 
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
+      OnFinished(*current, p);
    }
 
    virtual string toString()

@@ -166,6 +166,11 @@ public:
    // initialize timer, etc
    virtual void initialize() override
    {
+      cout << endl;
+      cout << "===========" << endl;
+      cout << "begin run()" << endl;
+      cout << "===========" << endl;
+
       cout << "initializing multimachine" << endl;
       if (watchdog)
          watchdog->reset();
@@ -173,6 +178,15 @@ public:
          cout << "No watchdog configured!" << endl;
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize();
+   }
+
+   // launch when machine is finished
+   virtual void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
+   {
+      cout << endl;
+      cout << "=================" << endl;
+      cout << "finished machine!" << endl;
+      cout << "=================" << endl;
    }
 
    virtual bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
