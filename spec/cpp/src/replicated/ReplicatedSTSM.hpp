@@ -127,6 +127,16 @@ public:
    vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
+   // watchdog timer
+   Timer* watchdog{ nullptr };
+
+   // MaxTime -1.0 means infinite time
+   // positive time is real expiration time
+   void setWatchdog(double MaxTime)
+   {
+      watchdog = (new Timer())->init(MaxTime);
+   }
+
    void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)
    {
       scheduledTransitions.push_back(sch);
@@ -157,6 +167,10 @@ public:
    virtual void initialize() override
    {
       cout << "initializing multimachine" << endl;
+      if (watchdog)
+         watchdog->reset();
+      else
+         cout << "No watchdog configured!" << endl;
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize();
    }
@@ -235,10 +249,19 @@ public:
       for (unsigned i = 0; i < current.size(); i++) {
          cout << "Machine " << i << " => " << current[i]->toString() << endl;
       }
+
+      if (watchdog)
+         watchdog->reset();
    }
 
-   virtual void beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
+   virtual bool beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
    {
+      // check watchdog
+      if (watchdog && watchdog->expired()) {
+         cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
+         return true;
+      }
+
       // process events
       bool re = processScheduledEvents(p);
       if (re) {
@@ -252,11 +275,13 @@ public:
          cout << "SOME GLOBAL TRANSITION HAPPENED!" << endl;
          //watchdog.reset(); // TODO: make watchdog part of this specific class
       }
+      return false;
    }
 
-   virtual void afterUpdateState(MultiState<Param>& current, MultiContext<Param>* p) override
+   virtual bool afterUpdateState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
       // nothing to do?
+      return false;
    }
 
    /*

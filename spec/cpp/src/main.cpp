@@ -185,7 +185,8 @@ dbft_backup_multi()
    minitial[0] = machine0->getStateByName("PreInitial");
 
    // run for 5.0 seconds max (watchdog limit)
-   multiMachine.run(minitial, 5.0, &ctx);
+   multiMachine.setWatchdog(5.0);
+   multiMachine.run(minitial, &ctx);
 }
 
 void
@@ -202,7 +203,8 @@ dbft_primary()
    ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
 
    // run for 5.0 seconds max
-   machine0->run(*machine0->states[0], 5.0, &ctx);
+   machine0->setWatchdog(5.0);
+   machine0->run(*machine0->states[0], &ctx);
 }
 
 int

@@ -28,6 +28,9 @@ public:
    // state machine timer // TODO: really keep it global?
    Timer* timer;
 
+   // watchdog timer
+   Timer* watchdog{ nullptr };
+
    // states for the state machine
    vector<State<Param>*> states;
    // global transitions: may come from any state (including a null state)
@@ -76,6 +79,9 @@ public:
    virtual void onEnterState(State<Param>& current, Param* p) override
    {
       cout << "entering state: " << current.toString() << endl;
+
+      if (watchdog)
+         watchdog->reset();
    }
 
    virtual bool isFinal(const State<Param>& current, Param* p) override
@@ -111,10 +117,23 @@ public:
       return r;
    }
 
+   // MaxTime -1.0 means infinite time
+   // positive time is real expiration time
+   void setWatchdog(double MaxTime)
+   {
+      watchdog = (new Timer())->init(MaxTime);
+   }
+
    // initialize timer, etc
    virtual void initialize() override
    {
       cout << "OnInitialize() Single MACHINE!" << endl;
+
+      if (watchdog)
+         watchdog->reset();
+      else
+         cout << "No watchdog configured!" << endl;
+
       cout << "will initialize timer" << endl;
       timer->init();
 
@@ -122,14 +141,21 @@ public:
       timer->reset();
    }
 
-   virtual void beforeUpdateState(State<Param>& current, Param* p) override
+   virtual bool beforeUpdateState(State<Param>& current, Param* p) override
    {
+      if (watchdog && watchdog->expired()) {
+         cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
+         return true;
+      }
+
       // nothing to do?
+      return false;
    }
 
-   virtual void afterUpdateState(State<Param>& current, Param* p) override
+   virtual bool afterUpdateState(State<Param>& current, Param* p) override
    {
       // nothing to do?
+      return false;
    }
 
    /*
