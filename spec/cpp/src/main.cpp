@@ -5,10 +5,10 @@
 
 // lib
 
-#include "replicated/Event.hpp"
-#include "replicated/ReplicatedSTSM.hpp"
 #include "SingleTimerStateMachine.hpp"
 #include "State.hpp"
+#include "replicated/Event.hpp"
+#include "replicated/ReplicatedSTSM.hpp"
 
 using namespace std;
 using namespace libbft;
@@ -48,7 +48,7 @@ simpleExample()
    cout << "Machine => " << machine.toString() << endl;
 
    // run for 5.0 seconds max (default)
-   machine.run(initial);
+   machine.run(*initial);
 }
 
 struct dBFTContext
@@ -144,6 +144,11 @@ dbft_backup_multi()
 {
    auto machine0 = create_dBFTMachine(0);
 
+   // insert pre-initial state
+   auto preinitial = new State<MultiContext<dBFTContext>>(false, "PreInitial");
+
+   machine0->states.insert(machine0->states.begin()+0, preinitial);
+
    cout << "Machine => " << machine0->toString() << endl;
 
    // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network)
@@ -160,7 +165,7 @@ dbft_backup_multi()
      (new Timer())->init(1.0), // 1 second to expire
      0,                        // machine 0
      // no other conditions, always 'true'
-     (new Transition<MultiContext<dBFTContext>>(machine0->states[0]))
+     (new Transition<MultiContext<dBFTContext>>(machine0->getStateByName("Initial")))
        ->add(Action<MultiContext<dBFTContext>>(
          "C := 0 | v := 0",
          [](Timer& C, MultiContext<dBFTContext>* d, int me) -> void {
@@ -176,8 +181,11 @@ dbft_backup_multi()
      0,                        // machine 0
      new Event<MultiContext<dBFTContext>>("OnPrepareRequest", "OnPrepareRequest"));
 
+   MultiState<dBFTContext> minitial(1, nullptr);
+   minitial[0] = machine0->getStateByName("PreInitial");
+
    // run for 5.0 seconds max (watchdog limit)
-   multiMachine.run(nullptr, 5.0, &ctx);
+   multiMachine.run(minitial, 5.0, &ctx);
 }
 
 void
@@ -194,7 +202,7 @@ dbft_primary()
    ctx.vm.push_back(MachineContext<dBFTContext>(&data, machine0));
 
    // run for 5.0 seconds max
-   machine0->run(machine0->states[0], 5.0, &ctx);
+   machine0->run(*machine0->states[0], 5.0, &ctx);
 }
 
 int

@@ -35,10 +35,19 @@ public:
 
    // specific timer
    SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* clock = nullptr)
-     : timer(t), TimedStateMachine<State<Param>, Param>(clock, me)
+     : timer(t)
+     , TimedStateMachine<State<Param>, Param>(clock, me)
    {
-      if(!timer)
+      if (!timer)
          timer = new Timer("", clock);
+   }
+
+   State<Param>* getStateByName(string name)
+   {
+      for (unsigned i = 0; i < states.size(); i++)
+         if (states[i]->name == name)
+            return states[i];
+      return nullptr; // not found
    }
 
    void registerState(State<Param>* s)
@@ -62,6 +71,11 @@ public:
             return _transitions[i];
       }
       return nullptr;
+   }
+
+   virtual void OnEnter(State<Param>& current, Param* p) override
+   {
+      cout << "entering state: " << current.toString() << endl;
    }
 
    virtual bool isFinal(const State<Param>& current, Param* p) override
@@ -98,8 +112,9 @@ public:
    }
 
    // initialize timer, etc
-   virtual void initialize()
+   virtual void initialize() override
    {
+      cout << "OnInitialize() Single MACHINE!" << endl;
       cout << "will initialize timer" << endl;
       timer->init();
 
@@ -107,6 +122,17 @@ public:
       timer->reset();
    }
 
+   virtual void beforeUpdateState(State<Param>& current, Param* p) override
+   {
+      // nothing to do?
+   }
+
+   virtual void afterUpdateState(State<Param>& current, Param* p) override
+   {
+      // nothing to do?
+   }
+
+   /*
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
    virtual void run(State<Param>* current, double MaxTime = 5.0, Param* p = nullptr)
@@ -148,6 +174,7 @@ public:
       cout << "finished machine!" << endl;
       cout << "=================" << endl;
    }
+*/
 
    string toString()
    {

@@ -222,13 +222,44 @@ public:
          bool r = machines[i]->updateState(states->at(i), p);
          if (r) {
             cout << "machine " << i << " moved to state: " << states->at(i)->toString() << endl;
-            states->at(i)->onEnter(p); // really useful?
+            //states->at(i)->onEnter(p); // really useful?
             ret = true;
          }
       }
       return ret;
    }
 
+   void OnEnter(MultiState<Param>& current, MultiContext<Param>* p) override
+   {
+      cout << "updating multi state! STATES:" << endl;
+      for (unsigned i = 0; i < current.size(); i++) {
+         cout << "Machine " << i << " => " << current[i]->toString() << endl;
+      }
+   }
+
+   virtual void beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
+   {
+      // process events
+      bool re = processScheduledEvents(p);
+      if (re) {
+         cout << "SOME EVENT HAPPENED!" << endl;
+         //watchdog.reset(); // TODO: make watchdog part of this specific class
+      }
+
+      // look for a scheduled global transition (or event)
+      bool b = processScheduledGlobalTransitions(states, p);
+      if (b) {
+         cout << "SOME GLOBAL TRANSITION HAPPENED!" << endl;
+         //watchdog.reset(); // TODO: make watchdog part of this specific class
+      }
+   }
+
+   virtual void afterUpdateState(MultiState<Param>& current, MultiContext<Param>* p) override
+   {
+      // nothing to do?
+   }
+
+   /*
    // execute the state machine (should be asynchonous for the future)
    // TODO: should be non-null?
    // this class should not inherit directly from Single, but from some prototype.. parameter 'mst' should not be here
@@ -302,6 +333,7 @@ public:
       cout << "finished replicated state machine!" << endl;
       cout << "==================================" << endl;
    }
+*/
 
    string toString()
    {
