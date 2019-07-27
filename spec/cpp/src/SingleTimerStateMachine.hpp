@@ -152,7 +152,7 @@ public:
       return false;
    }
 
-   string toString()
+   virtual string toString() override
    {
       stringstream ss;
       ss << "STSM {";

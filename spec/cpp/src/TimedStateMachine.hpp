@@ -82,7 +82,7 @@ public:
             onEnterState(*current, p);
          }
 
-         // post-process stuff (what?)
+         // post-process stuff (sleep if not evolving, etc)
          if (afterUpdateState(*current, p, updated))
             break;
       }
@@ -93,11 +93,12 @@ public:
       cout << "=================" << endl;
    }
 
-   string toString()
+   virtual string toString()
    {
       stringstream ss;
       ss << "TSM {";
       ss << "#id = " << me << ";";
+      ss << "clock = " << clock->toString() << ";";
       ss << "}";
       return ss.str();
    }

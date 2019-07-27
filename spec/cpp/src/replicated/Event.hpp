@@ -21,8 +21,11 @@ template<class Param = nullptr_t>
 class Event
 {
 private:
+   // event type (used to matching)
    std::string type;
+   // event name (optional)
    std::string name;
+   // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    int from;
 
 public:
@@ -55,42 +58,6 @@ public:
       return ss.str();
    }
 };
-
-/*
-template<class Param = nullptr_t>
-class EventHandler
-{
-private:
-   std::string type;
-   std::string name;
-
-public:
-   EventHandler(State<Param>* from, string _name, string _type)
-     : type(_type)
-     , name(_name)
-   {
-   }
-
-   // process and removes event
-   bool process(vector<Event*>& events)
-   {
-      for (unsigned i = 0; i < events.size(); i++)
-         if (events[i]->getType() == type) {
-            // remove event i
-            events.erase(events.begin() + i);
-            return true;
-         }
-      return false;
-   }
-
-   virtual string toString() const
-   {
-      stringstream ss;
-      ss << "EventHandler {name=" << name << "; type=" << type << "}";
-      return ss.str();
-   }
-};
-*/
 
 } // libbft
 

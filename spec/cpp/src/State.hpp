@@ -11,8 +11,8 @@
 #include <random>
 
 // standard Transition
-#include "timing/Timer.hpp"
 #include "Transition.hpp"
+#include "timing/Timer.hpp"
 
 // standard State
 
@@ -29,7 +29,6 @@ private:
    vector<Transition<Param>*> transitions;
 
 public:
-
    string name;
    bool isFinal;
 
@@ -43,22 +42,6 @@ public:
    {
       transitions.push_back(t);
    }
-
-   //void addTransition(const Transition<Param>& t)
-   //{
-   //   transitions.push_back(new Transition<Param>(t));
-   //}
-
-   // really useful or not?
-   //void onEnter(Param* P)
-   //{
-   //   cout << "enter state: " << this->toString() << endl;
-   //}
-
-   //void onLeave(Param* P)
-   //{
-   //   cout << "leave state: " << this->toString() << endl;
-   //}
 
    Transition<Param>* tryGetTransition(Timer& timer, Param* p, int me)
    {
@@ -77,7 +60,7 @@ public:
       return nullptr;
    }
 
-   string toString(bool recursive = true)
+   string toString(bool recursive = true) const
    {
       stringstream ss;
       ss << "state:{";

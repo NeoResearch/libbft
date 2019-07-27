@@ -175,7 +175,7 @@ public:
          machines[i]->initialize();
    }
 
-   bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
+   virtual bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
       for (unsigned i = 0; i < states.size(); i++) {
          if (!states[i] || !states[i]->isFinal)
@@ -243,7 +243,7 @@ public:
       return ret;
    }
 
-   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
+   virtual void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
       cout << "updating multi state! STATES:" << endl;
       for (unsigned i = 0; i < current.size(); i++) {
@@ -278,7 +278,7 @@ public:
       return false;
    }
 
-   string toString()
+   virtual string toString() override
    {
       stringstream ss;
       ss << "ReplicatedSTSM [";

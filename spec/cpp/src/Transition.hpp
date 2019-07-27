@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_TRANSITION_HPP
 
 // system includes
+#include <assert.h>
 #include <functional>
 #include <sstream>
 
@@ -34,13 +35,18 @@ struct Condition
      , timedFunction(_timedFunction)
    {
    }
+
+   string toString() const
+   {
+      return name;
+   }
 };
 
 // Action is a Condition that always returns true (can affect params and Timer)
 template<class Param = nullptr_t>
 struct Action
 {
-   std::string name = "true";
+   std::string name = "nop";
    std::function<void(Timer&, Param*, int)> timedAction = [](Timer& t, Param* p, int) -> void {};
 
    Action(std::string _name, std::function<void(Timer&, Param*, int)> _timedAction)
@@ -48,57 +54,50 @@ struct Action
      , timedAction(_timedAction)
    {
    }
+
+   string toString() const
+   {
+      return name;
+   }
 };
 
 template<class Param = nullptr_t>
 class Transition
 {
 private:
+   // state to go after executing this transition
    State<Param>* to;
+   // transition name (not really useful)
    string name;
+   // boolean conditions (if all are valid, transition is valid)
    std::vector<Condition<Param>> conditions;
+   // actions to be performed during Transition execution (reset timers, etc)
    std::vector<Action<Param>> actions;
 
 public:
-   //std::function<bool(Timer&)> timedFunction = [](Timer& t) -> bool { return true; };
-
-   // TODO: add a "when" function here? (make this class "final"?)
+   // a Transition goes to some state 'to'
    Transition(State<Param>* _to, string _name = "")
      : to(_to)
      , name(_name)
    {
+      assert(to != nullptr);
    }
 
+   // add a new boolean Condition (returns pointer to itself, to allow cascading effect)
    Transition* add(Condition<Param> c)
    {
       conditions.push_back(c);
       return this; // allow chaining effect
    }
 
+   // add a new Action (returns pointer to itself, to allow cascading effect)
    Transition* add(Action<Param> a)
    {
       actions.push_back(a);
       return this; // allow chaining effect
    }
 
-   string
-   toString()
-   {
-      stringstream ss;
-      ss << "t() => {name = '" << name << "',";
-      ss << "to='" << to->toString(false) << "',";
-      ss << "conditions=[";
-      for (unsigned i = 0; i < conditions.size(); i++)
-         ss << conditions[i].name << ";"; // TODO: toString() ?
-      ss << "], ";
-      ss << "actions=[";
-      for (unsigned i = 0; i < actions.size(); i++)
-         ss << actions[i].name << ";"; // TODO: toString() ?
-      ss << "], ";
-      ss << "'}";
-      return ss.str();
-   }
-
+   // returns 'true' if all conditions are valid (or no conditions are required)
    virtual bool isValid(const Timer& timer, Param* p, int me)
    {
       for (unsigned i = 0; i < conditions.size(); i++)
@@ -107,7 +106,7 @@ public:
       return true;
    }
 
-   // execute transition and return next State
+   // execute transition and returns the next State
    virtual State<Param>* execute(Timer& timer, Param* p, int me)
    {
       for (unsigned i = 0; i < actions.size(); i++)
@@ -115,10 +114,22 @@ public:
       return to;
    }
 
-   // after executed
-   void onExecute(Param* P)
+   // converts to string
+   string toString() const
    {
-      //for (unsigned i = 0; i < events.size(); i++)
+      stringstream ss;
+      ss << "t() => {name = '" << name << "',";
+      ss << "to='" << to->toString(false) << "',";
+      ss << "conditions=[";
+      for (unsigned i = 0; i < conditions.size(); i++)
+         ss << conditions[i].toString() << ";";
+      ss << "], ";
+      ss << "actions=[";
+      for (unsigned i = 0; i < actions.size(); i++)
+         ss << actions[i].toString() << ";";
+      ss << "], ";
+      ss << "'}";
+      return ss.str();
    }
 };
 
