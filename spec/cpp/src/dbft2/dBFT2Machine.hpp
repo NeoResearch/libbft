@@ -21,30 +21,67 @@ using namespace std; // TODO: remove
 
 namespace libbft {
 
-/*class dBFT2Machine : public ReplicatedSTSM<>
+/*
+      MultiContext<dBFT2Context> ctx;
+   ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
+
+   MultiSTSM<dBFT2Context> multiMachine;
+   multiMachine.registerMachine(machine0);
+
+   // global transition scheduled to start machine 0 ("OnStart") after 1 second
+   multiMachine.scheduleGlobalTransition(
+     (new Timer())->init(1.0), // 1 second to expire
+     0,                        // machine 0
+     // no other conditions, always 'true'
+     (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Initial")))
+       ->add(Action<MultiContext<dBFT2Context>>(
+         "C := 0 | v := 0",
+         [](Timer& C, MultiContext<dBFT2Context>* d, int me) -> void {
+            cout << " => action: C := 0" << endl;
+            C.reset();
+            cout << " => action: v := 0" << endl;
+            d->vm[me].params->v = 0;
+         })));
+
+   // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
+   multiMachine.scheduleEvent(
+     (new Timer())->init(3.0), // 3 second to expire
+     0,                        // machine 0
+     new Event<MultiContext<dBFT2Context>>("OnPrepareRequest", "OnPrepareRequest"));
+
+   MultiState<dBFT2Context> minitial(1, nullptr);
+   minitial[0] = machine0->getStateByName("PreInitial");
+
+   // run for 5.0 seconds max (watchdog limit)
+   multiMachine.setWatchdog(5.0);
+   multiMachine.run(minitial, &ctx);
+
+*/
+
+class dBFT2Machine : public ReplicatedSTSM<dBFT2Context>
 {
-   // view number
-   int v;
-   // blockchain height
-   int H;
-   // block time (in seconds)
-   int T;
-   // number of nodes (TODO: better solution for this?)
-   int R;
-
-   // cached events
-
-   // add ConsensusContext information here
-
-   dBFT2Context(int _v, int _H, int _T, int _R)
-     : v(_v)
-     , H(_H)
-     , T(_T)
-     , R(_R)
+public:
+   virtual MultiState<dBFT2Context>* initialize(MultiState<dBFT2Context>* current, MultiContext<dBFT2Context>* p) override
    {
+      if (!current)
+         current = new MultiState<dBFT2Context>(machines.size(), nullptr);
+
+      cout << endl;
+      cout << "=================" << endl;
+      cout << "begin run() dBFT2" << endl;
+      cout << "=================" << endl;
+
+      cout << "initializing multimachine" << endl;
+      if (watchdog)
+         watchdog->reset();
+      else
+         cout << "No watchdog configured!" << endl;
+      for (unsigned i = 0; i < machines.size(); i++)
+         machines[i]->initialize(current->at(i), p);
+
+      return current;
    }
 };
-*/
 
 SingleTimerStateMachine<MultiContext<dBFT2Context>>*
 create_dBFTMachine(int id)

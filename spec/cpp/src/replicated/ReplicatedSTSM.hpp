@@ -114,7 +114,7 @@ template<class Param>
 using MultiState = vector<State<MultiContext<Param>>*>;
 
 template<class Param = nullptr_t>
-class MultiSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
+class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
    // includes several internal machines
@@ -154,7 +154,7 @@ public:
    }
 
 public:
-   MultiSTSM()
+   ReplicatedSTSM()
    {
    }
 
@@ -165,8 +165,12 @@ public:
    }
 
    // initialize timer, etc
-   virtual void initialize() override
+   virtual MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
    {
+      // check if there's initial state available
+      if (!current)
+         current = new MultiState<Param>(machines.size(), nullptr);
+
       cout << endl;
       cout << "===========" << endl;
       cout << "begin run()" << endl;
@@ -178,7 +182,9 @@ public:
       else
          cout << "No watchdog configured!" << endl;
       for (unsigned i = 0; i < machines.size(); i++)
-         machines[i]->initialize();
+         machines[i]->initialize(current->at(i), p);
+
+      return current;
    }
 
    // launch when machine is finished

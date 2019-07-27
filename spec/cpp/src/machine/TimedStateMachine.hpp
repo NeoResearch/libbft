@@ -53,18 +53,19 @@ public:
    virtual bool isFinal(const StateType& current, Param* p) = 0;
 
    // initialize runtime states and timers, etc
-   virtual void initialize() = 0;
+   // if initial state is not given, it must provide one here
+   virtual StateType* initialize(StateType* current, Param* p) = 0;
 
    // launch when machine is finished
    virtual void OnFinished(const StateType& final, Param* p) = 0;
 
-   // execute the state machine (should be asynchonous for the future)
-   // TODO: should be non-null?
-   virtual void run(StateType& initial, Param* p = nullptr)
+   // execute the state machine (returns final state, or nullptr if on failure)
+   virtual StateType* run(StateType* initial = nullptr, Param* p = nullptr)
    {
-      StateType* current = &initial;
-
-      this->initialize();
+      StateType* current = this->initialize(initial, p);
+      // if no state given, abort
+      if(!current)
+         return nullptr;
 
       onEnterState(*current, p);
 
@@ -73,7 +74,7 @@ public:
 
          // preprocess stuff (watchdogs? global transitions?)
          if (beforeUpdateState(*current, p))
-            break;
+            return nullptr;
 
          bool updated = updateState(current, p);
          if (updated) {
@@ -82,10 +83,12 @@ public:
 
          // post-process stuff (sleep if not evolving, etc)
          if (afterUpdateState(*current, p, updated))
-            break;
+            return nullptr;
       }
 
       OnFinished(*current, p);
+
+      return current;
    }
 
    virtual string toString()

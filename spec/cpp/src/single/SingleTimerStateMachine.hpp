@@ -131,8 +131,12 @@ public:
    }
 
    // initialize timer, etc
-   virtual void initialize() override
+   virtual State<Param>* initialize(State<Param>* current, Param* p) override
    {
+      // check if there's initial state available
+      if(!current && states.size() == 0)
+         return nullptr;
+
       cout << endl;
       cout << "===========" << endl;
       cout << "begin run()" << endl;
@@ -150,6 +154,10 @@ public:
 
       cout << "will reset timer" << endl;
       timer->reset();
+
+      if(!current)
+         current = states[0];
+      return current;
    }
 
    // launch when machine is finished

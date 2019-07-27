@@ -5,10 +5,10 @@
 
 // lib
 
-#include "single/SingleTimerStateMachine.hpp"
-#include "single/State.hpp"
 #include "replicated/Event.hpp"
 #include "replicated/ReplicatedSTSM.hpp"
+#include "single/SingleTimerStateMachine.hpp"
+#include "single/State.hpp"
 
 #include "dbft2/dBFT2Machine.hpp"
 
@@ -50,11 +50,11 @@ simpleExample()
    cout << "Machine => " << machine.toString() << endl;
 
    // run for 5.0 seconds max (default)
-   machine.run(*initial);
+   machine.run(); // initial state is given by default first
 }
 
 void
-dbft_backup_multi()
+dbft_test_backup_multi()
 {
    auto machine0 = create_dBFTMachine(0);
 
@@ -71,7 +71,7 @@ dbft_backup_multi()
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
 
-   MultiSTSM<dBFT2Context> multiMachine;
+   ReplicatedSTSM<dBFT2Context> multiMachine;
    multiMachine.registerMachine(machine0);
 
    // global transition scheduled to start machine 0 ("OnStart") after 1 second
@@ -100,11 +100,11 @@ dbft_backup_multi()
 
    // run for 5.0 seconds max (watchdog limit)
    multiMachine.setWatchdog(5.0);
-   multiMachine.run(minitial, &ctx);
+   multiMachine.run(&minitial, &ctx);
 }
 
 void
-dbft_primary()
+dbft_test_primary()
 {
    auto machine0 = create_dBFTMachine(0);
 
@@ -118,7 +118,7 @@ dbft_primary()
 
    // run for 5.0 seconds max
    machine0->setWatchdog(5.0);
-   machine0->run(*machine0->states[0], &ctx);
+   machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
 int
@@ -130,9 +130,9 @@ main()
    simpleExample();
 
    // Neo dbft modeling as example
-   dbft_primary();
+   dbft_test_primary();
 
-   dbft_backup_multi();
+   dbft_test_backup_multi();
 
    cout << "finished successfully!" << endl;
 
