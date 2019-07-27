@@ -12,7 +12,8 @@
 // libbft includes
 
 // Prototype?
-#include "../SingleTimerStateMachine.hpp"
+#include "../machine/TimedStateMachine.hpp"
+#include "../single/SingleTimerStateMachine.hpp"
 #include "Event.hpp"
 
 using namespace std; // TODO: remove

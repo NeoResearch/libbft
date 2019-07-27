@@ -11,8 +11,8 @@
 #include <random>
 
 // standard Transition
+#include "../timing/Timer.hpp"
 #include "Transition.hpp"
-#include "timing/Timer.hpp"
 
 // standard State
 

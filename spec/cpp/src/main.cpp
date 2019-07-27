@@ -5,8 +5,8 @@
 
 // lib
 
-#include "SingleTimerStateMachine.hpp"
-#include "State.hpp"
+#include "single/SingleTimerStateMachine.hpp"
+#include "single/State.hpp"
 #include "replicated/Event.hpp"
 #include "replicated/ReplicatedSTSM.hpp"
 

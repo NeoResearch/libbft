@@ -11,17 +11,15 @@
 #include <random>
 
 // standard Transition
-#include "../Transition.hpp"
-#include "../timing/Timer.hpp"
 #include "../replicated/ReplicatedSTSM.hpp"
+#include "../single/Transition.hpp"
+#include "../timing/Timer.hpp"
 
 #include "dBFT2Context.hpp"
-
 
 using namespace std; // TODO: remove
 
 namespace libbft {
-
 
 /*class dBFT2Machine : public ReplicatedSTSM<>
 {
@@ -47,7 +45,6 @@ namespace libbft {
    }
 };
 */
-
 
 SingleTimerStateMachine<MultiContext<dBFT2Context>>*
 create_dBFTMachine(int id)
@@ -112,7 +109,6 @@ create_dBFTMachine(int id)
 
    return machine;
 }
-
 
 } // libbft
 

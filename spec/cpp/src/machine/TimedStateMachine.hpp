@@ -3,7 +3,7 @@
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 
 // default clock
-#include "timing/Clock.hpp"
+#include "../timing/Clock.hpp"
 
 using namespace std; // TODO: remove
 
