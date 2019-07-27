@@ -29,6 +29,12 @@ public:
          clock = new Clock();
    }
 
+   virtual ~TimedStateMachine()
+   {
+      // TODO: delete lot's of stuff
+      // unique_ptr the clock perhaps?
+   }
+
    // triggers this, after state machine enters this state
    virtual void onEnterState(StateType& current, Param* p) = 0;
 
@@ -64,7 +70,7 @@ public:
    {
       StateType* current = this->initialize(initial, p);
       // if no state given, abort
-      if(!current)
+      if (!current)
          return nullptr;
 
       onEnterState(*current, p);

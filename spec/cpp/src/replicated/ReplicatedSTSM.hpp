@@ -158,6 +158,12 @@ public:
    {
    }
 
+   virtual ~ReplicatedSTSM()
+   {
+      // TODO: delete lot's of stuff
+      // unique_ptr the clock perhaps?
+   }
+
    void registerMachine(SingleTimerStateMachine<MultiContext<Param>>* m)
    {
       // something else?

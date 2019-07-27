@@ -57,6 +57,12 @@ public:
          timer = new Timer("", this->clock);
    }
 
+   virtual ~SingleTimerStateMachine()
+   {
+      // TODO: delete lot's of stuff
+      // unique_ptr the clock perhaps?
+   }
+
    State<Param>* getStateByName(string name)
    {
       for (unsigned i = 0; i < states.size(); i++)
@@ -134,7 +140,7 @@ public:
    virtual State<Param>* initialize(State<Param>* current, Param* p) override
    {
       // check if there's initial state available
-      if(!current && states.size() == 0)
+      if (!current && states.size() == 0)
          return nullptr;
 
       cout << endl;
@@ -155,7 +161,7 @@ public:
       cout << "will reset timer" << endl;
       timer->reset();
 
-      if(!current)
+      if (!current)
          current = states[0];
       return current;
    }

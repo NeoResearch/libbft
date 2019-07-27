@@ -121,6 +121,24 @@ dbft_test_primary()
    machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
+void
+dbft_test_real_dbft2_primary()
+{
+   auto machine = new dBFT2Machine(0, 1); // f=0, N=1
+
+   cout << "Machine => " << machine->toString() << endl;
+
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
+   dBFT2Context data(0, 1500, 3, 1); // 1500 -> primary (R=1)
+
+   MultiContext<dBFT2Context> ctx;
+   ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine->machines[0]));
+
+   // run for 5.0 seconds max
+   machine->setWatchdog(5.0);
+   machine->run(nullptr, &ctx);
+}
+
 int
 main()
 {
@@ -132,7 +150,11 @@ main()
    // Neo dbft modeling as example
    dbft_test_primary();
 
+   // warm-up
    dbft_test_backup_multi();
+
+   // real thing starting to happen here
+   dbft_test_real_dbft2_primary();
 
    cout << "finished successfully!" << endl;
 
