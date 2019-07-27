@@ -136,6 +136,10 @@ dbft_test_real_dbft2_primary()
 
    // run for 5.0 seconds max
    machine->setWatchdog(5.0);
+
+   cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
+   cout << machine->toString("graphviz") << endl;
+
    machine->run(nullptr, &ctx);
 }
 

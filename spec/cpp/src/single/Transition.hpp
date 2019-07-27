@@ -115,20 +115,43 @@ public:
    }
 
    // converts to string
-   string toString() const
+   string toString(string format = "") const
    {
       stringstream ss;
-      ss << "t() => {name = '" << name << "',";
-      ss << "to='" << to->toString(false) << "',";
-      ss << "conditions=[";
-      for (unsigned i = 0; i < conditions.size(); i++)
-         ss << conditions[i].toString() << ";";
-      ss << "], ";
-      ss << "actions=[";
-      for (unsigned i = 0; i < actions.size(); i++)
-         ss << actions[i].toString() << ";";
-      ss << "], ";
-      ss << "'}";
+      if (format == "graphviz") {
+         ss << " -> " << this->to->name;
+         ss << " [ label = \"";
+
+         bool first = true;
+         for (unsigned i = 0; i < conditions.size(); i++) {
+            if (!first)
+               ss << " \\n ";
+            ss << conditions[i].name << " ";
+            first = false;
+         }
+         for (unsigned i = 0; i < actions.size(); i++) {
+            if (!first)
+               ss << " \\n ";
+
+            ss << actions[i].name << " ";
+            first = false;
+         }
+         ss << "\"];";
+         return ss.str();
+      } else {
+         // default print
+         ss << "t() => {name = '" << name << "',";
+         ss << "to='" << to->toString(false) << "',";
+         ss << "conditions=[";
+         for (unsigned i = 0; i < conditions.size(); i++)
+            ss << conditions[i].toString() << ";";
+         ss << "], ";
+         ss << "actions=[";
+         for (unsigned i = 0; i < actions.size(); i++)
+            ss << actions[i].toString() << ";";
+         ss << "], ";
+         ss << "'}";
+      }
       return ss.str();
    }
 };

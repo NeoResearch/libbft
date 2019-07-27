@@ -18,11 +18,14 @@ public:
    Clock* clock;
    // an identifier for itself
    int me{ 0 };
+   // string name
+   string name{ "" };
 
    // a Timed State Machine requires a global clock, and a unique personal identifier
-   TimedStateMachine(Clock* _clock = nullptr, int _me = 0)
+   TimedStateMachine(Clock* _clock = nullptr, int _me = 0, string _name = "")
      : clock(_clock)
      , me(_me)
+     , name(_name)
    {
       // clock must exist
       if (!clock)
@@ -97,13 +100,19 @@ public:
       return current;
    }
 
-   virtual string toString()
+   virtual string toString(string format = "")
    {
       stringstream ss;
-      ss << "TSM {";
-      ss << "#id = " << me << ";";
-      ss << "clock = " << clock->toString() << ";";
-      ss << "}";
+      if (format == "graphviz") {
+
+      } else {
+         // standard text
+
+         ss << "TSM {";
+         ss << "#id = " << me << ";";
+         ss << "clock = " << clock->toString() << ";";
+         ss << "}";
+      }
       return ss.str();
    }
 };

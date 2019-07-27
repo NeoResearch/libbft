@@ -25,7 +25,8 @@ namespace libbft {
 template<class Param = nullptr_t>
 class State
 {
-private:
+public:
+   // should only access for get string, etc (on graphviz)... TODO: design better protection here
    vector<Transition<Param>*> transitions;
 
 public:
