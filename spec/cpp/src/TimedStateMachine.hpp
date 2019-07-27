@@ -19,17 +19,12 @@ public:
    // an identifier for itself
    int me{ 0 };
 
-   // states for the state machine
-   //vector<StateType*> states;
-   // global transitions: may come from any state (including a null state)
-   //vector<TransitionType*> globalTransitions;
-
-   // Is it worth dealing with transitions here??
-
+   // a Timed State Machine requires a global clock, and a unique personal identifier
    TimedStateMachine(Clock* _clock = nullptr, int _me = 0)
      : clock(_clock)
      , me(_me)
    {
+      // clock must exist
       if (!clock)
          clock = new Clock();
    }
@@ -43,7 +38,13 @@ public:
 
    // do global after-processing (return 'true' means 'break' process)
    // TODO: may use a global processing FLAG here, to break
-   virtual bool afterUpdateState(StateType& current, Param* p) = 0;
+   virtual bool afterUpdateState(StateType& current, Param* p, bool updated)
+   {
+      // sleeping a little bit if not updated (avoid wasting resources)
+      if (!updated)
+         usleep(1000 * 100); // 100 milli (in microsecs)
+      return false;          // do not 'break'
+   }
 
    // get next state (null state is not allowed)
    // may return the same state, if nothing happened
@@ -72,6 +73,7 @@ public:
       // while current is  not final
       while (!isFinal(*current, p)) {
 
+         // preprocess stuff (watchdogs? global transitions?)
          if (beforeUpdateState(*current, p))
             break;
 
@@ -80,11 +82,9 @@ public:
             onEnterState(*current, p);
          }
 
-         if (afterUpdateState(*current, p))
+         // post-process stuff (what?)
+         if (afterUpdateState(*current, p, updated))
             break;
-
-         //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
-         usleep(1000 * 100); // 100 milli (in microsecs)
       }
 
       cout << endl;

@@ -6,6 +6,7 @@
 #include <iostream> // TODO: remove
 #include <vector>
 
+#include <assert.h> // TODO: remove
 #include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
@@ -37,12 +38,13 @@ public:
    vector<Transition<Param>*> globalTransitions;
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* clock = nullptr)
+   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr)
      : timer(t)
-     , TimedStateMachine<State<Param>, Param>(clock, me)
+     , TimedStateMachine<State<Param>, Param>(_clock, me)
    {
+      // timer must exist
       if (!timer)
-         timer = new Timer("", clock);
+         timer = new Timer("", this->clock);
    }
 
    State<Param>* getStateByName(string name)
@@ -55,13 +57,13 @@ public:
 
    void registerState(State<Param>* s)
    {
-      // something else?
+      assert(s != nullptr);
       states.push_back(s);
    }
 
    void registerGlobal(Transition<Param>* t)
    {
-      // something else?
+      assert(t != nullptr);
       globalTransitions.push_back(t);
    }
 
@@ -151,56 +153,6 @@ public:
       // nothing to do?
       return false;
    }
-
-   virtual bool afterUpdateState(State<Param>& current, Param* p) override
-   {
-      // nothing to do?
-      return false;
-   }
-
-   /*
-   // execute the state machine (should be asynchonous for the future)
-   // TODO: should be non-null?
-   virtual void run(State<Param>* current, double MaxTime = 5.0, Param* p = nullptr)
-   {
-      // current state may be null, waiting for a globalTransition
-
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
-
-      this->initialize();
-
-      Timer watchdog;
-      watchdog.init(MaxTime);
-      watchdog.reset();
-
-      // while current is null, or not final
-      while (!isFinal(*current, p)) {
-         // check watchdog timer
-         if (watchdog.expired()) {
-            cout << "StateMachine FAILED MAXTIME = " << MaxTime << endl;
-            break;
-         }
-
-         bool r = this->updateState(current, p);
-         if (r) {
-            cout << "moved to state: " << current->toString() << endl;
-            watchdog.reset();
-            current->onEnter(p); // really useful?
-         }
-
-         //cout << "sleeping a little bit... (TODO: improve busy sleep)" << endl;
-         usleep(1000 * 100); // 100 milli (in microsecs)
-      }
-
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
-   }
-*/
 
    string toString()
    {
