@@ -73,7 +73,7 @@ public:
       return nullptr;
    }
 
-   virtual void OnEnter(State<Param>& current, Param* p) override
+   virtual void onEnterState(State<Param>& current, Param* p) override
    {
       cout << "entering state: " << current.toString() << endl;
    }

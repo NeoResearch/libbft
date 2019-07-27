@@ -63,7 +63,7 @@ public:
    }
    */
 
-   virtual void OnEnter(StateType& current, Param* p) = 0;
+   virtual void onEnterState(StateType& current, Param* p) = 0;
 
    // do global processing
    virtual void beforeUpdateState(StateType& current, Param* p) = 0;
@@ -100,7 +100,7 @@ public:
       watchdog.init(MaxTime);
       watchdog.reset();
 
-      OnEnter(*current, p);
+      onEnterState(*current, p);
 
       // while current is  not final
       while (!isFinal(*current, p)) {
@@ -118,7 +118,7 @@ public:
             //cout << "moved to state: " << current->toString() << endl;
             // TODO: try this using operator<<
             watchdog.reset();
-            OnEnter(*current, p);
+            onEnterState(*current, p);
             //current->onEnter(p); // really useful?
             //current = next;
          }

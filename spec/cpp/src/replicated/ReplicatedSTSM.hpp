@@ -229,7 +229,7 @@ public:
       return ret;
    }
 
-   void OnEnter(MultiState<Param>& current, MultiContext<Param>* p) override
+   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
       cout << "updating multi state! STATES:" << endl;
       for (unsigned i = 0; i < current.size(); i++) {
