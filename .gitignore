@@ -4,5 +4,10 @@ bin/
 
 spec/cpp/cmake-build-debug/
 spec/cpp/build/
+spec/cpp/.idea/
+spec/cpp/.vscode/
 
 spec/go/vendor/
+spec/go/.idea/
+spec/go/.vscode/
+
