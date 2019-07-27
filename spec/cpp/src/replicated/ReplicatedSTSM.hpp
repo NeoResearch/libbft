@@ -164,7 +164,7 @@ public:
       machines.push_back(m);
    }
 
-   // initialize timer, etc
+   // initialize timer, etc, and also, setup first state (if not given)
    virtual MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
    {
       // check if there's initial state available
