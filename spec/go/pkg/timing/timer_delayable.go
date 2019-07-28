@@ -25,21 +25,21 @@ func NewTimerDelayable(name string, clock Clock, countdown float64) TimerDelayab
 }
 
 func (t *TimerDelayableService) String() string {
-	return t.timer.String()
+	return t.String()
 }
 
 func (t *TimerDelayableService) Reset() {
-	t.GetTimer().Reset()
+	t.Reset()
 }
 
 func (t *TimerDelayableService) ElapsedTime() float64 {
-	return t.GetTimer().ElapsedTime()
+	return t.ElapsedTime()
 }
 
 func (t *TimerDelayableService) RemainingTime() float64 {
-	return t.GetTimer().RemainingTime()
+	return t.RemainingTime()
 }
 
 func (t *TimerDelayableService) Expired() bool {
-	return t.GetTimer().Expired()
+	return t.Expired()
 }
