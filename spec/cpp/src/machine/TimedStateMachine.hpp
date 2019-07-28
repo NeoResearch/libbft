@@ -18,15 +18,24 @@ public:
    Clock* clock;
    // an identifier for itself
    int me{ 0 };
+   // string name
+   string name{ "" };
 
    // a Timed State Machine requires a global clock, and a unique personal identifier
-   TimedStateMachine(Clock* _clock = nullptr, int _me = 0)
+   TimedStateMachine(Clock* _clock = nullptr, int _me = 0, string _name = "")
      : clock(_clock)
      , me(_me)
+     , name(_name)
    {
       // clock must exist
       if (!clock)
          clock = new Clock();
+   }
+
+   virtual ~TimedStateMachine()
+   {
+      // TODO: delete lot's of stuff
+      // unique_ptr the clock perhaps?
    }
 
    // triggers this, after state machine enters this state
@@ -64,7 +73,7 @@ public:
    {
       StateType* current = this->initialize(initial, p);
       // if no state given, abort
-      if(!current)
+      if (!current)
          return nullptr;
 
       onEnterState(*current, p);
@@ -91,13 +100,19 @@ public:
       return current;
    }
 
-   virtual string toString()
+   virtual string toString(string format = "")
    {
       stringstream ss;
-      ss << "TSM {";
-      ss << "#id = " << me << ";";
-      ss << "clock = " << clock->toString() << ";";
-      ss << "}";
+      if (format == "graphviz") {
+
+      } else {
+         // standard text
+
+         ss << "TSM {";
+         ss << "#id = " << me << ";";
+         ss << "clock = " << clock->toString() << ";";
+         ss << "}";
+      }
       return ss.str();
    }
 };

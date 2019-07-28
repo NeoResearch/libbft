@@ -154,8 +154,15 @@ public:
    }
 
 public:
-   ReplicatedSTSM()
+   ReplicatedSTSM(Clock* _clock = nullptr, int _me = 0, string _name = "")
+     : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
    {
+   }
+
+   virtual ~ReplicatedSTSM()
+   {
+      // TODO: delete lot's of stuff
+      // unique_ptr the clock perhaps?
    }
 
    void registerMachine(SingleTimerStateMachine<MultiContext<Param>>* m)
@@ -299,13 +306,19 @@ public:
       return false;
    }
 
-   virtual string toString() override
+   virtual string toString(string format = "") override
    {
       stringstream ss;
-      ss << "ReplicatedSTSM [";
-      for (unsigned i = 0; i < machines.size(); i++)
-         ss << machines[i]->toString() << ";";
-      ss << "]";
+      if (format == "graphviz") {
+
+      } else {
+         // standard text
+
+         ss << "ReplicatedSTSM [";
+         for (unsigned i = 0; i < machines.size(); i++)
+            ss << machines[i]->toString() << ";";
+         ss << "]";
+      }
       return ss.str();
    }
 };

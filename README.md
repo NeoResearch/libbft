@@ -1,6 +1,6 @@
 # libbft
 
-## A lightweight and multi-language library for byzantine fault tolerance
+## A lightweight and multi-language library collection for byzantine fault tolerance
 
 Byzantine Fault Tolerance (BFT) is the core mechanism for building attack-resistant and self-adaptive systems. It is a widespread concept since the proposal of a Practical BFT (by Miguel Castro and Barbara Liskov), with multiple implementations nowadays (such as dBFT on Neo Blockchain).
 This project intends to allow easy implementation of BFT protocols on C++ and multiple languages (portability for cross-language is fundamental!). 
@@ -9,30 +9,28 @@ It is intended to be also used as the official dBFT for [neopt](https://github.c
 It may also help the development of other ecosystem tools, protocols, and even develop other blockchain and fail-safe storage technologies.
 
 
-### Why chosing C/C++ language for that?
+## Build Instructions
+
+Currently, C++ spec is the reference one. After that, focus will be on Go, Python and C# ports.
+
+### Builds for C++
 Existing frameworks use high-level languages that may not be suitable for very lightweight architectures,
 such as microcontrollers with very limited computing capabilities.
 
 C/C++ is interoperable with nearly all existing languages, so the idea is to provide modules that can be
 reused on other projects (on other languages too).
 
-**Note:** this project is still under development.
 
-## Build Instructions
+On debian-based systems (or ubuntu), just type `make cpp && ./spec/cpp/build/app_test`.
 
-Currently, only C++ native is being developed. After that, focus will be on Go, Python and C# ports.
-
-### C++ Native implementation
-On debian-based systems (or ubuntu), just type `make`.
-
-### tests
+#### tests for C++
 
 It will also configure test library (as long as you cloned this project with `--submodules` too).
 To test, just run `make test`.
 
 **Note:** tests are still under development.
 
-## C++ Standard
+#### C++ Standard
 Currently, C++11 is adopted, in order to keep the best compatibility between conversors and compilers. However, it is recommended to migrate to C++17 as soon as possible, if this does not break compatibility with any existing modules and tools.
 
 Let's please follow the [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines).
@@ -59,6 +57,20 @@ Recommended configuration for vscode:
 #### Variable Naming Style
 
 Let's please follow the [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines), and as usual, classic CamelCase `C++` naming is welcome :)
+
+### Builds for Go
+
+Still under development.
+
+### Builds for C#
+
+Still under development.
+
+### Builds for Python
+
+Still under development.
+
+
 
 ### License
 

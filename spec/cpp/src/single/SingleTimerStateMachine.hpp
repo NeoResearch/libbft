@@ -48,13 +48,19 @@ public:
    }
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr)
+   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "")
      : timer(t)
-     , TimedStateMachine<State<Param>, Param>(_clock, me)
+     , TimedStateMachine<State<Param>, Param>(_clock, me, name)
    {
       // timer must exist
       if (!timer)
          timer = new Timer("", this->clock);
+   }
+
+   virtual ~SingleTimerStateMachine()
+   {
+      // TODO: delete lot's of stuff
+      // unique_ptr the clock perhaps?
    }
 
    State<Param>* getStateByName(string name)
@@ -63,6 +69,14 @@ public:
          if (states[i]->name == name)
             return states[i];
       return nullptr; // not found
+   }
+
+   // default state is 0, or null
+   State<Param>* getDefaultState()
+   {
+      if (states.size() == 0)
+         return nullptr;
+      return states[0];
    }
 
    void registerState(State<Param>* s)
@@ -134,7 +148,7 @@ public:
    virtual State<Param>* initialize(State<Param>* current, Param* p) override
    {
       // check if there's initial state available
-      if(!current && states.size() == 0)
+      if (!current && states.size() == 0)
          return nullptr;
 
       cout << endl;
@@ -155,8 +169,8 @@ public:
       cout << "will reset timer" << endl;
       timer->reset();
 
-      if(!current)
-         current = states[0];
+      if (!current)
+         current = getDefaultState();
       return current;
    }
 
@@ -180,17 +194,23 @@ public:
       return false;
    }
 
-   virtual string toString() override
+   virtual string toString(string format = "") override
    {
       stringstream ss;
-      ss << "STSM {";
-      ss << "#id = " << this->me << ";";
-      ss << "Timer='" << timer->toString() << "';";
-      ss << "States=[";
-      for (unsigned i = 0; i < states.size(); i++)
-         ss << states[i]->toString() << ";";
-      ss << "]";
-      ss << "}";
+      if (format == "graphviz") {
+
+      } else {
+         // standard text
+
+         ss << "STSM {";
+         ss << "#id = " << this->me << ";";
+         ss << "Timer='" << timer->toString() << "';";
+         ss << "States=[";
+         for (unsigned i = 0; i < states.size(); i++)
+            ss << states[i]->toString() << ";";
+         ss << "]";
+         ss << "}";
+      }
       return ss.str();
    }
 };

@@ -11,3 +11,5 @@ spec/go/vendor/
 spec/go/.idea/
 spec/go/.vscode/
 
+*.dot
+*.png
