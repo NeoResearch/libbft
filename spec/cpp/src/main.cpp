@@ -138,7 +138,15 @@ dbft_test_real_dbft2_primary()
    machine->setWatchdog(5.0);
 
    cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
-   cout << machine->toString("graphviz") << endl;
+
+   string graphviz = machine->toString("graphviz");
+
+   cout << graphviz << endl;
+
+   FILE* fgraph = fopen("fgraph.dot", "w");
+   fprintf(fgraph, "%s\n",graphviz.c_str());
+   fclose(fgraph);
+   system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 
    machine->run(nullptr, &ctx);
 }

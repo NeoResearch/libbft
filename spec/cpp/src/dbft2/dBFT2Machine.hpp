@@ -184,7 +184,7 @@ public:
          for (unsigned i = 0; i < this->machines[0]->states.size(); i++) {
             State<MultiContext<dBFT2Context>>* state = this->machines[0]->states[i];
             for (unsigned t = 0; t < state->transitions.size(); t++) {
-               ss << state->name << " -> ";
+               ss << state->name << " ";
                ss << state->transitions[t]->toString("graphviz") << endl;
             }
          }
