@@ -75,6 +75,7 @@ dbft_test_backup_multi()
    multiMachine.registerMachine(machine0);
 
    // global transition scheduled to start machine 0 ("OnStart") after 1 second
+   /*
    multiMachine.scheduleGlobalTransition(
      (new Timer())->init(1.0), // 1 second to expire
      0,                        // machine 0
@@ -88,12 +89,27 @@ dbft_test_backup_multi()
             cout << " => action: v := 0" << endl;
             d->vm[me].params->v = 0;
          })));
+   */
+
+   // transition for PreInitial to Started
+   // preinitial -> started
+   preinitial->addTransition(
+     (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Started")))->add(Condition<MultiContext<dBFT2Context>>("OnStart", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+        cout << "Waiting for OnStart..." << endl;
+        return d->hasEvent("OnStart", me);
+     })));
+
+   // event scheduled to raise "OnStart" machine 0, after 1 seconds
+   multiMachine.scheduleEvent(
+     1.0, // 1 second to expire: after initialize()
+     0,   // machine 0
+     "OnStart");
 
    // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
    multiMachine.scheduleEvent(
-     (new Timer())->init(3.0), // 3 second to expire
-     0,                        // machine 0
-     new Event<MultiContext<dBFT2Context>>("OnPrepareRequest", "OnPrepareRequest"));
+     3.0, // 3 second to expire: after initialize()
+     0,   // machine 0
+     "OnPrepareRequest");
 
    MultiState<dBFT2Context> minitial(1, nullptr);
    minitial[0] = machine0->getStateByName("PreInitial");
@@ -143,12 +159,13 @@ dbft_test_real_dbft2_primary()
 
    cout << graphviz << endl;
 
+   machine->run(nullptr, &ctx);
+
+   // show
    FILE* fgraph = fopen("fgraph.dot", "w");
-   fprintf(fgraph, "%s\n",graphviz.c_str());
+   fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
    system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
-
-   machine->run(nullptr, &ctx);
 }
 
 int

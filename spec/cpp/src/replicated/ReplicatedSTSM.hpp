@@ -79,9 +79,19 @@ struct MultiContext
    bool hasEvent(string type, int at)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->getType() == type)
+         if (vm[at].events[i]->isActivated(type))
             return true;
       return false;
+   }
+
+   void consumeEvent(string type, int at)
+   {
+      for (unsigned i = 0; i < vm[at].events.size(); i++)
+         if (vm[at].events[i]->isActivated(type))
+         {
+            vm[at].events.erase(vm[at].events.begin()+i);
+            return;
+         }
    }
 
    void processEvent(string type, int at)
@@ -95,16 +105,16 @@ struct MultiContext
 
 // Scheduled class: launches a 'thing' (type T) after clock has expired
 // simple class to hold information, could be an std::array perhaps, if named
-template<class T>
-struct Scheduled
+//template<class T>
+struct ScheduledEvent
 {
-   T* thing;
-   Timer* timer;
+   string type;
+   double countdown;
    int machine;
 
-   Scheduled(T* _thing, Timer* _timer, int _machine)
-     : thing(_thing)
-     , timer(_timer)
+   ScheduledEvent(string _type, double _countdown, int _machine)
+     : type(_type)
+     , countdown(_countdown)
      , machine(_machine)
    {
    }
@@ -121,11 +131,11 @@ public:
    vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
    // includes several internal machines
-   vector<Scheduled<Event<MultiContext<Param>>>> scheduledEvents;
+   vector<ScheduledEvent> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
    // create again with other name...
-   vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
+   //vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
    // watchdog timer
@@ -138,19 +148,20 @@ public:
       watchdog = (new Timer())->init(MaxTime);
    }
 
-   void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)
-   {
-      scheduledTransitions.push_back(sch);
-   }
+   //void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)
+   //{
+   //   scheduledTransitions.push_back(sch);
+   //}
 
-   void scheduleGlobalTransition(Timer* when, int machine, Transition<MultiContext<Param>>* t)
-   {
-      scheduledTransitions.push_back(Scheduled(t, when, machine));
-   }
+   //void scheduleGlobalTransition(Timer* when, int machine, Transition<MultiContext<Param>>* t)
+   //{
+   //   scheduledTransitions.push_back(Scheduled(t, when, machine));
+   //}
 
-   void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
+   //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
+   void scheduleEvent(double countdown, int machine, string type)
    {
-      scheduledEvents.push_back(Scheduled(e, when, machine));
+      scheduledEvents.push_back(ScheduledEvent(type, countdown, machine));
    }
 
 public:
@@ -191,6 +202,18 @@ public:
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize(current->at(i), p);
 
+      // launch all scheduled events
+      for (unsigned i = 0; i < scheduledEvents.size(); i++) {
+         ScheduledEvent e = scheduledEvents[i];
+         if (e.machine == -1) {
+            // broadcast event
+            p->broadcast(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), -1);
+         } else {
+            // target machine event
+            p->sendTo(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), e.machine);
+         }
+      }
+
       return current;
    }
 
@@ -212,6 +235,7 @@ public:
       return true;
    }
 
+/*
    // perhaps just processGlobalTransitions here (both scheduled and non-scheduled)
    bool processScheduledGlobalTransitions(MultiState<Param>& states, MultiContext<Param>* p)
    {
@@ -236,6 +260,7 @@ public:
       return r;
    }
 
+
    bool processScheduledEvents(MultiContext<Param>* p)
    {
       bool r = false;
@@ -255,6 +280,7 @@ public:
       }
       return r;
    }
+*/
 
    virtual bool updateState(MultiState<Param>*& states, MultiContext<Param>* p) override
    {
@@ -289,7 +315,7 @@ public:
          cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
          return true;
       }
-
+/*
       // process events
       bool re = processScheduledEvents(p);
       if (re) {
@@ -303,6 +329,7 @@ public:
          cout << "SOME GLOBAL TRANSITION HAPPENED!" << endl;
          //watchdog.reset(); // TODO: make watchdog part of this specific class
       }
+*/
       return false;
    }
 

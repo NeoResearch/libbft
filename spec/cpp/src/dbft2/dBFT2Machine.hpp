@@ -207,7 +207,7 @@ create_dBFTMachine(int id)
    // declaring dBFT states
    // ---------------------
 
-   auto initial = new State<MultiContext<dBFT2Context>>(false, "Initial");
+   auto started = new State<MultiContext<dBFT2Context>>(false, "Started");
    auto backup = new State<MultiContext<dBFT2Context>>(false, "Backup");
    auto primary = new State<MultiContext<dBFT2Context>>(false, "Primary");
    auto reqSentOrRecv = new State<MultiContext<dBFT2Context>>(false, "RequestSentOrReceived");
@@ -223,14 +223,14 @@ create_dBFTMachine(int id)
    machine->me = id;
 
    // initial -> backup
-   initial->addTransition(
+   started->addTransition(
      (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
         cout << "lambda1" << endl;
         return !((d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me);
      })));
 
    // initial -> primary
-   initial->addTransition(
+   started->addTransition(
      (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
         cout << "lambda2 H=" << d->vm[me].params->H << " v=" << d->vm[me].params->v << " me=" << me << endl;
         return (d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me;
@@ -258,7 +258,7 @@ create_dBFTMachine(int id)
         return true;
      })));
 
-   machine->registerState(initial);
+   machine->registerState(started);
    machine->registerState(blockSent);
 
    return machine;
