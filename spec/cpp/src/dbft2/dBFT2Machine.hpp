@@ -98,6 +98,13 @@ public:
       auto machine = this->machines[m];
       int id = this->machines[m]->me;
 
+      // preinitial -> started
+      preinitial->addTransition(
+        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+           cout << "Waiting for OnStart..." << endl;
+           return d->hasEvent("OnStart", me);
+        })));
+
       // initial -> backup
       started->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
