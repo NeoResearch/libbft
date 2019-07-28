@@ -87,9 +87,8 @@ struct MultiContext
    void consumeEvent(string type, int at)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->isActivated(type))
-         {
-            vm[at].events.erase(vm[at].events.begin()+i);
+         if (vm[at].events[i]->isActivated(type)) {
+            vm[at].events.erase(vm[at].events.begin() + i);
             return;
          }
    }
@@ -182,6 +181,21 @@ public:
       machines.push_back(m);
    }
 
+   void launchScheduledEvents(MultiContext<Param>* p)
+   {
+      // launch all scheduled events
+      for (unsigned i = 0; i < scheduledEvents.size(); i++) {
+         ScheduledEvent e = scheduledEvents[i];
+         if (e.machine == -1) {
+            // broadcast event
+            p->broadcast(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), -1);
+         } else {
+            // target machine event
+            p->sendTo(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), e.machine);
+         }
+      }
+   }
+
    // initialize timer, etc, and also, setup first state (if not given)
    virtual MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
    {
@@ -202,17 +216,7 @@ public:
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize(current->at(i), p);
 
-      // launch all scheduled events
-      for (unsigned i = 0; i < scheduledEvents.size(); i++) {
-         ScheduledEvent e = scheduledEvents[i];
-         if (e.machine == -1) {
-            // broadcast event
-            p->broadcast(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), -1);
-         } else {
-            // target machine event
-            p->sendTo(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), e.machine);
-         }
-      }
+      launchScheduledEvents(p);
 
       return current;
    }
@@ -235,7 +239,7 @@ public:
       return true;
    }
 
-/*
+   /*
    // perhaps just processGlobalTransitions here (both scheduled and non-scheduled)
    bool processScheduledGlobalTransitions(MultiState<Param>& states, MultiContext<Param>* p)
    {
@@ -315,7 +319,7 @@ public:
          cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
          return true;
       }
-/*
+      /*
       // process events
       bool re = processScheduledEvents(p);
       if (re) {

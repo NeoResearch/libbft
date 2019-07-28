@@ -142,6 +142,22 @@ dbft_test_real_dbft2_primary()
 {
    auto machine = new dBFT2Machine(0, 1); // f=0, N=1
 
+   // ==============================
+   // prepare two events for testing
+   // ==============================
+   // event scheduled to raise "OnStart" machine 0, after 1 seconds
+   machine->scheduleEvent(
+     1.0, // 1 second to expire: after initialize()
+     0,   // machine 0
+     "OnStart");
+     
+   // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
+   machine->scheduleEvent(
+     3.0, // 3 second to expire: after initialize()
+     0,   // machine 0
+     "OnPrepareRequest");
+   // ==============================
+
    cout << "Machine => " << machine->toString() << endl;
 
    // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)

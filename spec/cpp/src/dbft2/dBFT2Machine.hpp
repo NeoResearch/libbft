@@ -162,6 +162,9 @@ public:
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize(current->at(i), p);
 
+      // from ReplicatedSTSM (scheduled events for simulation)
+      this->launchScheduledEvents(p);
+
       return current;
    }
 
