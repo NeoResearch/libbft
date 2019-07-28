@@ -58,6 +58,20 @@ Recommended configuration for vscode:
 
 Let's please follow the [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines), and as usual, classic CamelCase `C++` naming is welcome :)
 
+### Builds for Go
+
+Still under development.
+
+### Builds for C#
+
+Still under development.
+
+### Builds for Python
+
+Still under development.
+
+
+
 ### License
 
 Code follows `MIT License`.
