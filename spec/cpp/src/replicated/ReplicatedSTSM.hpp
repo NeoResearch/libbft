@@ -14,7 +14,7 @@
 // Prototype?
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
-#include "Event.hpp"
+#include "../events/Event.hpp"
 
 using namespace std; // TODO: remove
 
@@ -188,10 +188,10 @@ public:
          ScheduledEvent e = scheduledEvents[i];
          if (e.machine == -1) {
             // broadcast event
-            p->broadcast(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), -1);
+            p->broadcast(new TimedEvent<MultiContext<Param>>(e.countdown, e.type, e.type, -1), -1);
          } else {
             // target machine event
-            p->sendTo(new Event<MultiContext<Param>>(e.type, e.type, -1, (new Timer())->init(e.countdown)), e.machine);
+            p->sendTo(new TimedEvent<MultiContext<Param>>(e.countdown, e.type, e.type, -1), e.machine);
          }
       }
    }

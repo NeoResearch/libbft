@@ -24,38 +24,29 @@ namespace libbft {
 template<class Param = nullptr_t>
 class Event
 {
-private:
+protected:
    // event type (used to matching)
    std::string type;
    // event name (optional)
    std::string name;
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    int from;
-   // Timer sent in countdown mode
-   Timer* timer;
 
 public:
-   Event(string _type, string _name = "", int _from = -1, Timer* _timer = nullptr)
+   Event(string _type, string _name = "", int _from = -1)
      : type(_type)
      , name(_name)
      , from(_from)
-     , timer(_timer)
+   {
+   }
+
+   virtual ~Event()
    {
    }
 
    virtual bool isActivated(string _type) const
    {
-      return (type == _type) && ((timer == nullptr) || (timer->expired()));
-   }
-
-   virtual string getType() const
-   {
-      return type;
-   }
-
-   virtual string getName() const
-   {
-      return name;
+      return (type == _type);
    }
 
    virtual int getFrom() const
@@ -68,8 +59,41 @@ public:
       stringstream ss;
       ss << "Event {name=" << name;
       ss << "; type=" << type;
-      if (timer)
-         ss << "; timer={countdown:" << timer->getCountdown() << "}";
+      ss << "}";
+      return ss.str();
+   }
+};
+
+template<class Param = nullptr_t>
+class TimedEvent : public Event<Param>
+{
+protected:
+   // Timer sent in countdown mode
+   Timer* timer;
+
+public:
+   TimedEvent(double countdown, string _type, string _name = "", int _from = -1)
+     : Event<Param>(_type, _name, _from)
+   {
+      timer = (new Timer())->init(countdown);
+   }
+
+   virtual ~TimedEvent()
+   {
+      delete timer;
+   }
+
+   virtual bool isActivated(string _type) const override
+   {
+      return (this->type == _type) && (timer->expired());
+   }
+
+   virtual string toString() const override
+   {
+      stringstream ss;
+      ss << "TimedEvent {name=" << this->name;
+      ss << "; type=" << this->type;
+      ss << "; timer={countdown:" << timer->getCountdown() << "}";
       ss << "}";
       return ss.str();
    }

@@ -5,7 +5,7 @@
 
 // lib
 
-#include "replicated/Event.hpp"
+#include "events/Event.hpp"
 #include "replicated/ReplicatedSTSM.hpp"
 #include "single/SingleTimerStateMachine.hpp"
 #include "single/State.hpp"
