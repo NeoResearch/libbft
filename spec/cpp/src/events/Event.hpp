@@ -18,6 +18,11 @@ using namespace std; // TODO: remove
 
 namespace libbft {
 
+template<class Param = nullptr_t>
+class EventParameter
+{
+};
+
 // this Event class is mostly used for simulation
 // it indicates a type for event (for matching), a name for printing, a source 'from', and possibly a countdown Timer
 
@@ -25,17 +30,14 @@ template<class Param = nullptr_t>
 class Event
 {
 protected:
-   // event type (used to matching)
-   std::string type;
-   // event name (optional)
+   // event name (used to matching)
    std::string name;
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    int from;
 
 public:
-   Event(string _type, string _name = "", int _from = -1)
-     : type(_type)
-     , name(_name)
+   Event(string _name, int _from = -1)
+     : name(_name)
      , from(_from)
    {
    }
@@ -44,9 +46,9 @@ public:
    {
    }
 
-   virtual bool isActivated(string _type) const
+   virtual bool isActivated(string _name) const
    {
-      return (type == _type);
+      return (name == _name);
    }
 
    virtual int getFrom() const
@@ -57,8 +59,7 @@ public:
    virtual string toString() const
    {
       stringstream ss;
-      ss << "Event {name=" << name;
-      ss << "; type=" << type;
+      ss << "Event {name=" << name << "()"; // default '()', empty parameters
       ss << "}";
       return ss.str();
    }
@@ -72,8 +73,8 @@ protected:
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _type, string _name = "", int _from = -1)
-     : Event<Param>(_type, _name, _from)
+   TimedEvent(double countdown, string _name, int _from = -1)
+     : Event<Param>(_name, _from)
    {
       timer = (new Timer())->init(countdown);
    }
@@ -83,16 +84,15 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _type) const override
+   virtual bool isActivated(string _name) const override
    {
-      return (this->type == _type) && (timer->expired());
+      return (this->name == _name) && (timer->expired());
    }
 
    virtual string toString() const override
    {
       stringstream ss;
-      ss << "TimedEvent {name=" << this->name;
-      ss << "; type=" << this->type;
+      ss << "TimedEvent {name=" << this->name << "()"; // default suffix '()' (empty parameters)
       ss << "; timer={countdown:" << timer->getCountdown() << "}";
       ss << "}";
       return ss.str();

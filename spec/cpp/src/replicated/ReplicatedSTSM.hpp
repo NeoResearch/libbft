@@ -107,12 +107,12 @@ struct MultiContext
 //template<class T>
 struct ScheduledEvent
 {
-   string type;
+   string name;
    double countdown;
    int machine;
 
-   ScheduledEvent(string _type, double _countdown, int _machine)
-     : type(_type)
+   ScheduledEvent(string _name, double _countdown, int _machine)
+     : name(_name)
      , countdown(_countdown)
      , machine(_machine)
    {
@@ -188,10 +188,10 @@ public:
          ScheduledEvent e = scheduledEvents[i];
          if (e.machine == -1) {
             // broadcast event
-            p->broadcast(new TimedEvent<MultiContext<Param>>(e.countdown, e.type, e.type, -1), -1);
+            p->broadcast(new TimedEvent<MultiContext<Param>>(e.countdown, e.name, -1), -1);
          } else {
             // target machine event
-            p->sendTo(new TimedEvent<MultiContext<Param>>(e.countdown, e.type, e.type, -1), e.machine);
+            p->sendTo(new TimedEvent<MultiContext<Param>>(e.countdown, e.name, -1), e.machine);
          }
       }
    }

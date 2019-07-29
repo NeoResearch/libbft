@@ -28,7 +28,7 @@ public:
    }
 
 public:
-   // get time in seconds
+   // get time in seconds (milliseconds precision here.. could be more, perhaps)
    virtual double getTime()
    {
       // using chrono
