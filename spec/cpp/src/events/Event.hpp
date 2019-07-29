@@ -21,6 +21,36 @@ namespace libbft {
 template<class Param = nullptr_t>
 class EventParameter
 {
+protected:
+   // type of EventParameter class (usually, empty... is string)
+   string type;
+   // content stored on event parameter (as string). other implementations can ignore this field.
+   string content;
+
+public:
+   EventParameter(string _type = "", string _content = "")
+     : type(_type)
+     , content(_content)
+   {
+   }
+
+   string getType() const
+   {
+      return type;
+   }
+
+   // default implementation of equals uses toString() visualization
+   virtual bool equals(const EventParameter& other)
+   {
+      return (type == other.getType()) && (this->toString() == other->toString());
+   }
+
+   virtual string toString()
+   {
+      stringstream ss;
+      ss << "EventParameter:{type=" << type << ";content='" << content << "'}";
+      return ss.str();
+   }
 };
 
 // this Event class is mostly used for simulation
