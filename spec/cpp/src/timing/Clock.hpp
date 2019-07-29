@@ -33,13 +33,11 @@ public:
    {
       // using chrono
       system_clock::time_point now = system_clock::now();
-      system_clock::duration tp = now.time_since_epoch(); // which epoch.. unix? // TODO: check
-
-      tp -= duration_cast<seconds>(tp);
-
-      auto f_secs = std::chrono::duration_cast<std::chrono::duration<float>>(tp);
-      // todo: fix this clock to return seconds in double/float format
-      return f_secs.count();
+      auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+      auto epoch = now_ms.time_since_epoch(); // which epoch? unix?
+      auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+      long duration = value.count();
+      return duration / 1000.0;
    }
 
    string toString() const
