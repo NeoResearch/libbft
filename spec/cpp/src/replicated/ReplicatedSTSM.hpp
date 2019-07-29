@@ -12,9 +12,9 @@
 // libbft includes
 
 // Prototype?
+#include "../events/Event.hpp"
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
-#include "../events/Event.hpp"
 
 using namespace std; // TODO: remove
 
@@ -76,30 +76,32 @@ struct MultiContext
       sendTo(new Event<MultiContext<Param>>(event, event, from), to);
    }
 
-   bool hasEvent(string type, int at)
+   bool hasEvent(string name, int at, EventParameter* param)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->isActivated(type))
+         if (vm[at].events[i]->isActivated(name, param))
             return true;
       return false;
    }
 
-   void consumeEvent(string type, int at)
+   void consumeEvent(string name, int at, EventParameter* param)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->isActivated(type)) {
+         if (vm[at].events[i]->isActivated(name, param)) {
             vm[at].events.erase(vm[at].events.begin() + i);
             return;
          }
    }
 
-   void processEvent(string type, int at)
+   /*
+   void processEvent(string name, int at)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->getType() == type) {
+         if (vm[at].events[i]->getType() == name) {
             vm[at].events.erase(vm[at].events.begin() + i);
          }
    }
+*/
 };
 
 // Scheduled class: launches a 'thing' (type T) after clock has expired
@@ -108,11 +110,13 @@ struct MultiContext
 struct ScheduledEvent
 {
    string name;
+   EventParameter* param;
    double countdown;
    int machine;
 
-   ScheduledEvent(string _name, double _countdown, int _machine)
+   ScheduledEvent(string _name, double _countdown, int _machine, EventParameter* _param = nullptr)
      : name(_name)
+     , param(_param)
      , countdown(_countdown)
      , machine(_machine)
    {
@@ -158,9 +162,9 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, int machine, string type)
+   void scheduleEvent(double countdown, int machine, string name, EventParameter* param)
    {
-      scheduledEvents.push_back(ScheduledEvent(type, countdown, machine));
+      scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, param));
    }
 
 public:

@@ -96,20 +96,22 @@ dbft_test_backup_multi()
    preinitial->addTransition(
      (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Started")))->add(Condition<MultiContext<dBFT2Context>>("OnStart", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
         cout << "Waiting for OnStart..." << endl;
-        return d->hasEvent("OnStart", me);
+        return d->hasEvent("OnStart", me, nullptr);
      })));
 
    // event scheduled to raise "OnStart" machine 0, after 1 seconds
    multiMachine.scheduleEvent(
      1.0, // 1 second to expire: after initialize()
      0,   // machine 0
-     "OnStart");
+     "OnStart",
+     nullptr);
 
    // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
    multiMachine.scheduleEvent(
      3.0, // 3 second to expire: after initialize()
      0,   // machine 0
-     "OnPrepareRequest");
+     "OnPrepareRequest",
+     nullptr);
 
    MultiState<dBFT2Context> minitial(1, nullptr);
    minitial[0] = machine0->getStateByName("PreInitial");
@@ -149,13 +151,15 @@ dbft_test_real_dbft2_primary()
    machine->scheduleEvent(
      1.0, // 1 second to expire: after initialize()
      0,   // machine 0
-     "OnStart");
-     
+     "OnStart",
+     nullptr);
+
    // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
    machine->scheduleEvent(
      3.0, // 3 second to expire: after initialize()
      0,   // machine 0
-     "OnPrepareRequest");
+     "OnPrepareRequest",
+     nullptr);
    // ==============================
 
    cout << "Machine => " << machine->toString() << endl;
