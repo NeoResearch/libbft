@@ -102,7 +102,7 @@ public:
       preinitial->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
            cout << "Waiting for OnStart..." << endl;
-           return d->hasEvent("OnStart", me, nullptr);
+           return d->hasEvent("OnStart", me, "");
         })));
 
       // initial -> backup
@@ -124,7 +124,10 @@ public:
       backup->addTransition(
         toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
            cout << "waiting for event OnPrepareRequest at " << me << " for view " << d->vm[me].params->v << endl;
-           return d->hasEvent("OnPrepareRequest", me, new EventParameter<MultiContext<dBFT2Context>>("", d->vm[me].params->v));
+           stringstream ss;
+           ss << d->vm[me].params->v;
+           //cout << "for " << ss.str() << endl;
+           return d->hasEvent("OnPrepareRequest", me, ss.str());
         })));
 
       // reqSentOrRecv -> commitSent

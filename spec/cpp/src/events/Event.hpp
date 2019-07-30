@@ -90,7 +90,6 @@ public:
 
    virtual bool isActivated(string _name, string _parameters) const
    {
-      cout << "Event isActivated name=" << name << " param=" << _parameters << endl;
       return (name == _name) && (parameters == _parameters);
    }
 
@@ -102,8 +101,7 @@ public:
    virtual string toString() const
    {
       stringstream ss;
-      ss << "Event {name=" << name << "()"; // default '()', empty parameters
-      ss << "}";
+      ss << "Event " << name << "(" << parameters << ")";
       return ss.str();
    }
 };
@@ -128,16 +126,13 @@ public:
 
    virtual bool isActivated(string _name, string _parameters) const override
    {
-      cout << "TimedEvent isActivated name=" << this->name << " param=" << _parameters << endl;
       return (this->name == _name) && (timer->expired()) && (this->parameters == _parameters);
    }
 
    virtual string toString() const override
    {
       stringstream ss;
-      ss << "TimedEvent {name=" << this->name << "()"; // default suffix '()' (empty parameters)
-      ss << "; timer={countdown:" << timer->getCountdown() << "}";
-      ss << "}";
+      ss << "TimedEvent " << this->name << "(" << this->parameters << ") " << (timer->expired()?"expired":"notexpired"); // default suffix '()' (empty parameters)
       return ss.str();
    }
 };

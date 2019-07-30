@@ -28,7 +28,7 @@ struct MachineContext
 {
    Param* params;
    SingleTimerStateMachine<MultiContext<Param>>* machine;
-   vector<Event<MultiContext<Param>>*> events;
+   vector<Event*> events;
 
    //void addEvent(Event<MultiContext<Param>>* e)
    //{
@@ -49,9 +49,9 @@ struct MultiContext
    vector<MachineContext<Param>> vm;
 
    // from may be -1, if broadcasted from system
-   void broadcast(string event, int from)
+   void broadcast(string event, int from, string parameters)
    {
-      broadcast(new Event(event, event, from), from);
+      broadcast(new Event(event, from, parameters), from);
    }
 
    // from may be -1, if broadcasted from system
@@ -71,16 +71,19 @@ struct MultiContext
 
    // 'from' may be -1, if broadcasted from system
    // 'to' should be valid (0 <= to <= R)
-   void sendTo(string event, int from, int to)
+   void sendTo(string event, int from, int to, string parameters)
    {
-      sendTo(new Event(event, event, from), to);
+      sendTo(new Event(event, from, parameters), to);
    }
 
    bool hasEvent(string name, int at, string parameters)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
+      {
+         //cout << "comparing " << name << "(" << parameters << ") with: " << vm[at].events[i]->toString() << endl;
          if (vm[at].events[i]->isActivated(name, parameters))
             return true;
+      }
       return false;
    }
 
@@ -163,7 +166,7 @@ public:
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
    void scheduleEvent(double countdown, int machine, string name, string parameters)
    {
-      scheduledEvents.push_back(ScheduledEvent<Param>(name, countdown, machine, parameters));
+      scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, parameters));
    }
 
 public:
@@ -192,10 +195,10 @@ public:
          ScheduledEvent e = scheduledEvents[i];
          if (e.machine == -1) {
             // broadcast event
-            p->broadcast(new TimedEvent(e.countdown, e.name, -1), -1);
+            p->broadcast(new TimedEvent(e.countdown, e.name, -1, e.parameters), -1);
          } else {
             // target machine event
-            p->sendTo(new TimedEvent(e.countdown, e.name, -1), e.machine);
+            p->sendTo(new TimedEvent(e.countdown, e.name, -1, e.parameters), e.machine);
          }
       }
    }

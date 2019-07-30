@@ -142,6 +142,7 @@ dbft_test_primary()
 void
 dbft_test_real_dbft2_primary()
 {
+   cout << "will create machine!" << endl;
    auto machine = new dBFT2Machine(0, 1); // f=0, N=1
 
    // ==============================
@@ -152,14 +153,14 @@ dbft_test_real_dbft2_primary()
      1.0, // 1 second to expire: after initialize()
      0,   // machine 0
      "OnStart",
-     nullptr);
+     "");
 
    // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
    machine->scheduleEvent(
      3.0, // 3 second to expire: after initialize()
      0,   // machine 0
      "OnPrepareRequest",
-     nullptr);
+     "0"); // view = 0 
    // ==============================
 
    cout << "Machine => " << machine->toString() << endl;
