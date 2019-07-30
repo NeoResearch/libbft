@@ -68,7 +68,7 @@ public:
       // very dangerous to delete like this... clock may be shared.
    }
 
-   void fillStatesForMachine(int m)
+   void fillSimpleCycle(int m)
    {
       // ---------------------
       // declaring dBFT states
@@ -100,7 +100,7 @@ public:
 
       // preinitial -> started
       preinitial->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
            cout << "Waiting for OnStart..." << endl;
            return d->hasEvent("OnStart", me, nullptr);
         })));
@@ -140,6 +140,13 @@ public:
            cout << "nothing to do... assuming all commits were received!" << endl;
            return true;
         })));
+   }
+
+   // official method
+   virtual void fillStatesForMachine(int m)
+   {
+      // method for a simple dbft cycle (single height considered)
+      fillSimpleCycle(m);
    }
 
    virtual MultiState<dBFT2Context>* initialize(MultiState<dBFT2Context>* current, MultiContext<dBFT2Context>* p) override

@@ -76,7 +76,7 @@ struct MultiContext
       sendTo(new Event<MultiContext<Param>>(event, event, from), to);
    }
 
-   bool hasEvent(string name, int at, EventParameter* param)
+   bool hasEvent(string name, int at, EventParameter<MultiContext<Param>>* param)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
          if (vm[at].events[i]->isActivated(name, param))
@@ -84,7 +84,7 @@ struct MultiContext
       return false;
    }
 
-   void consumeEvent(string name, int at, EventParameter* param)
+   void consumeEvent(string name, int at, EventParameter<MultiContext<Param>>* param)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
          if (vm[at].events[i]->isActivated(name, param)) {
@@ -106,15 +106,15 @@ struct MultiContext
 
 // Scheduled class: launches a 'thing' (type T) after clock has expired
 // simple class to hold information, could be an std::array perhaps, if named
-//template<class T>
+template<class Param = nullptr_t>
 struct ScheduledEvent
 {
    string name;
-   EventParameter* param;
+   EventParameter<Param>* param;
    double countdown;
    int machine;
 
-   ScheduledEvent(string _name, double _countdown, int _machine, EventParameter* _param = nullptr)
+   ScheduledEvent(string _name, double _countdown, int _machine, EventParameter<Param>* _param = nullptr)
      : name(_name)
      , param(_param)
      , countdown(_countdown)
@@ -134,7 +134,7 @@ public:
    vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
    // includes several internal machines
-   vector<ScheduledEvent> scheduledEvents;
+   vector<ScheduledEvent<Param>> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
    // create again with other name...
@@ -162,9 +162,9 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, int machine, string name, EventParameter* param)
+   void scheduleEvent(double countdown, int machine, string name, EventParameter<Param>* param)
    {
-      scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, param));
+      scheduledEvents.push_back(ScheduledEvent<Param>(name, countdown, machine, param));
    }
 
 public:
@@ -189,7 +189,7 @@ public:
    {
       // launch all scheduled events
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
-         ScheduledEvent e = scheduledEvents[i];
+         ScheduledEvent<Param> e = scheduledEvents[i];
          if (e.machine == -1) {
             // broadcast event
             p->broadcast(new TimedEvent<MultiContext<Param>>(e.countdown, e.name, -1), -1);

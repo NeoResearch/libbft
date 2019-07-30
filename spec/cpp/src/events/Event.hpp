@@ -18,6 +18,7 @@ using namespace std; // TODO: remove
 
 namespace libbft {
 
+template<class Param = nullptr_t>
 class EventParameter
 {
 protected:
@@ -39,7 +40,7 @@ public:
    }
 
    // default implementation of equals uses toString() visualization
-   virtual bool equals(const EventParameter& other)
+   virtual bool equals(const EventParameter<Param>& other)
    {
       return (type == other.getType()) && (this->toString() == other.toString());
    }
@@ -64,10 +65,10 @@ protected:
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    int from;
    // extra parameter to compare
-   EventParameter* param;
+   EventParameter<Param>* param;
 
 public:
-   Event(string _name, int _from = -1, EventParameter* _param = nullptr)
+   Event(string _name, int _from = -1, EventParameter<Param>* _param = nullptr)
      : name(_name)
      , from(_from)
      , param(_param)
@@ -78,7 +79,7 @@ public:
    {
    }
 
-   virtual bool isActivated(string _name, EventParameter* _param) const
+   virtual bool isActivated(string _name, EventParameter<Param>* _param) const
    {
       return (name == _name) && (!param || param->equals(*_param));
    }
@@ -105,7 +106,7 @@ protected:
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _name, int _from = -1, EventParameter* _param = nullptr)
+   TimedEvent(double countdown, string _name, int _from = -1, EventParameter<Param>* _param = nullptr)
      : Event<Param>(_name, _from, _param)
    {
       timer = (new Timer())->init(countdown);
@@ -116,7 +117,7 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _name, EventParameter* _param) const override
+   virtual bool isActivated(string _name, EventParameter<Param>* _param) const override
    {
       return (this->name == _name) && (timer->expired()) && (!this->param || this->param->equals(*_param));
    }
