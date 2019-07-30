@@ -34,6 +34,14 @@ public:
    {
    }
 
+   EventParameter(string _type = "", int _content = 0)
+     : type(_type)
+   {
+      stringstream ss;
+      ss << _content;
+      content = ss.str();
+   }
+
    string getType() const
    {
       return type;

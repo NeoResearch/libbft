@@ -122,9 +122,9 @@ public:
       // backup -> reqSentOrRecv
       auto toReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
       backup->addTransition(
-        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
-           cout << "waiting for event OnPrepareRequest at " << me << endl;
-           return d->hasEvent("OnPrepareRequest", me, nullptr);
+        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+           cout << "waiting for event OnPrepareRequest at " << me << " for view " << d->vm[me].params->v << endl;
+           return d->hasEvent("OnPrepareRequest", me, new EventParameter<MultiContext<dBFT2Context>>("", d->vm[me].params->v));
         })));
 
       // reqSentOrRecv -> commitSent
