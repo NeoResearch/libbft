@@ -51,11 +51,11 @@ struct MultiContext
    // from may be -1, if broadcasted from system
    void broadcast(string event, int from)
    {
-      broadcast(new Event<MultiContext<Param>>(event, event, from), from);
+      broadcast(new Event(event, event, from), from);
    }
 
    // from may be -1, if broadcasted from system
-   void broadcast(Event<MultiContext<Param>>* event, int from)
+   void broadcast(Event* event, int from)
    {
       for (unsigned i = 0; vm.size(); i++)
          if (i != from)
@@ -63,7 +63,7 @@ struct MultiContext
    }
 
    // 'to' should be valid (0 <= to <= R)
-   void sendTo(Event<MultiContext<Param>>* event, int to)
+   void sendTo(Event* event, int to)
    {
       assert((to >= 0) && (to < vm.size()));
       vm[to].events.push_back(event);
@@ -73,21 +73,21 @@ struct MultiContext
    // 'to' should be valid (0 <= to <= R)
    void sendTo(string event, int from, int to)
    {
-      sendTo(new Event<MultiContext<Param>>(event, event, from), to);
+      sendTo(new Event(event, event, from), to);
    }
 
-   bool hasEvent(string name, int at, EventParameter<MultiContext<Param>>* param)
+   bool hasEvent(string name, int at, string parameters)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->isActivated(name, param))
+         if (vm[at].events[i]->isActivated(name, parameters))
             return true;
       return false;
    }
 
-   void consumeEvent(string name, int at, EventParameter<MultiContext<Param>>* param)
+   void consumeEvent(string name, int at, string parameters)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->isActivated(name, param)) {
+         if (vm[at].events[i]->isActivated(name, parameters)) {
             vm[at].events.erase(vm[at].events.begin() + i);
             return;
          }
@@ -106,17 +106,16 @@ struct MultiContext
 
 // Scheduled class: launches a 'thing' (type T) after clock has expired
 // simple class to hold information, could be an std::array perhaps, if named
-template<class Param = nullptr_t>
 struct ScheduledEvent
 {
-   string name;
-   EventParameter<Param>* param;
+   string name;       // event name
+   string parameters; // event parameters
    double countdown;
    int machine;
 
-   ScheduledEvent(string _name, double _countdown, int _machine, EventParameter<Param>* _param = nullptr)
+   ScheduledEvent(string _name, double _countdown, int _machine, string _parameters)
      : name(_name)
-     , param(_param)
+     , parameters(_parameters)
      , countdown(_countdown)
      , machine(_machine)
    {
@@ -134,7 +133,7 @@ public:
    vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
    // includes several internal machines
-   vector<ScheduledEvent<Param>> scheduledEvents;
+   vector<ScheduledEvent> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
    // create again with other name...
@@ -162,9 +161,9 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, int machine, string name, EventParameter<Param>* param)
+   void scheduleEvent(double countdown, int machine, string name, string parameters)
    {
-      scheduledEvents.push_back(ScheduledEvent<Param>(name, countdown, machine, param));
+      scheduledEvents.push_back(ScheduledEvent<Param>(name, countdown, machine, parameters));
    }
 
 public:
@@ -187,15 +186,16 @@ public:
 
    void launchScheduledEvents(MultiContext<Param>* p)
    {
+      cout << "launching scheduled events!" << endl;
       // launch all scheduled events
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
-         ScheduledEvent<Param> e = scheduledEvents[i];
+         ScheduledEvent e = scheduledEvents[i];
          if (e.machine == -1) {
             // broadcast event
-            p->broadcast(new TimedEvent<MultiContext<Param>>(e.countdown, e.name, -1), -1);
+            p->broadcast(new TimedEvent(e.countdown, e.name, -1), -1);
          } else {
             // target machine event
-            p->sendTo(new TimedEvent<MultiContext<Param>>(e.countdown, e.name, -1), e.machine);
+            p->sendTo(new TimedEvent(e.countdown, e.name, -1), e.machine);
          }
       }
    }

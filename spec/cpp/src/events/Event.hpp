@@ -18,7 +18,7 @@ using namespace std; // TODO: remove
 
 namespace libbft {
 
-template<class Param = nullptr_t>
+/*
 class EventParameter
 {
 protected:
@@ -48,8 +48,9 @@ public:
    }
 
    // default implementation of equals uses toString() visualization
-   virtual bool equals(const EventParameter<Param>& other)
+   virtual bool equals(const EventParameter& other)
    {
+      cout << "equals?? content = " << content << " -> " << other.toString() << endl;
       return (type == other.getType()) && (this->toString() == other.toString());
    }
 
@@ -60,11 +61,11 @@ public:
       return ss.str();
    }
 };
+*/
 
 // this Event class is mostly used for simulation
 // it indicates a type for event (for matching), a name for printing, a source 'from', and possibly a countdown Timer
 
-template<class Param = nullptr_t>
 class Event
 {
 protected:
@@ -73,13 +74,13 @@ protected:
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    int from;
    // extra parameter to compare
-   EventParameter<Param>* param;
+   std::string parameters;
 
 public:
-   Event(string _name, int _from = -1, EventParameter<Param>* _param = nullptr)
+   Event(string _name, int _from = -1, string _parameters = "")
      : name(_name)
      , from(_from)
-     , param(_param)
+     , parameters(_parameters)
    {
    }
 
@@ -87,9 +88,10 @@ public:
    {
    }
 
-   virtual bool isActivated(string _name, EventParameter<Param>* _param) const
+   virtual bool isActivated(string _name, string _parameters) const
    {
-      return (name == _name) && (!param || param->equals(*_param));
+      cout << "Event isActivated name=" << name << " param=" << _parameters << endl;
+      return (name == _name) && (parameters == _parameters);
    }
 
    virtual int getFrom() const
@@ -106,16 +108,15 @@ public:
    }
 };
 
-template<class Param = nullptr_t>
-class TimedEvent : public Event<Param>
+class TimedEvent : public Event
 {
 protected:
    // Timer sent in countdown mode
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _name, int _from = -1, EventParameter<Param>* _param = nullptr)
-     : Event<Param>(_name, _from, _param)
+   TimedEvent(double countdown, string _name, int _from = -1, string _parameters = "")
+     : Event(_name, _from, _parameters)
    {
       timer = (new Timer())->init(countdown);
    }
@@ -125,9 +126,10 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _name, EventParameter<Param>* _param) const override
+   virtual bool isActivated(string _name, string _parameters) const override
    {
-      return (this->name == _name) && (timer->expired()) && (!this->param || this->param->equals(*_param));
+      cout << "TimedEvent isActivated name=" << this->name << " param=" << _parameters << endl;
+      return (this->name == _name) && (timer->expired()) && (this->parameters == _parameters);
    }
 
    virtual string toString() const override

@@ -165,7 +165,7 @@ dbft_test_real_dbft2_primary()
    cout << "Machine => " << machine->toString() << endl;
 
    // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1500, 3, 1); // 1500 -> primary (R=1)
+   dBFT2Context data(0, 1501, 3, 2); // 1500 -> primary (R=1)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine->machines[0]));
@@ -185,7 +185,9 @@ dbft_test_real_dbft2_primary()
    FILE* fgraph = fopen("fgraph.dot", "w");
    fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
-   system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
+   cout << "Generating image 'fgraph.png'" << endl;
+   system("dot -Tpng fgraph.dot -o fgraph.png");
+   //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
 int
@@ -194,13 +196,13 @@ main()
    cout << "begin test state machines!" << endl;
 
    // simple example: wait one second and quit
-   simpleExample();
+   //simpleExample();
 
    // Neo dbft modeling as example
-   dbft_test_primary();
+   //dbft_test_primary();
 
    // warm-up
-   dbft_test_backup_multi();
+   //dbft_test_backup_multi();
 
    // real thing starting to happen here
    dbft_test_real_dbft2_primary();
