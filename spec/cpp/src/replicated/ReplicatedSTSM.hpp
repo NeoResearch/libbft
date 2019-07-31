@@ -49,9 +49,9 @@ struct MultiContext
    vector<MachineContext<Param>> vm;
 
    // from may be -1, if broadcasted from system
-   void broadcast(string event, int from, string parameters)
+   void broadcast(string event, int from, vector<string> eventParams)
    {
-      broadcast(new Event(event, from, parameters), from);
+      broadcast(new Event(event, from, eventParams), from);
    }
 
    // from may be -1, if broadcasted from system
@@ -71,26 +71,25 @@ struct MultiContext
 
    // 'from' may be -1, if broadcasted from system
    // 'to' should be valid (0 <= to <= R)
-   void sendTo(string event, int from, int to, string parameters)
+   void sendTo(string event, int from, int to, vector<string> eventParams)
    {
-      sendTo(new Event(event, from, parameters), to);
+      sendTo(new Event(event, from, eventParams), to);
    }
 
-   bool hasEvent(string name, int at, string parameters)
+   bool hasEvent(string name, int at, vector<string> eventParams)
    {
-      for (unsigned i = 0; i < vm[at].events.size(); i++)
-      {
+      for (unsigned i = 0; i < vm[at].events.size(); i++) {
          //cout << "comparing " << name << "(" << parameters << ") with: " << vm[at].events[i]->toString() << endl;
-         if (vm[at].events[i]->isActivated(name, parameters))
+         if (vm[at].events[i]->isActivated(name, eventParams))
             return true;
       }
       return false;
    }
 
-   void consumeEvent(string name, int at, string parameters)
+   void consumeEvent(string name, int at, vector<string> eventParams)
    {
       for (unsigned i = 0; i < vm[at].events.size(); i++)
-         if (vm[at].events[i]->isActivated(name, parameters)) {
+         if (vm[at].events[i]->isActivated(name, eventParams)) {
             vm[at].events.erase(vm[at].events.begin() + i);
             return;
          }
@@ -111,14 +110,14 @@ struct MultiContext
 // simple class to hold information, could be an std::array perhaps, if named
 struct ScheduledEvent
 {
-   string name;       // event name
-   string parameters; // event parameters
+   string name;               // event name
+   vector<string> parameters; // event parameters
    double countdown;
    int machine;
 
-   ScheduledEvent(string _name, double _countdown, int _machine, string _parameters)
+   ScheduledEvent(string _name, double _countdown, int _machine, vector<string> _eventParams)
      : name(_name)
-     , parameters(_parameters)
+     , parameters(_eventParams)
      , countdown(_countdown)
      , machine(_machine)
    {
@@ -164,7 +163,7 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, int machine, string name, string parameters)
+   void scheduleEvent(double countdown, int machine, string name, vector<string> parameters)
    {
       scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, parameters));
    }

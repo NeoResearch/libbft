@@ -74,10 +74,10 @@ protected:
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    int from;
    // extra parameter to compare
-   std::string parameters;
+   vector<string> parameters;
 
 public:
-   Event(string _name, int _from = -1, string _parameters = "")
+   Event(string _name, int _from = -1, vector<string> _parameters = vector<string>(0))
      : name(_name)
      , from(_from)
      , parameters(_parameters)
@@ -88,7 +88,7 @@ public:
    {
    }
 
-   virtual bool isActivated(string _name, string _parameters) const
+   virtual bool isActivated(string _name, vector<string> _parameters) const
    {
       return (name == _name) && (parameters == _parameters);
    }
@@ -101,7 +101,10 @@ public:
    virtual string toString() const
    {
       stringstream ss;
-      ss << "Event " << name << "(" << parameters << ")";
+      ss << "Event " << name << "(";
+      for (int i = 0; i < this->parameters.size(); i++)
+         ss << ((i != ((int)parameters.size()) - 1) ? "," : "") << this->parameters[i];
+      ss << ")";
       return ss.str();
    }
 };
@@ -113,7 +116,7 @@ protected:
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _name, int _from = -1, string _parameters = "")
+   TimedEvent(double countdown, string _name, int _from = -1, vector<string> _parameters = vector<string>(0))
      : Event(_name, _from, _parameters)
    {
       timer = (new Timer())->init(countdown);
@@ -124,7 +127,7 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _name, string _parameters) const override
+   virtual bool isActivated(string _name, vector<string> _parameters) const override
    {
       return (this->name == _name) && (timer->expired()) && (this->parameters == _parameters);
    }
@@ -132,7 +135,10 @@ public:
    virtual string toString() const override
    {
       stringstream ss;
-      ss << "TimedEvent " << this->name << "(" << this->parameters << ") " << (timer->expired()?"expired":"notexpired"); // default suffix '()' (empty parameters)
+      ss << "TimedEvent " << this->name << "(";
+      for (int i = 0; i < this->parameters.size(); i++)
+         ss << ((i != ((int)parameters.size()) - 1) ? "," : "") << this->parameters[i];
+      ss << ") " << (timer->expired() ? "expired" : "notexpired"); // default suffix '()' (empty parameters)
       return ss.str();
    }
 };

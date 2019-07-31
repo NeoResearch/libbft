@@ -102,7 +102,7 @@ public:
       preinitial->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
            cout << "Waiting for OnStart..." << endl;
-           return d->hasEvent("OnStart", me, "");
+           return d->hasEvent("OnStart", me, vector<string>(0)); // no parameters on event
         })));
 
       // initial -> backup
@@ -126,8 +126,9 @@ public:
            cout << "waiting for event OnPrepareRequest at " << me << " for view " << d->vm[me].params->v << endl;
            stringstream ss;
            ss << d->vm[me].params->v;
+           vector<string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
-           return d->hasEvent("OnPrepareRequest", me, ss.str());
+           return d->hasEvent("OnPrepareRequest", me, params);
         })));
 
       // reqSentOrRecv -> commitSent
@@ -261,7 +262,7 @@ create_dBFTMachine(int id)
    backup->addTransition(
      toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
         cout << "waiting for event OnPrepareRequest at " << me << endl;
-        return d->hasEvent("OnPrepareRequest", me, nullptr);
+        return d->hasEvent("OnPrepareRequest", me, vector<string>(0)); // no parameters on event
      })));
 
    // reqSentOrRecv -> commitSent
