@@ -110,14 +110,14 @@ struct MultiContext
 // simple class to hold information, could be an std::array perhaps, if named
 struct ScheduledEvent
 {
-   string name;               // event name
-   vector<string> parameters; // event parameters
+   string name;                // event name
+   vector<string> eventParams; // event parameters
    double countdown;
    int machine;
 
    ScheduledEvent(string _name, double _countdown, int _machine, vector<string> _eventParams)
      : name(_name)
-     , parameters(_eventParams)
+     , eventParams(_eventParams)
      , countdown(_countdown)
      , machine(_machine)
    {
@@ -163,9 +163,9 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, int machine, string name, vector<string> parameters)
+   void scheduleEvent(double countdown, int machine, string name, vector<string> eventParams)
    {
-      scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, parameters));
+      scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, eventParams));
    }
 
 public:
@@ -194,10 +194,10 @@ public:
          ScheduledEvent e = scheduledEvents[i];
          if (e.machine == -1) {
             // broadcast event
-            p->broadcast(new TimedEvent(e.countdown, e.name, -1, e.parameters), -1);
+            p->broadcast(new TimedEvent(e.countdown, e.name, -1, e.eventParams), -1);
          } else {
             // target machine event
-            p->sendTo(new TimedEvent(e.countdown, e.name, -1, e.parameters), e.machine);
+            p->sendTo(new TimedEvent(e.countdown, e.name, -1, e.eventParams), e.machine);
          }
       }
    }
