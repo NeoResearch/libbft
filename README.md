@@ -22,7 +22,9 @@ reused on other projects (on other languages too).
 
 On debian-based systems (or ubuntu), just type `make cpp && ./spec/cpp/build/app_test`.
 
-Getting submodules: git submodule update --init --recursive and git pull --recurse-submodules
+Getting submodules: `git submodule update --init --recursive` and `git pull --recurse-submodules`.
+
+Installing graphviz: `sudo apt install graphviz`
 
 #### tests for C++
 
