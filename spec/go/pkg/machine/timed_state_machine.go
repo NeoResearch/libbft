@@ -9,9 +9,11 @@ import (
 )
 
 type TimedStateMachine interface {
+	// get / set
 	GetClock() timing.Clock
 	GetMe() int
-
+	GetName() string
+	// methods
 	OnEnterState(current single.State, param single.Param)
 	BeforeUpdateState(current single.State, param single.Param) bool
 	AfterUpdateState(current single.State, param single.Param, updated bool) bool
@@ -27,12 +29,18 @@ type TimedStateMachine interface {
 type TimedStateMachineService struct {
 	clock timing.Clock
 	me    int
+	name string
 }
 
-func NewTimedStateMachine(clock timing.Clock, me int) TimedStateMachine {
+func NewDefaultTimedStateMachine() TimedStateMachine {
+	return NewTimedStateMachine(nil, 0, "")
+}
+
+func NewTimedStateMachine(clock timing.Clock, me int, name string) TimedStateMachine {
 	return &TimedStateMachineService{
 		clock,
 		me,
+		name,
 	}
 }
 
@@ -107,4 +115,8 @@ func (t *TimedStateMachineService) String() string {
 	sb.WriteString(fmt.Sprintf("clock = %v;", t.GetClock()))
 	sb.WriteString("TSM }")
 	return sb.String()
+}
+
+func (t *TimedStateMachineService) GetName() string {
+	return t.name
 }

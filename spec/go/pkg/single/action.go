@@ -5,8 +5,9 @@ import "github.com/NeoResearch/libbft/pkg/timing"
 type TimedAction func(timing.Timer, Param, int) bool
 
 type Action interface {
+	// get / set
+	GetTimedAction() TimedAction
 	String() string
-	TimedAction() TimedAction
 }
 
 type ActionService struct {
@@ -25,6 +26,6 @@ func (a *ActionService) String() string {
 	return a.name
 }
 
-func (a *ActionService) TimedAction() TimedAction {
+func (a *ActionService) GetTimedAction() TimedAction {
 	return a.timedAction
 }

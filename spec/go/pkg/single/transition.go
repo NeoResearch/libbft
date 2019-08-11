@@ -7,12 +7,14 @@ import (
 )
 
 type Transition interface {
+	// get / set
+	GetConditions() []Condition
+	GetActions() []Action
+	// methods
 	AddCondition(condition Condition) Transition
 	AddAction(action Action) Transition
 	IsValid(timer timing.Timer, param Param, me int) bool
 	Execute(timer timing.Timer, param Param, me int) State
-	GetConditions() []Condition
-	GetActions() []Action
 
 	String() string
 }
@@ -45,7 +47,7 @@ func (t *TransitionService) AddAction(action Action) Transition {
 
 func (t *TransitionService) IsValid(timer timing.Timer, param Param, me int) bool {
 	for _, condition := range t.GetConditions() {
-		if !condition.TimedFunction()(timer, param, me) {
+		if !condition.GetTimedFunction()(timer, param, me) {
 			return false
 		}
 	}
@@ -54,7 +56,7 @@ func (t *TransitionService) IsValid(timer timing.Timer, param Param, me int) boo
 
 func (t *TransitionService) Execute(timer timing.Timer, param Param, me int) State {
 	for _, action := range t.GetActions() {
-		action.TimedAction()(timer, param, me)
+		action.GetTimedAction()(timer, param, me)
 	}
 	return t.to
 }

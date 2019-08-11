@@ -13,7 +13,8 @@ type SingleTimerStateMachine interface {
 	// get / set
 	GetClock() timing.Clock
 	GetMe() int
-	// Methods
+	GetName() string
+	// methods
 	OnEnterState(current single.State, param single.Param)
 	BeforeUpdateState(current single.State, param single.Param) bool
 	AfterUpdateState(current single.State, param single.Param, updated bool) bool
@@ -21,14 +22,14 @@ type SingleTimerStateMachine interface {
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
-	Run(current single.State, param single.Param)
+	Run(current single.State, param single.Param) single.State
 
 	// get / set
 	GetTimer() timing.Timer
 	GetStates() []single.State
 	GetGlobalTransitions() []single.Transition
-	// Methods
 	SetWatchdog(maxTime float64)
+	// methods
 	GetStateByName(name string) single.State
 	GetDefaultState() single.State
 	RegisterState(state single.State) error
@@ -151,10 +152,6 @@ func (s *SingleTimerStateMachineService) OnFinished(current single.State, param 
 	fmt.Println("=================")
 }
 
-func (s *SingleTimerStateMachineService) Run(current single.State, param single.Param) {
-	s.timedStateMachine.Run(current, param)
-}
-
 func (s *SingleTimerStateMachineService) String() string {
 	return s.StringFormat("")
 }
@@ -231,4 +228,12 @@ func (s *SingleTimerStateMachineService) FindGlobalTransition(param single.Param
 		}
 	}
 	return nil
+}
+
+func (s *SingleTimerStateMachineService) GetName() string {
+	return s.timedStateMachine.GetName()
+}
+
+func (s *SingleTimerStateMachineService) Run(current single.State, param single.Param) single.State {
+	return s.timedStateMachine.Run()
 }

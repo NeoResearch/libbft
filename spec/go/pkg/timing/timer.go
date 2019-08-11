@@ -8,7 +8,9 @@ import (
 const infiniteTime = 1000000000.0
 
 type Timer interface {
+	// get / set
 	GetCountdown() float64
+	// methods
 	Reset()
 	ElapsedTime() float64
 	RemainingTime() float64

@@ -11,11 +11,11 @@ import (
 type State interface {
 	// get / set
 	GetName() string
+	GetTransitions() []Transition
+	IsFinal() bool
 	// Meethods
 	AddTransition(transition Transition)
 	TryGetTransition(timer timing.Timer, param Param, me int) Transition
-	GetTransitions() []Transition
-	IsFinal() bool
 
 	StringRecursive(recursive bool) string
 	String() string
@@ -25,6 +25,10 @@ type StateService struct {
 	name        string
 	isFinal     bool
 	transitions []Transition
+}
+
+func NewDefaultState(isFinal bool, name string) State {
+	return NewState(false, "")
 }
 
 func NewState(isFinal bool, name string) State {

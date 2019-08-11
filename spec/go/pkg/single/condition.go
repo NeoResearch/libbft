@@ -7,8 +7,10 @@ import (
 type TimedFunction func(timing.Timer, Param, int) bool
 
 type Condition interface {
+	// get / set
+	GetTimedFunction() TimedFunction
+	// methods
 	String() string
-	TimedFunction() TimedFunction
 }
 
 type ConditionService struct {
@@ -27,6 +29,6 @@ func (c *ConditionService) String() string {
 	return c.name
 }
 
-func (c *ConditionService) TimedFunction() TimedFunction {
+func (c *ConditionService) GetTimedFunction() TimedFunction {
 	return c.timedFunction
 }
