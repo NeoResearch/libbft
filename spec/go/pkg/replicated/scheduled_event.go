@@ -1,20 +1,21 @@
 package replicated
 
 type ScheduledEvent interface {
+	// get / set
 	GetName() string
 	GetEventParams() []string
 	GetCountdown() float64
-	GetMachine() int32
+	GetMachine() int
 }
 
 type ScheduledEventService struct {
 	name        string
 	eventParams []string
 	countdown   float64
-	machine     int32
+	machine     int
 }
 
-func NewScheduledEvent(name string, eventParams []string, countdown float64, machine int32) ScheduledEvent {
+func NewScheduledEvent(name string, eventParams []string, countdown float64, machine int) ScheduledEvent {
 	return &ScheduledEventService{
 		name,
 		eventParams,
@@ -35,6 +36,6 @@ func (s *ScheduledEventService) GetCountdown() float64 {
 	return s.countdown
 }
 
-func (s *ScheduledEventService) GetMachine() int32 {
+func (s *ScheduledEventService) GetMachine() int {
 	return s.machine
 }
