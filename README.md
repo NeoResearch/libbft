@@ -20,8 +20,11 @@ such as microcontrollers with very limited computing capabilities.
 C/C++ is interoperable with nearly all existing languages, so the idea is to provide modules that can be
 reused on other projects (on other languages too).
 
-
 On debian-based systems (or ubuntu), just type `make cpp && ./spec/cpp/build/app_test`.
+
+Getting submodules: `git submodule update --init --recursive` and `git pull --recurse-submodules`.
+
+Installing graphviz: `sudo apt install graphviz`
 
 #### tests for C++
 

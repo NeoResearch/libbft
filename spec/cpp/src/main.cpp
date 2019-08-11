@@ -30,12 +30,13 @@ simpleExample()
 
    // unused (demonstration)
    Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
-   alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*, int) -> bool { return true; }));
+   //alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*, int) -> bool { return true; }));
    //initial->addTransition(alwaysTrue); // (unused)
 
    initial->addTransition(
-     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& t, Data* d, int) -> bool {
-        return t.elapsedTime() >= 1.0;
+     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& c, Data* d, int) -> bool {
+        cout << "WAITING TRANSITION TO HAPPEN" << c.elapsedTime() << "s" << endl;
+        return c.elapsedTime() >= 3.0;
      })));
 
    //cout << "initial state: " << initial->toString() << endl;
@@ -49,8 +50,20 @@ simpleExample()
 
    cout << "Machine => " << machine.toString() << endl;
 
-   // run for 5.0 seconds max (default)
+   cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
+   string graphviz = machine.toString("graphviz");
+   cout << graphviz << endl;
+
+   // set set machine watchdog - 5 seconds - Default disabled 
+   machine.setWatchdog(5);
+
    machine.run(); // initial state is given by default first
+   
+   FILE* fgraph = fopen("fgraph_STSM.dot", "w");
+   fprintf(fgraph, "%s\n", graphviz.c_str());
+   fclose(fgraph);
+   cout << "Generating image 'fgraph_STSM.png'" << endl;
+   system("dot -Tpng fgraph_STSM.dot -o fgraph_STSM.png");
 }
 
 void
@@ -197,7 +210,7 @@ main()
    cout << "begin test state machines!" << endl;
 
    // simple example: wait one second and quit
-   //simpleExample();
+   simpleExample();
 
    // Neo dbft modeling as example
    //dbft_test_primary();

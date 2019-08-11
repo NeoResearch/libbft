@@ -48,7 +48,7 @@ public:
    }
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "")
+   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM")
      : timer(t)
      , TimedStateMachine<State<Param>, Param>(_clock, me, name)
    {
@@ -198,7 +198,30 @@ public:
    {
       stringstream ss;
       if (format == "graphviz") {
+         ss << "digraph " << this->name << " {" << endl;
+         ss << "//graph [bgcolor=lightgoldenrodyellow]" << endl;
+         ss << "//rankdir=LR;" << endl;
+         ss << "size=\"11\"" << endl;
+         // add states
+         ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << endl;
+         for (unsigned i = 0; i < this->states.size(); i++)
+            ss << "node [shape = " << (this->states[i]->isFinal ? "doublecircle" : "circle") << "]; " << this->states[i]->name << ";" << endl;
+         // default initial state transition
+         State<Param>* defState = this->getDefaultState();
+         // will happen in an empty transition
+         ss << "Empty -> " << defState->name << " [label = \"\"];" << endl;
+         // begin regular transitions
+         //Initial -> Primary [ label = "(H + v) mod R = i" ];
+         //      getDefaultState
+         for (unsigned i = 0; i < this->states.size(); i++) {
+            State<Param>* state = this->states[i];
+            for (unsigned t = 0; t < state->transitions.size(); t++) {
+               ss << state->name << " ";
+               ss << state->transitions[t]->toString("graphviz") << endl;
+            }
+         }
 
+         ss << "}" << endl;
       } else {
          // standard text
 
