@@ -10,6 +10,7 @@ import (
 
 type SingleTimerStateMachine interface {
 	// Superclass
+	getTimedStateMachine() TimedStateMachine
 	// get / set
 	GetClock() timing.Clock
 	GetMe() int
@@ -63,11 +64,11 @@ func NewSingleTimerStateMachine(
 }
 
 func (s *SingleTimerStateMachineService) GetClock() timing.Clock {
-	return s.timedStateMachine.GetClock()
+	return s.getTimedStateMachine().GetClock()
 }
 
 func (s *SingleTimerStateMachineService) GetMe() int {
-	return s.timedStateMachine.GetMe()
+	return s.getTimedStateMachine().GetMe()
 }
 
 func (s *SingleTimerStateMachineService) OnEnterState(current single.State, param single.Param) {
@@ -88,7 +89,7 @@ func (s *SingleTimerStateMachineService) BeforeUpdateState(current single.State,
 }
 
 func (s *SingleTimerStateMachineService) AfterUpdateState(current single.State, param single.Param, updated bool) bool {
-	return s.timedStateMachine.AfterUpdateState(current, param, updated)
+	return s.getTimedStateMachine().AfterUpdateState(current, param, updated)
 }
 
 func (s *SingleTimerStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool) {
@@ -231,9 +232,13 @@ func (s *SingleTimerStateMachineService) FindGlobalTransition(param single.Param
 }
 
 func (s *SingleTimerStateMachineService) GetName() string {
-	return s.timedStateMachine.GetName()
+	return s.getTimedStateMachine().GetName()
 }
 
 func (s *SingleTimerStateMachineService) Run(current single.State, param single.Param) single.State {
-	return s.timedStateMachine.Run()
+	return s.getTimedStateMachine().Run(current, param)
+}
+
+func (s *SingleTimerStateMachineService) getTimedStateMachine() TimedStateMachine {
+	return s.timedStateMachine
 }

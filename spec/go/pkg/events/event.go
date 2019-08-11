@@ -3,28 +3,28 @@ package events
 import "fmt"
 
 type Event interface {
-	GetType() string
+	// get / set
 	GetName() string
 	GetFrom() int
+	GetParameters() []string
+	// methods
+	IsActivated(name string, parameters []string) bool
+
 	String() string
 }
 
 type EventService struct {
-	theType string
 	name    string
 	from    int
+	parameters []string
 }
 
-func NewEvent(theType string, name string, from int) Event {
+func NewEvent(name string, from int, parameters []string) Event {
 	return &EventService{
-		theType,
 		name,
 		from,
+		parameters,
 	}
-}
-
-func (e *EventService) GetType() string {
-	return e.theType
 }
 
 func (e *EventService) GetName() string {
@@ -37,4 +37,20 @@ func (e *EventService) GetFrom() int {
 
 func (e *EventService) String() string {
 	return fmt.Sprintf("Event {name=%v; type=%v}", e.GetName(), e.GetType())
+}
+
+func (e *EventService) IsActivated(name string, parameters []string) bool {
+	if e.GetName() == name && len(e.GetParameters()) == len(parameters) {
+		for i, v := range e.GetParameters() {
+			if parameters[i] != v {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+func (e *EventService) GetParameters() []string {
+	return e.parameters
 }

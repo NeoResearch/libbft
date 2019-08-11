@@ -1,15 +1,18 @@
 package replicated
 
-import "github.com/NeoResearch/libbft/pkg/events"
+import (
+	"errors"
+	"github.com/NeoResearch/libbft/pkg/events"
+)
 
 type MultiContext interface {
 	GetVm() []MachineContext
-	BroadcastParams(event string, from int32, eventParams []string)
-	Broadcast(event events.Event, from int32)
-	SendToParams(event string, from int32, eventParams []string)
-	SendTo(event events.Event, to int32)
-	HasEvent(name string, at int32, eventParams []string) bool
-	ConsumeEvent(name string, at int32, eventParams []string)
+	Broadcast(event string, from int, eventParams []string) error
+	BroadcastEvent(event events.Event, from int) error
+	SendToVm(event string, from int, to int, eventParams []string) error
+	SendToVmEvent(event events.Event, to int) error
+	HasEvent(name string, at int, eventParams []string) (bool, error)
+	ConsumeEvent(name string, at int, eventParams []string) error
 }
 
 type MultiContextService struct {
@@ -23,29 +26,53 @@ func NewMultiContext(vm []MachineContext) MultiContext {
 }
 
 func (m *MultiContextService) GetVm() []MachineContext {
-	panic("implement me")
+	return m.vm
 }
 
-func (m *MultiContextService) BroadcastParams(event string, from int32, eventParams []string) {
-	panic("implement me")
+func (m *MultiContextService) Broadcast(event string, from int, eventParams []string) error {
+	return m.BroadcastEvent(events.NewEvent(event, from, eventParams), from)
 }
 
-func (m *MultiContextService) Broadcast(event events.Event, from int32) {
-	panic("implement me")
+func (m *MultiContextService) BroadcastEvent(event events.Event, from int) error {
+	for i := 0; i < len(m.GetVm()); i++ {
+		if i != from {
+			return m.SendToVmEvent(event, i)
+		}
+	}
+	return nil
 }
 
-func (m *MultiContextService) SendToParams(event string, from int32, eventParams []string) {
-	panic("implement me")
+func (m *MultiContextService) SendToVm(event string, from int, to int, eventParams []string) error {
+	return m.SendToVmEvent(events.NewEvent(event, from, eventParams), to)
 }
 
-func (m *MultiContextService) SendTo(event events.Event, to int32) {
-	panic("implement me")
+func (m *MultiContextService) SendToVmEvent(event events.Event, to int) error {
+	if to < 0 || to >= len(m.GetVm()) {
+		return errors.New("invalid \"to\" destination")
+	}
+	m.GetVm()[to].AddEvent(event)
 }
 
-func (m *MultiContextService) HasEvent(name string, at int32, eventParams []string) bool {
-	panic("implement me")
+func (m *MultiContextService) HasEvent(name string, at int, eventParams []string) (bool, error) {
+	if at < 0 || at >= len(m.GetVm()) {
+		return false, errors.New("invalid \"at\" destination")
+	}
+	for _, event := range m.GetVm()[at].GetEvents() {
+		if event.IsActivated(name, eventParams) {
+			return true, nil
+		}
+	}
 }
 
-func (m *MultiContextService) ConsumeEvent(name string, at int32, eventParams []string) {
-	panic("implement me")
+func (m *MultiContextService) ConsumeEvent(name string, at int, eventParams []string) error {
+	if at < 0 || at >= len(m.GetVm()) {
+		return errors.New("invalid \"at\" destination")
+	}
+	for i, event := range m.GetVm()[at].GetEvents() {
+		if event.IsActivated(name, eventParams) {
+			m.GetVm()[at].RemoveEvent(i)
+			return nil
+		}
+	}
+	return nil
 }

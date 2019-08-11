@@ -1,6 +1,7 @@
 package replicated
 
 import (
+	"errors"
 	"github.com/NeoResearch/libbft/pkg/events"
 	"github.com/NeoResearch/libbft/pkg/machine"
 	"github.com/NeoResearch/libbft/pkg/single"
@@ -9,8 +10,11 @@ import (
 type MachineContext interface {
 	// get / set
 	GetParams() []single.Param
-	GetSingleTimerStateMachine() machine.SingleTimerStateMachine
+	GetMachine() machine.SingleTimerStateMachine
 	GetEvents() []events.Event
+	// methods
+	AddEvent(event events.Event)
+	RemoveEvent(index int) error
 }
 
 type MachineContextService struct {
@@ -32,10 +36,21 @@ func (m *MachineContextService) GetParams() []single.Param {
 	return m.params
 }
 
-func (m *MachineContextService) GetSingleTimerStateMachine() machine.SingleTimerStateMachine {
+func (m *MachineContextService) GetMachine() machine.SingleTimerStateMachine {
 	return m.singleTimerStateMachine
 }
 
 func (m *MachineContextService) GetEvents() []events.Event {
 	return m.events
+}
+
+func (m *MachineContextService) AddEvent(event events.Event) {
+	m.events = append(m.events, event)
+}
+
+func (m *MachineContextService) RemoveEvent(index int) error {
+	if index < 0 || index > len(m.events) {
+		return errors.New("invalid index")
+	}
+	m.events = append(m.events[:index], m.events[index+1:]...)
 }
