@@ -14,6 +14,10 @@ type ClockService struct {
 	name string
 }
 
+func NewDefaultClock() Clock {
+	return NewClock("")
+}
+
 func NewClock(name string) Clock {
 	return &ClockService{
 		name,
@@ -25,5 +29,5 @@ func (c *ClockService) String() string {
 }
 
 func (c *ClockService) GetTime() float64 {
-	return float64(time.Now().Nanosecond()) / 1e9
+	return float64(time.Now().Nanosecond()) / 1e6
 }

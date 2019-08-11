@@ -9,6 +9,9 @@ import (
 )
 
 type State interface {
+	// get / set
+	GetName() string
+	// Meethods
 	AddTransition(transition Transition)
 	TryGetTransition(timer timing.Timer, param Param, me int) Transition
 	GetTransitions() []Transition
@@ -81,4 +84,8 @@ func (s *StateService) StringRecursive(recursive bool) string {
 	}
 	sb.WriteString("}")
 	return sb.String()
+}
+
+func (s *StateService) GetName() string {
+	return s.name
 }

@@ -8,20 +8,18 @@ import (
 	"time"
 )
 
-type StateType interface{}
-
 type TimedStateMachine interface {
 	GetClock() timing.Clock
 	GetMe() int
 
-	OnEnterState(current StateType, param single.Param)
-	BeforeUpdateState(current StateType, param single.Param) bool
-	AfterUpdateState(current StateType, param single.Param, updated bool) bool
-	UpdateState(current StateType, param single.Param) bool
-	IsFinal(current StateType, param single.Param) bool
-	Initialize(current StateType, param single.Param) StateType
-	OnFinished(current StateType, param single.Param)
-	Run(current StateType, param single.Param)
+	OnEnterState(current single.State, param single.Param)
+	BeforeUpdateState(current single.State, param single.Param) bool
+	AfterUpdateState(current single.State, param single.Param, updated bool) bool
+	UpdateState(current single.State, param single.Param) (single.State, bool)
+	IsFinal(current single.State, param single.Param) bool
+	Initialize(current single.State, param single.Param) single.State
+	OnFinished(current single.State, param single.Param)
+	Run(current single.State, param single.Param) single.State
 
 	String() string
 }
@@ -46,35 +44,60 @@ func (t *TimedStateMachineService) GetMe() int {
 	return t.me
 }
 
-func (t *TimedStateMachineService) BeforeUpdateState(current StateType, param single.Param) bool {
-	panic("implement me")
+func (t *TimedStateMachineService) BeforeUpdateState(current single.State, param single.Param) bool {
+	panic("interface method")
 }
 
-func (t *TimedStateMachineService) UpdateState(current StateType, param single.Param) bool {
-	panic("implement me")
+func (t *TimedStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool) {
+	panic("interface method")
 }
 
-func (t *TimedStateMachineService) IsFinal(current StateType, param single.Param) bool {
-	panic("implement me")
+func (t *TimedStateMachineService) IsFinal(current single.State, param single.Param) bool {
+	panic("interface method")
 }
 
-func (t *TimedStateMachineService) Initialize(current StateType, param single.Param) StateType {
-	panic("implement me")
+func (t *TimedStateMachineService) Initialize(current single.State, param single.Param) single.State {
+	panic("interface method")
 }
 
-func (t *TimedStateMachineService) OnEnterState(current StateType, param single.Param) {}
+func (t *TimedStateMachineService) OnEnterState(current single.State, param single.Param) {
+	panic("interface method")
+}
 
-func (t *TimedStateMachineService) AfterUpdateState(current StateType, param single.Param, updated bool) bool {
+func (t *TimedStateMachineService) AfterUpdateState(current single.State, param single.Param, updated bool) bool {
 	if !updated {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return false
 }
 
-func (t *TimedStateMachineService) OnFinished(current StateType, param single.Param) {}
+func (t *TimedStateMachineService) OnFinished(current single.State, param single.Param) {
+	panic("interface method")
+}
 
-func (t *TimedStateMachineService) Run(current StateType, param single.Param) {
-	panic("implement me")
+func (t *TimedStateMachineService) Run(initial single.State, param single.Param) single.State {
+	current := t.Initialize(initial, param)
+	if current == nil {
+		return nil
+	}
+	t.OnEnterState(current, param)
+	for !t.IsFinal(current, param) {
+		if t.BeforeUpdateState(current, param) {
+			return nil
+		}
+		updated := false
+		current, updated := t.UpdateState(current, param)
+		if updated {
+			t.OnEnterState(current, param)
+		}
+		if t.AfterUpdateState(current, param, updated) {
+			return nil
+		}
+	}
+
+	t.OnFinished(current, param)
+
+	return current
 }
 
 func (t *TimedStateMachineService) String() string {

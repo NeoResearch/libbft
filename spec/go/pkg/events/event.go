@@ -1,4 +1,4 @@
-package replicated
+package events
 
 import "fmt"
 

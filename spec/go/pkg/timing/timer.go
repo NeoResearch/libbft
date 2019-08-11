@@ -8,10 +8,13 @@ import (
 const infiniteTime = 1000000000.0
 
 type Timer interface {
+	GetCountdown() float64
 	Reset()
 	ElapsedTime() float64
 	RemainingTime() float64
 	Expired() bool
+	Init(countdown float64) Timer
+
 	String() string
 }
 
@@ -20,6 +23,10 @@ type TimerService struct {
 	myTime    float64
 	name      string
 	countdown float64
+}
+
+func NewDefaultTimer() Timer {
+	return NewTimer("", nil, -1.0)
 }
 
 func NewTimer(name string, clock Clock, countdown float64) Timer {
@@ -41,7 +48,7 @@ func (t *TimerService) ElapsedTime() float64 {
 
 func (t *TimerService) RemainingTime() float64 {
 	if t.countdown >= 0.0 {
-		return math.Max(0.0, t.countdown - t.ElapsedTime())
+		return math.Max(0.0, t.countdown-t.ElapsedTime())
 	} else {
 		return infiniteTime
 	}
@@ -53,4 +60,17 @@ func (t *TimerService) Expired() bool {
 
 func (t *TimerService) String() string {
 	return fmt.Sprintf("Timer {name='%v'}", t.name)
+}
+
+func (t *TimerService) GetCountdown() float64 {
+	return t.countdown
+}
+
+func (t *TimerService) Init(countdown float64) Timer {
+	t.countdown = countdown
+	if t.clock == nil {
+		t.clock = NewDefaultClock()
+	}
+	t.myTime = t.clock.GetTime()
+	return t
 }
