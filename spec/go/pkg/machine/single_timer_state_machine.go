@@ -135,7 +135,7 @@ func (s *SingleTimerStateMachineService) Initialize(current single.State, param 
 	}
 
 	fmt.Println("will initialize timer")
-	s.GetTimer().Init()
+	s.GetTimer().InitDefault()
 
 	fmt.Println("will reset timer")
 	s.GetTimer().Reset()
@@ -213,6 +213,7 @@ func (s *SingleTimerStateMachineService) RegisterState(state single.State) error
 		return errors.New("the state can not be nil")
 	}
 	s.states = append(s.states, state)
+	return nil
 }
 
 func (s *SingleTimerStateMachineService) RegisterGlobal(transition single.Transition) error {
@@ -220,6 +221,7 @@ func (s *SingleTimerStateMachineService) RegisterGlobal(transition single.Transi
 		return errors.New("the transition can not be nil")
 	}
 	s.globalTransitions = append(s.globalTransitions, transition)
+	return nil
 }
 
 func (s *SingleTimerStateMachineService) FindGlobalTransition(param single.Param) single.Transition {

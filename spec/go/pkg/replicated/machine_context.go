@@ -23,8 +23,7 @@ type MachineContextService struct {
 	events                  []events.Event
 }
 
-func NewMachineContext(params []single.Param, singleTimerStateMachine machine.SingleTimerStateMachine,
-	events []events.Event) MachineContext {
+func NewMachineContext(params []single.Param, singleTimerStateMachine machine.SingleTimerStateMachine, events []events.Event) MachineContext {
 	return &MachineContextService{
 		params,
 		singleTimerStateMachine,
@@ -53,4 +52,5 @@ func (m *MachineContextService) RemoveEvent(index int) error {
 		return errors.New("invalid index")
 	}
 	m.events = append(m.events[:index], m.events[index+1:]...)
+	return nil
 }

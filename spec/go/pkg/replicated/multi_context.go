@@ -51,6 +51,7 @@ func (m *MultiContextService) SendToVmEvent(event events.Event, to int) error {
 		return errors.New("invalid \"to\" destination")
 	}
 	m.GetVm()[to].AddEvent(event)
+	return nil
 }
 
 func (m *MultiContextService) HasEvent(name string, at int, eventParams []string) (bool, error) {
@@ -62,6 +63,7 @@ func (m *MultiContextService) HasEvent(name string, at int, eventParams []string
 			return true, nil
 		}
 	}
+	return false, nil
 }
 
 func (m *MultiContextService) ConsumeEvent(name string, at int, eventParams []string) error {

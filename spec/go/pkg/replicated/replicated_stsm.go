@@ -1,7 +1,9 @@
 package replicated
 
 import (
+	"errors"
 	"fmt"
+	"github.com/NeoResearch/libbft/pkg/events"
 	"github.com/NeoResearch/libbft/pkg/machine"
 	"github.com/NeoResearch/libbft/pkg/single"
 	"github.com/NeoResearch/libbft/pkg/timing"
@@ -34,10 +36,10 @@ type ReplicatedSTSM interface {
 	SetWatchdog(timer timing.Timer)
 	AddScheduleEvent(countdown float64, machine int, name string, eventParams []string)
 	RegisterMachine(machine machine.SingleTimerStateMachine)
-	LaunchScheduleEvents(param MultiContext)
-	InitializeMulti(current MultiState, param MultiContext) MultiState
+	LaunchScheduleEvents(param MultiContext) error
+	InitializeMulti(current MultiState, param MultiContext) (MultiState, error)
 	IsFinalMulti(current MultiState, param MultiContext) bool
-	UpdateStateMulti(current MultiState, param MultiContext) (single.State, bool)
+	UpdateStateMulti(current MultiState, param MultiContext) (MultiState, bool)
 	OnEnterStateMulti(current MultiState, param MultiContext)
 	BeforeUpdateStateMulti(current MultiState, param MultiContext) bool
 
@@ -47,6 +49,9 @@ type ReplicatedSTSM interface {
 
 type ReplicatedSTSMService struct {
 	timedStateMachine machine.TimedStateMachine
+	machines          []machine.SingleTimerStateMachine
+	scheduledEvents   []ScheduledEvent
+	watchdog          timing.Timer
 }
 
 func NewReplicatedSTSM(clock timing.Clock, me int, name string) ReplicatedSTSM {
@@ -96,7 +101,10 @@ func (r *ReplicatedSTSMService) Initialize(current single.State, param single.Pa
 }
 
 func (r *ReplicatedSTSMService) OnFinished(current single.State, param single.Param) {
-	r.getTimedStateMachine().OnFinished(current, param)
+	fmt.Println()
+	fmt.Println("=================")
+	fmt.Println("finished machine!")
+	fmt.Println("=================")
 }
 
 func (r *ReplicatedSTSMService) Run(current single.State, param single.Param) single.State {
@@ -122,49 +130,104 @@ func (r *ReplicatedSTSMService) String() string {
 }
 
 func (r *ReplicatedSTSMService) GetMachines() []machine.SingleTimerStateMachine {
-	panic("implement me")
+	return r.machines
 }
 
 func (r *ReplicatedSTSMService) GetScheduledEvents() []ScheduledEvent {
-	panic("implement me")
+	return r.scheduledEvents
 }
 
 func (r *ReplicatedSTSMService) GetWatchdog() timing.Timer {
-	panic("implement me")
+	return r.watchdog
 }
 
 func (r *ReplicatedSTSMService) SetWatchdog(timer timing.Timer) {
-	panic("implement me")
+	r.watchdog = timer
 }
 
 func (r *ReplicatedSTSMService) AddScheduleEvent(countdown float64, machine int, name string, eventParams []string) {
-	panic("implement me")
+	r.scheduledEvents = append(r.scheduledEvents, NewScheduledEvent(name, eventParams, countdown, machine))
 }
 
 func (r *ReplicatedSTSMService) RegisterMachine(machine machine.SingleTimerStateMachine) {
-	panic("implement me")
+	r.machines = append(r.machines, machine)
 }
 
-func (r *ReplicatedSTSMService) LaunchScheduleEvents(param MultiContext) {
-	panic("implement me")
+func (r *ReplicatedSTSMService) LaunchScheduleEvents(param MultiContext) error {
+	fmt.Println("launching scheduled events!")
+	for _, event := range r.GetScheduledEvents() {
+		if event.GetMachine() == -1 {
+			return param.BroadcastEvent(events.NewTimedEvent(event.GetName(), -1, event.GetEventParams(), event.GetCountdown()), -1)
+		} else {
+			return param.SendToVmEvent(events.NewTimedEvent(event.GetName(), -1, event.GetEventParams(), event.GetCountdown()), event.GetMachine())
+		}
+	}
+	return nil
 }
 
-func (r *ReplicatedSTSMService) InitializeMulti(current MultiState, param MultiContext) MultiState {
-	panic("implement me")
+func (r *ReplicatedSTSMService) InitializeMulti(current MultiState, param MultiContext) (MultiState, error) {
+	if current == nil {
+		//current = new MultiState<Param>(machines.size(), nullptr);
+	}
+	if len(current) != len(r.GetMachines()) {
+		return nil, errors.New("invalid number of states")
+	}
+
+	fmt.Println()
+	fmt.Println("===========")
+	fmt.Println("begin run()")
+	fmt.Println("===========")
+
+	fmt.Println("initializing multimachine")
+	if r.GetWatchdog() != nil {
+		r.GetWatchdog().Reset()
+	} else {
+		fmt.Println("No watchdog configured")
+	}
+
+	for i, machine := range r.GetMachines() {
+		machine.Initialize(current[i], param)
+	}
+	err := r.LaunchScheduleEvents(param)
+
+	return current, err
 }
 
 func (r *ReplicatedSTSMService) IsFinalMulti(current MultiState, param MultiContext) bool {
-	panic("implement me")
+	for _, state := range current {
+		if state == nil || !state.IsFinal() {
+			return false
+		}
+	}
+	return true
 }
 
-func (r *ReplicatedSTSMService) UpdateStateMulti(current MultiState, param MultiContext) (single.State, bool) {
-	panic("implement me")
+func (r *ReplicatedSTSMService) UpdateStateMulti(current MultiState, param MultiContext) (MultiState, bool) {
+	resp := false
+	temp := false
+	for i, machine := range r.GetMachines() {
+		if  current[i], temp = machine.UpdateState(current[i], param); temp {
+			resp = true
+		}
+	}
+
+	return current, resp
 }
 
 func (r *ReplicatedSTSMService) OnEnterStateMulti(current MultiState, param MultiContext) {
-	panic("implement me")
+	fmt.Println("updating multi state! STATES:")
+	for i, state := range current {
+		fmt.Printf("Machine %v => %v\n", i, state)
+	}
+	if r.GetWatchdog() != nil {
+		r.GetWatchdog().Reset()
+	}
 }
 
 func (r *ReplicatedSTSMService) BeforeUpdateStateMulti(current MultiState, param MultiContext) bool {
-	panic("implement me")
+	if r.GetWatchdog() != nil && r.GetWatchdog().Expired() {
+		fmt.Printf("StateMachine FAILED MAXTIME %v\n", r.GetWatchdog().GetCountdown())
+		return true
+	}
+	return false
 }

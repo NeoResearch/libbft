@@ -15,6 +15,7 @@ type Timer interface {
 	ElapsedTime() float64
 	RemainingTime() float64
 	Expired() bool
+	InitDefault() Timer
 	Init(countdown float64) Timer
 
 	String() string
@@ -75,4 +76,8 @@ func (t *TimerService) Init(countdown float64) Timer {
 	}
 	t.myTime = t.clock.GetTime()
 	return t
+}
+
+func (t *TimerService) InitDefault() Timer {
+	return t.Init(-1)
 }

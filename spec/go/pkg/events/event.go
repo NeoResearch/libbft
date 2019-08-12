@@ -1,6 +1,9 @@
 package events
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Event interface {
 	// get / set
@@ -14,8 +17,8 @@ type Event interface {
 }
 
 type EventService struct {
-	name    string
-	from    int
+	name       string
+	from       int
 	parameters []string
 }
 
@@ -36,7 +39,16 @@ func (e *EventService) GetFrom() int {
 }
 
 func (e *EventService) String() string {
-	return fmt.Sprintf("Event {name=%v; type=%v}", e.GetName(), e.GetType())
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Event %v(", e.GetName()))
+	for i, param := range e.GetParameters() {
+		sb.WriteString(fmt.Sprintf("%v", param))
+		if i != len(e.GetParameters())-1 {
+			sb.WriteString(",")
+		}
+	}
+	sb.WriteString(")")
+	return sb.String()
 }
 
 func (e *EventService) IsActivated(name string, parameters []string) bool {
