@@ -49,7 +49,7 @@ sudo make install                         # this will install system-wide protob
 sudo ldconfig                             # refresh shared library cache
 cd ../..                                  # back to grpc
 make
-sudo make install                         # install grpc
+sudo make install                         # install grpc (and also /usr/local/bin/grpc_cpp_plugin)
 ```
 
 ### Test it
