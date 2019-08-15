@@ -6,7 +6,7 @@ import (
 )
 
 type Clock interface {
-	GetTime() float64
+	GetTime() time.Time
 	String() string
 }
 
@@ -28,6 +28,14 @@ func (c *ClockService) String() string {
 	return fmt.Sprintf("Clock {name='%v'}", c.name)
 }
 
-func (c *ClockService) GetTime() float64 {
-	return float64(time.Now().Nanosecond()) / 1e6
+func (c *ClockService) GetTime() time.Time {
+	return time.Now()
+}
+
+func Since(clock Clock) float64 {
+	return SinceTime(clock.GetTime())
+}
+
+func SinceTime(clock time.Time) float64 {
+	return float64(time.Since(clock)) / 1e9
 }

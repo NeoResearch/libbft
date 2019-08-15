@@ -24,7 +24,7 @@ func startWait(t *testing.T, name string) {
 }
 
 func startWait2(t *testing.T, name string) {
-	timer := NewTimer(name, NewClock("clock"), .2)
+	timer := NewTimer(name, NewClock("clock"), .3)
 	time.Sleep(100 * time.Millisecond)
 	assert.False(t, timer.Expired())
 	time.Sleep(250 * time.Millisecond)
@@ -32,23 +32,23 @@ func startWait2(t *testing.T, name string) {
 }
 
 func TestTimerElapsedTimeExpired(t *testing.T) {
-	go startWait(t, "timer")
-	go startWait2(t, "timer")
+	startWait(t, "timer")
+	startWait2(t, "timer")
 }
 
 func startRemainingTime(t *testing.T, name string) {
 	timer := NewTimer(name, NewClock("clock"), 1)
 	time.Sleep(100 * time.Millisecond)
-	assert.False(t, timer.RemainingTime() < 1)
-	assert.False(t, timer.RemainingTime() > .5)
+	assert.True(t, timer.RemainingTime() < 1.0)
+	assert.True(t, timer.RemainingTime() > .5)
 	time.Sleep(100 * time.Millisecond)
-	assert.False(t, timer.RemainingTime() < .8)
-	assert.False(t, timer.RemainingTime() > .4)
+	assert.True(t, timer.RemainingTime() < .8)
+	assert.True(t, timer.RemainingTime() > .4)
 	time.Sleep(800 * time.Millisecond)
 	assert.True(t, timer.Expired())
 	assert.Equal(t, 0.0, timer.RemainingTime())
 }
 
 func TestTimerRemainingTime(t *testing.T) {
-	go startRemainingTime(t, "timer")
+	startRemainingTime(t, "timer")
 }

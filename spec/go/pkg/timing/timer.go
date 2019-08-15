@@ -3,6 +3,7 @@ package timing
 import (
 	"fmt"
 	"math"
+	"time"
 )
 
 const infiniteTime = 1000000000.0
@@ -23,7 +24,7 @@ type Timer interface {
 
 type TimerService struct {
 	clock     Clock
-	myTime    float64
+	myTime    time.Time
 	name      string
 	countdown float64
 }
@@ -46,12 +47,12 @@ func (t *TimerService) Reset() {
 }
 
 func (t *TimerService) ElapsedTime() float64 {
-	return t.clock.GetTime() - t.myTime
+	return SinceTime(t.myTime)
 }
 
 func (t *TimerService) RemainingTime() float64 {
-	if t.countdown >= 0.0 {
-		return math.Max(0.0, t.countdown-t.ElapsedTime())
+	if t.GetCountdown() >= 0.0 {
+		return math.Max(0.0, t.GetCountdown()-t.ElapsedTime())
 	} else {
 		return infiniteTime
 	}
