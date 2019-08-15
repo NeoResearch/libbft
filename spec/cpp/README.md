@@ -60,8 +60,16 @@ sudo make install                         # install grpc
 
 **Warning:** I had a **huge** problem when two versions existed here... `19.0.0` and `20.0.0`, so if this happens with you, get rid of `20.0.0` before it's too late!
 
-This simple test is a huge thanks to the authors of: `https://medium.com/@andrewvetovitz/grpc-c-introduction-45a66ca9461f`
+If you want to test `protobuf`:
+```
+cd grpc/third_party/protobuf/examples
+make clean
+make
+./add_person_cpp book.txt   # put some data
+./list_people_cpp book.txt  # get info
+```
 
+If you want to test `grpc`, do this simple test (_huge thanks to the authors of `https://medium.com/@andrewvetovitz/grpc-c-introduction-45a66ca9461f`_):
 ```
 cd test-grpc
 make clean
