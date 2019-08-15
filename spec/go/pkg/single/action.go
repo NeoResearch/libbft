@@ -7,6 +7,7 @@ type TimedAction func(timing.Timer, Param, int) bool
 type Action interface {
 	// get / set
 	GetTimedAction() TimedAction
+
 	String() string
 }
 
