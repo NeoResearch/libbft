@@ -72,8 +72,7 @@ func (m *MultiContextService) ConsumeEvent(name string, at int, eventParams []st
 	}
 	for i, event := range m.GetVm()[at].GetEvents() {
 		if event.IsActivated(name, eventParams) {
-			m.GetVm()[at].RemoveEvent(i)
-			return nil
+			return m.GetVm()[at].RemoveEvent(i)
 		}
 	}
 	return nil
