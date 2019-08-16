@@ -2,7 +2,7 @@ package single
 
 import (
 	"fmt"
-	"github.com/NeoResearch/libbft/pkg/timing"
+	"github.com/NeoResearch/libbft/src/timing"
 	"math/rand"
 	"strings"
 	"time"

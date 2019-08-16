@@ -2,7 +2,7 @@ package replicated
 
 import (
 	"errors"
-	"github.com/NeoResearch/libbft/pkg/events"
+	"github.com/NeoResearch/libbft/src/events"
 )
 
 type MultiContext interface {

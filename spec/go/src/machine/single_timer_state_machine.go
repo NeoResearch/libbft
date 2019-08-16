@@ -3,8 +3,8 @@ package machine
 import (
 	"errors"
 	"fmt"
-	"github.com/NeoResearch/libbft/pkg/single"
-	"github.com/NeoResearch/libbft/pkg/timing"
+	"github.com/NeoResearch/libbft/src/single"
+	"github.com/NeoResearch/libbft/src/timing"
 	"strings"
 )
 
@@ -49,16 +49,17 @@ type SingleTimerStateMachineService struct {
 	watchdog          timing.Timer
 }
 
-func NewSingleTimerStateMachine(
-	timedStateMachine TimedStateMachine,
-	timer timing.Timer,
-	states []single.State,
-	globalTransitions []single.Transition) SingleTimerStateMachine {
+func NewSingleTimerStateMachine(clock timing.Clock, me int, name string, timer timing.Timer) SingleTimerStateMachine {
+	return NewSingleTimerStateMachineSizes(clock, me, name, timer, 0, 0)
+}
+
+func NewSingleTimerStateMachineSizes(clock timing.Clock, me int, name string, timer timing.Timer,
+	numberOfStates int, numberOfGlobalTransitions int) SingleTimerStateMachine {
 	return &SingleTimerStateMachineService{
-		timedStateMachine,
+		NewTimedStateMachine(clock, me, name),
 		timer,
-		states,
-		globalTransitions,
+		make([]single.State, numberOfStates),
+		make([]single.Transition, numberOfGlobalTransitions),
 		nil,
 	}
 }

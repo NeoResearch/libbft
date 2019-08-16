@@ -1,7 +1,7 @@
 package single
 
 import (
-	"github.com/NeoResearch/libbft/pkg/timing"
+	"github.com/NeoResearch/libbft/src/timing"
 )
 
 type TimedFunction func(timing.Timer, Param, int) bool

@@ -2,8 +2,8 @@ package machine
 
 import (
 	"fmt"
-	"github.com/NeoResearch/libbft/pkg/single"
-	"github.com/NeoResearch/libbft/pkg/timing"
+	"github.com/NeoResearch/libbft/src/single"
+	"github.com/NeoResearch/libbft/src/timing"
 	"strings"
 	"time"
 )

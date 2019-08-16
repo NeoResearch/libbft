@@ -2,9 +2,9 @@ package replicated
 
 import (
 	"errors"
-	"github.com/NeoResearch/libbft/pkg/events"
-	"github.com/NeoResearch/libbft/pkg/machine"
-	"github.com/NeoResearch/libbft/pkg/single"
+	"github.com/NeoResearch/libbft/src/events"
+	"github.com/NeoResearch/libbft/src/machine"
+	"github.com/NeoResearch/libbft/src/single"
 )
 
 type MachineContext interface {

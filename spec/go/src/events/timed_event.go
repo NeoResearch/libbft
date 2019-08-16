@@ -2,7 +2,7 @@ package events
 
 import (
 	"fmt"
-	"github.com/NeoResearch/libbft/pkg/timing"
+	"github.com/NeoResearch/libbft/src/timing"
 	"strings"
 )
 

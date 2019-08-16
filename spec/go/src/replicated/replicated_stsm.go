@@ -3,10 +3,10 @@ package replicated
 import (
 	"errors"
 	"fmt"
-	"github.com/NeoResearch/libbft/pkg/events"
-	"github.com/NeoResearch/libbft/pkg/machine"
-	"github.com/NeoResearch/libbft/pkg/single"
-	"github.com/NeoResearch/libbft/pkg/timing"
+	"github.com/NeoResearch/libbft/src/events"
+	"github.com/NeoResearch/libbft/src/machine"
+	"github.com/NeoResearch/libbft/src/single"
+	"github.com/NeoResearch/libbft/src/timing"
 	"strings"
 )
 
@@ -55,8 +55,15 @@ type ReplicatedSTSMService struct {
 }
 
 func NewReplicatedSTSM(clock timing.Clock, me int, name string) ReplicatedSTSM {
+	return NewReplicatedSTSMSizes(clock, me, name, 0, 0)
+}
+
+func NewReplicatedSTSMSizes(clock timing.Clock, me int, name string, numberOfMachines int, numberOfScheduledEvents int) ReplicatedSTSM {
 	return &ReplicatedSTSMService{
-		timedStateMachine: machine.NewTimedStateMachine(clock, me, name),
+		machine.NewTimedStateMachine(clock, me, name),
+		make([]machine.SingleTimerStateMachine, numberOfMachines),
+		make([]ScheduledEvent, numberOfScheduledEvents),
+		nil,
 	}
 }
 
@@ -206,7 +213,7 @@ func (r *ReplicatedSTSMService) UpdateStateMulti(current MultiState, param Multi
 	resp := false
 	temp := false
 	for i, machine := range r.GetMachines() {
-		if  current[i], temp = machine.UpdateState(current[i], param); temp {
+		if current[i], temp = machine.UpdateState(current[i], param); temp {
 			resp = true
 		}
 	}
