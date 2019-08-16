@@ -1,0 +1,4 @@
+*.pb.*
+client
+server
+*.o
