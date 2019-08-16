@@ -34,6 +34,9 @@ func NewDefaultTimer() Timer {
 }
 
 func NewTimer(name string, clock Clock, countdown float64) Timer {
+	if clock == nil {
+		clock = NewDefaultClock()
+	}
 	return &TimerService{
 		clock,
 		clock.GetTime(),

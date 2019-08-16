@@ -181,7 +181,7 @@ func (d *DBFT2MachineService) OnEnterStateMulti(current replicated.MultiState, p
 }
 
 func (d *DBFT2MachineService) BeforeUpdateStateMulti(current replicated.MultiState, param replicated.MultiContext) bool {
-	return d.getReplicatedSTSM().BeforeUpdateState(current, param)
+	return d.getReplicatedSTSM().BeforeUpdateStateMulti(current, param)
 }
 
 func (d *DBFT2MachineService) StringFormat(format string) string {

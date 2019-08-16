@@ -2,7 +2,7 @@ package single
 
 import "github.com/NeoResearch/libbft/src/timing"
 
-type TimedAction func(timing.Timer, Param, int) bool
+type TimedAction func(timing.Timer, Param, int)
 
 type Action interface {
 	// get / set
