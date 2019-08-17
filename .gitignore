@@ -4,6 +4,8 @@ bin/
 
 spec/cpp/cmake-build-debug/
 spec/cpp/build/
+spec/cpp/grpc/
+spec/cpp/grpc/third_party/
 spec/cpp/.idea/
 spec/cpp/.vscode/
 
