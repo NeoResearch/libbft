@@ -6,6 +6,7 @@ type TimedAction func(timing.Timer, Param, int)
 
 type Action interface {
 	// get / set
+	GetName() string
 	GetTimedAction() TimedAction
 
 	String() string
@@ -29,4 +30,8 @@ func (a *ActionService) String() string {
 
 func (a *ActionService) GetTimedAction() TimedAction {
 	return a.timedAction
+}
+
+func (a *ActionService) GetName() string {
+	return a.name
 }

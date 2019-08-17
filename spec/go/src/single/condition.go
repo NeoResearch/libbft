@@ -8,6 +8,7 @@ type TimedFunction func(timing.Timer, Param, int) (bool, error)
 
 type Condition interface {
 	// get / set
+	GetName() string
 	GetTimedFunction() TimedFunction
 	// methods
 	String() string
@@ -31,4 +32,8 @@ func (c *ConditionService) String() string {
 
 func (c *ConditionService) GetTimedFunction() TimedFunction {
 	return c.timedFunction
+}
+
+func (c *ConditionService) GetName() string {
+	return c.name
 }

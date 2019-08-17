@@ -7,6 +7,7 @@ import (
 	"github.com/NeoResearch/libbft/src/machine"
 	"github.com/NeoResearch/libbft/src/single"
 	"github.com/NeoResearch/libbft/src/timing"
+	"github.com/NeoResearch/libbft/src/util"
 	"strings"
 )
 
@@ -121,7 +122,7 @@ func (r *ReplicatedSTSMService) Run(current single.State, param single.Param) si
 
 func (r *ReplicatedSTSMService) StringFormat(format string) string {
 	var sb strings.Builder
-	if format == "graphviz" {
+	if format == util.GraphivizFormat {
 	} else {
 		sb.WriteString("ReplicatedSTSM [")
 		for _, machine := range r.GetMachines() {
@@ -196,9 +197,8 @@ func (r *ReplicatedSTSMService) InitializeMulti(current MultiState, param MultiC
 	for i, machine := range r.GetMachines() {
 		machine.Initialize(current[i], param)
 	}
-	err := r.LaunchScheduleEvents(param)
 
-	return current, err
+	return current, r.LaunchScheduleEvents(param)
 }
 
 func (r *ReplicatedSTSMService) IsFinalMulti(current MultiState, param MultiContext) bool {

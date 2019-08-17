@@ -3,19 +3,24 @@ package single
 import (
 	"fmt"
 	"github.com/NeoResearch/libbft/src/timing"
+	"github.com/NeoResearch/libbft/src/util"
 	"strings"
 )
 
 type Transition interface {
 	// get / set
-	GetConditions() []Condition
 	GetActions() []Action
+	GetConditions() []Condition
+	GetName() string
+	GetTo() State
+
 	// methods
 	AddCondition(condition Condition) Transition
 	AddAction(action Action) Transition
 	IsValid(timer timing.Timer, param Param, me int) (bool, error)
 	Execute(timer timing.Timer, param Param, me int) State
 
+	StringFormat(format string) string
 	String() string
 }
 
@@ -77,20 +82,54 @@ func (t *TransitionService) GetActions() []Action {
 	return t.actions
 }
 
-func (t *TransitionService) String() string {
+func (t *TransitionService) StringFormat(format string) string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("t() => {name = '%v',", t.name))
-	sb.WriteString(fmt.Sprintf("to='%v',", t.to))
-	sb.WriteString("conditions=[")
-	for _, condition := range t.GetConditions() {
-		sb.WriteString(fmt.Sprintf("%v;", condition))
+	if format == util.GraphivizFormat {
+		sb.WriteString(fmt.Sprintf(" -> %v", t.GetTo()))
+		sb.WriteString(" [ label = \"")
+		first := true
+		for _, condition := range t.GetConditions() {
+			if !first {
+				sb.WriteString(" \n ")
+				sb.WriteString(fmt.Sprintf("%v ", condition.GetName()))
+			}
+			first = false
+		}
+		for _, action := range t.GetActions() {
+			if !first {
+				sb.WriteString(" \n ")
+				sb.WriteString(fmt.Sprintf("%v ", action.GetName()))
+			}
+			first = false
+		}
+		sb.WriteString("\"];")
+	} else {
+		sb.WriteString(fmt.Sprintf("t() => {name = '%v',", t.GetName()))
+		sb.WriteString(fmt.Sprintf("to='%v',", t.GetTo()))
+		sb.WriteString("conditions=[")
+		for _, condition := range t.GetConditions() {
+			sb.WriteString(fmt.Sprintf("%v;", condition))
+		}
+		sb.WriteString("], ")
+		sb.WriteString("actions=[")
+		for _, action := range t.GetActions() {
+			sb.WriteString(fmt.Sprintf("%v;", action))
+		}
+		sb.WriteString("], ")
+		sb.WriteString("}")
 	}
-	sb.WriteString("], ")
-	sb.WriteString("actions=[")
-	for _, action := range t.GetActions() {
-		sb.WriteString(fmt.Sprintf("%v;", action))
-	}
-	sb.WriteString("], ")
-	sb.WriteString("}")
+
 	return sb.String()
+}
+
+func (t *TransitionService) String() string {
+	return t.StringFormat("")
+}
+
+func (t *TransitionService) GetTo() State {
+	return t.to
+}
+
+func (t *TransitionService) GetName() string {
+	return t.name
 }

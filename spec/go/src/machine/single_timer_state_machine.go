@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/NeoResearch/libbft/src/single"
 	"github.com/NeoResearch/libbft/src/timing"
+	"github.com/NeoResearch/libbft/src/util"
 	"strings"
 )
 
@@ -166,7 +167,7 @@ func (s *SingleTimerStateMachineService) String() string {
 func (s *SingleTimerStateMachineService) StringFormat(format string) string {
 	var sb strings.Builder
 
-	if format == "graphviz" {
+	if format == util.GraphivizFormat {
 	} else {
 		// standard text
 		sb.WriteString("STSM {")

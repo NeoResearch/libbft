@@ -7,6 +7,8 @@ import (
 	"github.com/NeoResearch/libbft/src/replicated"
 	"github.com/NeoResearch/libbft/src/single"
 	"github.com/NeoResearch/libbft/src/timing"
+	"github.com/NeoResearch/libbft/src/util"
+	"strings"
 )
 
 type DBFT2Machine interface {
@@ -183,7 +185,27 @@ func (d *DBFT2MachineService) LaunchScheduleEvents(param replicated.MultiContext
 }
 
 func (d *DBFT2MachineService) InitializeMulti(current replicated.MultiState, param replicated.MultiContext) (replicated.MultiState, error) {
-	return d.getReplicatedSTSM().InitializeMulti(current, param)
+	if current == nil {
+		current = make(replicated.MultiState, len(d.GetMachines()))
+	}
+	for i, machine := range d.GetMachines() {
+		current[i] = machine.GetDefaultState()
+	}
+	fmt.Println()
+	fmt.Println("=================")
+	fmt.Println("begin run() dBFT2")
+	fmt.Println("=================")
+
+	fmt.Println("initializing multimachine")
+	if d.GetWatchdog() != nil {
+		d.GetWatchdog().Reset()
+	} else {
+		fmt.Println("No watchdog configured!")
+	}
+	for i, machine := range d.GetMachines() {
+		machine.Initialize(current[i], param)
+	}
+	return current, nil
 }
 
 func (d *DBFT2MachineService) IsFinalMulti(current replicated.MultiState, param replicated.MultiContext) bool {
@@ -203,11 +225,47 @@ func (d *DBFT2MachineService) BeforeUpdateStateMulti(current replicated.MultiSta
 }
 
 func (d *DBFT2MachineService) StringFormat(format string) string {
-	return d.getReplicatedSTSM().StringFormat(format)
+	var sb strings.Builder
+	if format == util.GraphivizFormat {
+		if len(d.GetMachines()) == 0 {
+			return ""
+		}
+
+		sb.WriteString(fmt.Sprintf("digraph %v {\n", d.GetMachines()[0].GetName()))
+		sb.WriteString("//graph [bgcolor=lightgoldenrodyellow]\n")
+		sb.WriteString("//rankdir=LR;\n")
+		sb.WriteString("size=\"11\"\n")
+
+		// add states
+		sb.WriteString("Empty [ label=\"\", width=0, height=0, style = invis ];\n")
+		for _, state := range d.GetMachines()[0].GetStates() {
+			shape := "doublecircle"
+			if !state.IsFinal() {
+				shape = "circle"
+			}
+			sb.WriteString(fmt.Sprintf("node [shape = %v]; %v;\n", shape, state.GetName()))
+		}
+
+		defaultState := d.GetMachines()[0].GetDefaultState()
+		sb.WriteString(fmt.Sprintf("Empty -> %v [label = \"\"];\n", defaultState.GetName()))
+
+		for _, state := range d.GetMachines()[0].GetStates() {
+			for _, transition := range state.GetTransitions() {
+				sb.WriteString(fmt.Sprintf("%v \n", state.GetName()))
+				sb.WriteString(transition.StringFormat(util.GraphivizFormat))
+			}
+		}
+		sb.WriteString("}\n")
+	} else {
+		sb.WriteString("Welcome to dBFT2Machine : ")
+		sb.WriteString(fmt.Sprintf("{ name = %v}", d.GetName()))
+
+	}
+	return sb.String()
 }
 
 func (d *DBFT2MachineService) String() string {
-	return d.getReplicatedSTSM().String()
+	return d.StringFormat("")
 }
 
 func (d *DBFT2MachineService) FillStatesForMachine(me int) error {
