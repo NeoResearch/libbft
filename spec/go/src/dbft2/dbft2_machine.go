@@ -269,13 +269,43 @@ func (d *DBFT2MachineService) FillSimpleCycle(me int) error {
 		dMc := d.(replicated.MultiContext)
 		return dMc.HasEvent("OnStart", me, make([]string, 0))
 	})))
+
 	// initial -> backup
 	started.AddTransition(single.NewTransactionState(backup).AddCondition(single.NewCondition("not (H+v) mod R = i", func(t timing.Timer, d single.Param, me int) (bool, error) {
 		fmt.Println("lambda1")
-		//(d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R != me
 		dMc := d.(replicated.MultiContext)
 		dbfContext := dMc.GetVm()[me].GetParams().(DBFT2Context)
-		return (dbfContext.GetHeight() + dbfContext.GetView()) % dbfContext.GetNumberOfNodes() != me, nil
+		//(d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R != me
+		return (dbfContext.GetHeight()+dbfContext.GetView())%dbfContext.GetNumberOfNodes() != me, nil
+	})))
+	// initial -> primary
+	started.AddTransition(single.NewTransactionState(primary).AddCondition(single.NewCondition("(H+v) mod R = i", func(t timing.Timer, d single.Param, me int) (bool, error) {
+		dMc := d.(replicated.MultiContext)
+		dbfContext := dMc.GetVm()[me].GetParams().(DBFT2Context)
+		fmt.Printf("lambda2 H=%v V=%v me=%v\n", dbfContext.GetHeight(), dbfContext.GetView(), me)
+		return (dbfContext.GetHeight()+dbfContext.GetView())%dbfContext.GetNumberOfNodes() == me, nil
+	})))
+
+	// backup -> reqSentOrRecv
+	backup.AddTransition(single.NewTransactionState(requestSentOrReceived).AddCondition(single.NewCondition("OnPrepareRequest(v)", func(t timing.Timer, d single.Param, me int) (bool, error) {
+		dMc := d.(replicated.MultiContext)
+		dbfContext := dMc.GetVm()[me].GetParams().(DBFT2Context)
+		fmt.Printf("waiting for event OnPrepareRequest at %v for view %v\n", me, dbfContext.GetView())
+		params := make([]string, 1)
+		params[0] = string(dbfContext.GetView())
+		return dMc.HasEvent("OnPrepareRequest", me, params)
+	})))
+
+	// reqSentOrRecv -> commitSent
+	requestSentOrReceived.AddTransition(single.NewTransactionState(commitSent).AddCondition(single.NewCondition("OnStart()", func(t timing.Timer, d single.Param, me int) (bool, error) {
+		fmt.Println("nothing to do... assuming all preparations were received!")
+		return true, nil
+	})))
+
+	// commitSent -> blockSent
+	commitSent.AddTransition(single.NewTransactionState(blockSent).AddCondition(single.NewCondition("OnStart()", func(t timing.Timer, d single.Param, me int) (bool, error) {
+		fmt.Println("nothing to do... assuming all commits were received!")
+		return true, nil
 	})))
 
 	return nil
