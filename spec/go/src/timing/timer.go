@@ -33,6 +33,10 @@ func NewDefaultTimer() Timer {
 	return NewTimer("", nil, -1.0)
 }
 
+func NewTimerName(name string) Timer {
+	return NewTimer(name, nil, -1.0)
+}
+
 func NewTimer(name string, clock Clock, countdown float64) Timer {
 	if clock == nil {
 		clock = NewDefaultClock()

@@ -24,6 +24,7 @@ type SingleTimerStateMachine interface {
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
+	RunDefault() single.State
 	Run(current single.State, param single.Param) single.State
 
 	// get / set
@@ -48,6 +49,10 @@ type SingleTimerStateMachineService struct {
 	states            []single.State
 	globalTransitions []single.Transition
 	watchdog          timing.Timer
+}
+
+func NewSingleTimerStateMachineClock(timer timing.Timer) SingleTimerStateMachine {
+	return NewSingleTimerStateMachineSizes(nil, 0, "STSM", timer, 0, 0)
 }
 
 func NewSingleTimerStateMachine(clock timing.Clock, me int, name string, timer timing.Timer) SingleTimerStateMachine {
@@ -254,4 +259,8 @@ func (s *SingleTimerStateMachineService) Run(current single.State, param single.
 
 func (s *SingleTimerStateMachineService) getTimedStateMachine() TimedStateMachine {
 	return s.timedStateMachine
+}
+
+func (s *SingleTimerStateMachineService) RunDefault() single.State {
+	return s.Run(nil, nil)
 }
