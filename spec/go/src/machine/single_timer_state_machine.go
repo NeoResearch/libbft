@@ -19,7 +19,7 @@ type SingleTimerStateMachine interface {
 	OnEnterState(current single.State, param single.Param)
 	BeforeUpdateState(current single.State, param single.Param) bool
 	AfterUpdateState(current single.State, param single.Param, updated bool) bool
-	UpdateState(current single.State, param single.Param) (single.State, bool)
+	UpdateState(current single.State, param single.Param) (single.State, bool, error)
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
@@ -35,7 +35,7 @@ type SingleTimerStateMachine interface {
 	GetDefaultState() single.State
 	RegisterState(state single.State) error
 	RegisterGlobal(transition single.Transition) error
-	FindGlobalTransition(param single.Param) single.Transition
+	FindGlobalTransition(param single.Param) (single.Transition, error)
 
 	StringFormat(format string) string
 	String() string
@@ -93,10 +93,12 @@ func (s *SingleTimerStateMachineService) AfterUpdateState(current single.State, 
 	return s.getTimedStateMachine().AfterUpdateState(current, param, updated)
 }
 
-func (s *SingleTimerStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool) {
+func (s *SingleTimerStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool, error) {
+	gt, err := s.FindGlobalTransition(param)
+	if err != nil {
+		return nil, false, err
+	}
 	r := false
-
-	gt := s.FindGlobalTransition(param)
 	if gt != nil {
 		fmt.Printf("-> found valid global transition! %v\n", gt)
 		current = gt.Execute(s.GetTimer(), param, s.GetMe())
@@ -104,14 +106,17 @@ func (s *SingleTimerStateMachineService) UpdateState(current single.State, param
 	}
 
 	if current != nil {
-		got := current.TryGetTransition(s.GetTimer(), param, s.GetMe())
+		got, err := current.TryGetTransition(s.GetTimer(), param, s.GetMe())
+		if err != nil {
+			return nil, false, err
+		}
 		if got != nil {
 			fmt.Printf("-> found valid global transition! %v\n", gt)
 			current = got.Execute(s.GetTimer(), param, s.GetMe())
 			r = true
 		}
 	}
-	return current, r
+	return current, r, nil
 }
 
 func (s *SingleTimerStateMachineService) IsFinal(current single.State, param single.Param) bool {
@@ -225,13 +230,17 @@ func (s *SingleTimerStateMachineService) RegisterGlobal(transition single.Transi
 	return nil
 }
 
-func (s *SingleTimerStateMachineService) FindGlobalTransition(param single.Param) single.Transition {
+func (s *SingleTimerStateMachineService) FindGlobalTransition(param single.Param) (single.Transition, error) {
 	for _, transition := range s.GetGlobalTransitions() {
-		if transition.IsValid(s.GetTimer(), param, s.GetMe()) {
-			return transition
+		resp, err := transition.IsValid(s.GetTimer(), param, s.GetMe())
+		if err != nil {
+			return nil, err
+		}
+		if resp {
+			return transition, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (s *SingleTimerStateMachineService) GetName() string {

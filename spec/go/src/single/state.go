@@ -13,9 +13,9 @@ type State interface {
 	GetName() string
 	GetTransitions() []Transition
 	IsFinal() bool
-	// Meethods
+	// methods
 	AddTransition(transition Transition)
-	TryGetTransition(timer timing.Timer, param Param, me int) Transition
+	TryGetTransition(timer timing.Timer, param Param, me int) (Transition, error)
 
 	StringRecursive(recursive bool) string
 	String() string
@@ -47,17 +47,21 @@ func (s *StateService) AddTransition(transition Transition) {
 	s.transitions = append(s.transitions, transition)
 }
 
-func (s *StateService) TryGetTransition(timer timing.Timer, param Param, me int) Transition {
+func (s *StateService) TryGetTransition(timer timing.Timer, param Param, me int) (Transition, error) {
 	rand.Seed(time.Now().UnixNano())
 	transitions := make([]Transition, len(s.transitions))
 	copy(transitions, s.transitions)
 	rand.Shuffle(len(s.transitions), func(i, j int) { s.transitions[i], s.transitions[j] = s.transitions[j], s.transitions[i] })
 	for _, transition := range transitions {
-		if transition.IsValid(timer, param, me) {
-			return transition
+		resp, err := transition.IsValid(timer, param, me)
+		if err != nil {
+			return nil, err
+		}
+		if resp {
+			return transition, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (s *StateService) IsFinal() bool {

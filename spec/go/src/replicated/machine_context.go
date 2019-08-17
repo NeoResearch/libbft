@@ -9,7 +9,7 @@ import (
 
 type MachineContext interface {
 	// get / set
-	GetParams() []single.Param
+	GetParams() single.Param
 	GetMachine() machine.SingleTimerStateMachine
 	GetEvents() []events.Event
 	// methods
@@ -18,12 +18,12 @@ type MachineContext interface {
 }
 
 type MachineContextService struct {
-	params                  []single.Param
+	params                  single.Param
 	singleTimerStateMachine machine.SingleTimerStateMachine
 	events                  []events.Event
 }
 
-func NewMachineContext(params []single.Param, singleTimerStateMachine machine.SingleTimerStateMachine, events []events.Event) MachineContext {
+func NewMachineContext(params single.Param, singleTimerStateMachine machine.SingleTimerStateMachine, events []events.Event) MachineContext {
 	return &MachineContextService{
 		params,
 		singleTimerStateMachine,
@@ -31,7 +31,7 @@ func NewMachineContext(params []single.Param, singleTimerStateMachine machine.Si
 	}
 }
 
-func (m *MachineContextService) GetParams() []single.Param {
+func (m *MachineContextService) GetParams() single.Param {
 	return m.params
 }
 

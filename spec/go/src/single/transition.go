@@ -13,7 +13,7 @@ type Transition interface {
 	// methods
 	AddCondition(condition Condition) Transition
 	AddAction(action Action) Transition
-	IsValid(timer timing.Timer, param Param, me int) bool
+	IsValid(timer timing.Timer, param Param, me int) (bool, error)
 	Execute(timer timing.Timer, param Param, me int) State
 
 	String() string
@@ -24,6 +24,10 @@ type TransitionService struct {
 	name       string
 	conditions []Condition
 	actions    []Action
+}
+
+func NewTransactionState(state State) Transition {
+	return NewTransaction(state, "")
 }
 
 func NewTransaction(state State, name string) Transition {
@@ -45,13 +49,17 @@ func (t *TransitionService) AddAction(action Action) Transition {
 	return t
 }
 
-func (t *TransitionService) IsValid(timer timing.Timer, param Param, me int) bool {
+func (t *TransitionService) IsValid(timer timing.Timer, param Param, me int) (bool, error) {
 	for _, condition := range t.GetConditions() {
-		if !condition.GetTimedFunction()(timer, param, me) {
-			return false
+		resp, err := condition.GetTimedFunction()(timer, param, me)
+		if err != nil {
+			return resp, err
+		}
+		if !resp {
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }
 
 func (t *TransitionService) Execute(timer timing.Timer, param Param, me int) State {

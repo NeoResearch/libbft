@@ -2,6 +2,7 @@ package dbft2
 
 import (
 	"errors"
+	"fmt"
 	"github.com/NeoResearch/libbft/src/machine"
 	"github.com/NeoResearch/libbft/src/replicated"
 	"github.com/NeoResearch/libbft/src/single"
@@ -36,14 +37,15 @@ type DBFT2Machine interface {
 	LaunchScheduleEvents(param replicated.MultiContext) error
 	InitializeMulti(current replicated.MultiState, param replicated.MultiContext) (replicated.MultiState, error)
 	IsFinalMulti(current replicated.MultiState, param replicated.MultiContext) bool
-	UpdateStateMulti(current replicated.MultiState, param replicated.MultiContext) (replicated.MultiState, bool)
+	UpdateStateMulti(current replicated.MultiState, param replicated.MultiContext) (replicated.MultiState, bool, error)
 	OnEnterStateMulti(current replicated.MultiState, param replicated.MultiContext)
 	BeforeUpdateStateMulti(current replicated.MultiState, param replicated.MultiContext) bool
 
 	// get / set
 	GetFaultyNodes() int
 	// methods
-	FillStatesForMachine(me int)
+	FillStatesForMachine(me int) error
+	FillSimpleCycle(me int) error
 
 	StringFormat(format string) string
 	String() string
@@ -59,28 +61,44 @@ func NewDefaultDBFT2Machine(faultyNodes int, numberOfMachines int, clock timing.
 }
 
 func NewDBFT2Machine(faultyNodes int, numberOfMachines int, clock timing.Clock, me int, name string) (DBFT2Machine, error) {
-	if faultyNodes < 0 {
-		return nil, errors.New("invalid number of faulty nodes")
-	}
 	if numberOfMachines < 1 {
 		return nil, errors.New("invalid number of machines")
 	}
-	if faultyNodes > numberOfMachines {
-		return nil, errors.New("number of faulty nodes can not be greater than the number of machines")
-	}
-	replicatedSTSM := replicated.NewReplicatedSTSMSizes(clock, me, name, numberOfMachines, 0)
+	machines := make([]machine.SingleTimerStateMachine, numberOfMachines)
 	for i := 0; i < numberOfMachines; i++ {
-		replicatedSTSM.GetMachines()[i] = machine.NewSingleTimerStateMachine(clock, i, "dBFT", timing.NewTimer("C", clock, -1))
+		machines[i] = machine.NewSingleTimerStateMachine(clock, i, "dBFT", timing.NewTimer("C", clock, -1))
 	}
 
+	resp, err := NewDBFT2MachineMachines(faultyNodes, machines, clock, me, name)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < numberOfMachines; i++ {
+		err = resp.FillStatesForMachine(i)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return resp, err
+}
+
+func NewDBFT2MachineMachines(faultyNodes int, machines []machine.SingleTimerStateMachine, clock timing.Clock, me int, name string) (DBFT2Machine, error) {
+	if faultyNodes < 0 {
+		return nil, errors.New("invalid number of faulty nodes")
+	}
+	if len(machines) < 1 {
+		return nil, errors.New("invalid number of machines")
+	}
+	if faultyNodes > len(machines) {
+		return nil, errors.New("number of faulty nodes can not be greater than the number of machines")
+	}
+	replicatedSTSM := replicated.NewReplicatedSTSMSizes(clock, me, name, len(machines), 0)
+	replicatedSTSM.SetMachines(machines)
 	resp := DBFT2MachineService{
 		replicatedSTSM,
 		faultyNodes,
 	}
 
-	for i := 0; i < numberOfMachines; i++ {
-		resp.FillStatesForMachine(i)
-	}
 	return &resp, nil
 }
 
@@ -172,7 +190,7 @@ func (d *DBFT2MachineService) IsFinalMulti(current replicated.MultiState, param 
 	return d.getReplicatedSTSM().IsFinalMulti(current, param)
 }
 
-func (d *DBFT2MachineService) UpdateStateMulti(current replicated.MultiState, param replicated.MultiContext) (replicated.MultiState, bool) {
+func (d *DBFT2MachineService) UpdateStateMulti(current replicated.MultiState, param replicated.MultiContext) (replicated.MultiState, bool, error) {
 	return d.getReplicatedSTSM().UpdateStateMulti(current, param)
 }
 
@@ -191,6 +209,74 @@ func (d *DBFT2MachineService) StringFormat(format string) string {
 func (d *DBFT2MachineService) String() string {
 	return d.getReplicatedSTSM().String()
 }
-func (d *DBFT2MachineService) FillStatesForMachine(me int) {
-	panic("implement me")
+
+func (d *DBFT2MachineService) FillStatesForMachine(me int) error {
+	return d.FillSimpleCycle(me)
+}
+
+func (d *DBFT2MachineService) FillSimpleCycle(me int) error {
+	machine := d.GetMachines()[me]
+	// ---------------------
+	// declaring dBFT states
+	// ---------------------
+	preInitial := single.NewState(false, "PreInitial")
+	err := machine.RegisterState(preInitial)
+	if err != nil {
+		return err
+	}
+	started := single.NewState(false, "Started")
+	err = machine.RegisterState(started)
+	if err != nil {
+		return err
+	}
+	backup := single.NewState(false, "Backup")
+	err = machine.RegisterState(backup)
+	if err != nil {
+		return err
+	}
+	primary := single.NewState(false, "Primary")
+	err = machine.RegisterState(primary)
+	if err != nil {
+		return err
+	}
+	requestSentOrReceived := single.NewState(false, "RequestSentOrReceived")
+	err = machine.RegisterState(requestSentOrReceived)
+	if err != nil {
+		return err
+	}
+	commitSent := single.NewState(false, "CommitSent")
+	err = machine.RegisterState(commitSent)
+	if err != nil {
+		return err
+	}
+	viewChanging := single.NewState(false, "ViewChanging")
+	err = machine.RegisterState(viewChanging)
+	if err != nil {
+		return err
+	}
+	blockSent := single.NewState(true, "BlockSent")
+	err = machine.RegisterState(blockSent)
+	if err != nil {
+		return err
+	}
+
+	// -------------------------
+	// creating dBFT transitions
+	// -------------------------
+	// preinitial -> started
+	preInitial.AddTransition(single.NewTransactionState(started).AddCondition(single.NewCondition("OnStart()", func(t timing.Timer, d single.Param, me int) (bool, error) {
+		fmt.Println("Waiting for OnStart...")
+		dMc := d.(replicated.MultiContext)
+		return dMc.HasEvent("OnStart", me, make([]string, 0))
+	})))
+	// initial -> backup
+	started.AddTransition(single.NewTransactionState(backup).AddCondition(single.NewCondition("not (H+v) mod R = i", func(t timing.Timer, d single.Param, me int) (bool, error) {
+		fmt.Println("lambda1")
+		//(d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R != me
+		dMc := d.(replicated.MultiContext)
+		dbfContext := dMc.GetVm()[me].GetParams().(DBFT2Context)
+		return (dbfContext.GetHeight() + dbfContext.GetView()) % dbfContext.GetNumberOfNodes() != me, nil
+	})))
+
+	return nil
 }

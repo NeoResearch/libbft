@@ -31,6 +31,7 @@ type ReplicatedSTSM interface {
 
 	// get / set
 	GetMachines() []machine.SingleTimerStateMachine
+	SetMachines(machines []machine.SingleTimerStateMachine)
 	GetScheduledEvents() []ScheduledEvent
 	GetWatchdog() timing.Timer
 	SetWatchdog(timer timing.Timer)
@@ -39,7 +40,7 @@ type ReplicatedSTSM interface {
 	LaunchScheduleEvents(param MultiContext) error
 	InitializeMulti(current MultiState, param MultiContext) (MultiState, error)
 	IsFinalMulti(current MultiState, param MultiContext) bool
-	UpdateStateMulti(current MultiState, param MultiContext) (MultiState, bool)
+	UpdateStateMulti(current MultiState, param MultiContext) (MultiState, bool, error)
 	OnEnterStateMulti(current MultiState, param MultiContext)
 	BeforeUpdateStateMulti(current MultiState, param MultiContext) bool
 
@@ -209,16 +210,21 @@ func (r *ReplicatedSTSMService) IsFinalMulti(current MultiState, param MultiCont
 	return true
 }
 
-func (r *ReplicatedSTSMService) UpdateStateMulti(current MultiState, param MultiContext) (MultiState, bool) {
+func (r *ReplicatedSTSMService) UpdateStateMulti(current MultiState, param MultiContext) (MultiState, bool, error) {
 	resp := false
 	temp := false
 	for i, machine := range r.GetMachines() {
-		if current[i], temp = machine.UpdateState(current[i], param); temp {
+		var err error
+		current[i], temp, err = machine.UpdateState(current[i], param)
+		if err != nil {
+			return nil, false, err
+		}
+		if temp {
 			resp = true
 		}
 	}
 
-	return current, resp
+	return current, resp, nil
 }
 
 func (r *ReplicatedSTSMService) OnEnterStateMulti(current MultiState, param MultiContext) {
@@ -237,4 +243,8 @@ func (r *ReplicatedSTSMService) BeforeUpdateStateMulti(current MultiState, param
 		return true
 	}
 	return false
+}
+
+func (r *ReplicatedSTSMService) SetMachines(machines []machine.SingleTimerStateMachine) {
+	r.machines = machines
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/NeoResearch/libbft/src/timing"
 )
 
-type TimedFunction func(timing.Timer, Param, int) bool
+type TimedFunction func(timing.Timer, Param, int) (bool, error)
 
 type Condition interface {
 	// get / set
