@@ -24,8 +24,8 @@ type SingleTimerStateMachine interface {
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
-	RunDefault() single.State
-	Run(current single.State, param single.Param) single.State
+	RunDefault() (single.State, error)
+	Run(current single.State, param single.Param) (single.State, error)
 
 	// get / set
 	GetTimer() timing.Timer
@@ -100,15 +100,17 @@ func (s *SingleTimerStateMachineService) AfterUpdateState(current single.State, 
 }
 
 func (s *SingleTimerStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool, error) {
-	gt, err := s.FindGlobalTransition(param)
-	if err != nil {
-		return nil, false, err
-	}
 	r := false
-	if gt != nil {
-		fmt.Printf("-> found valid global transition! %v\n", gt)
-		current = gt.Execute(s.GetTimer(), param, s.GetMe())
-		r = true
+	{
+		gt, err := s.FindGlobalTransition(param)
+		if err != nil {
+			return nil, false, err
+		}
+		if gt != nil {
+			fmt.Printf("-> found valid global transition! %v\n", gt)
+			current = gt.Execute(s.GetTimer(), param, s.GetMe())
+			r = true
+		}
 	}
 
 	if current != nil {
@@ -117,7 +119,7 @@ func (s *SingleTimerStateMachineService) UpdateState(current single.State, param
 			return nil, false, err
 		}
 		if got != nil {
-			fmt.Printf("-> found valid global transition! %v\n", gt)
+			fmt.Printf("-> found valid transition! %v\n", got)
 			current = got.Execute(s.GetTimer(), param, s.GetMe())
 			r = true
 		}
@@ -173,17 +175,45 @@ func (s *SingleTimerStateMachineService) StringFormat(format string) string {
 	var sb strings.Builder
 
 	if format == util.GraphivizFormat {
+		sb.WriteString(fmt.Sprintf("digraph %v {\n", s.GetName()))
+		sb.WriteString("//graph [bgcolor=lightgoldenrodyellow]\n")
+		sb.WriteString("//rankdir=LR;\n")
+		sb.WriteString("size=\"11\"\n")
+		// add states
+		sb.WriteString("Empty [ label=\"\", width=0, height=0, style = invis ];\n")
+		for _, state := range s.GetStates() {
+			sb.WriteString("node [shape = ")
+			if state.IsFinal() {
+				sb.WriteString("doublecircle")
+			} else {
+				sb.WriteString("circle")
+			}
+			sb.WriteString(fmt.Sprintf("]; %v;\n", state.GetName()))
+		}
+		// default initial state transition
+		defaultState := s.GetDefaultState()
+		// will happen in an empty transition
+		sb.WriteString(fmt.Sprintf("Empty -> %v [label = \"\"];\n", defaultState.GetName()))
+		// begin regular transitions
+		//Initial -> Primary [ label = "(H + v) mod R = i" ];
+		for _, state := range s.GetStates() {
+			for _, transition := range state.GetTransitions() {
+				sb.WriteString(fmt.Sprintf("%v ", state.GetName()))
+				stringFormat := transition.StringFormat(format)
+				sb.WriteString(fmt.Sprintf("%v\n", stringFormat))
+			}
+		}
+		sb.WriteString("}\n")
 	} else {
 		// standard text
 		sb.WriteString("STSM {")
-		sb.WriteString(fmt.Sprintf("#id = %v;',", s.GetMe()))
+		sb.WriteString(fmt.Sprintf("#id = %v;", s.GetMe()))
 		sb.WriteString(fmt.Sprintf("Timer='%v';", s.GetTimer()))
 		sb.WriteString("States=[")
 		for _, state := range s.GetStates() {
 			sb.WriteString(fmt.Sprintf("%v;", state))
 		}
-		sb.WriteString("]")
-		sb.WriteString("}")
+		sb.WriteString("]}")
 	}
 	return sb.String()
 }
@@ -253,14 +283,14 @@ func (s *SingleTimerStateMachineService) GetName() string {
 	return s.getTimedStateMachine().GetName()
 }
 
-func (s *SingleTimerStateMachineService) Run(current single.State, param single.Param) single.State {
-	return s.getTimedStateMachine().Run(current, param)
+func (s *SingleTimerStateMachineService) Run(current single.State, param single.Param) (single.State, error) {
+	return RunMachine(s, current, param)
 }
 
 func (s *SingleTimerStateMachineService) getTimedStateMachine() TimedStateMachine {
 	return s.timedStateMachine
 }
 
-func (s *SingleTimerStateMachineService) RunDefault() single.State {
+func (s *SingleTimerStateMachineService) RunDefault() (single.State, error) {
 	return s.Run(nil, nil)
 }

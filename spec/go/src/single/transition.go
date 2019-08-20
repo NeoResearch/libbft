@@ -39,8 +39,8 @@ func NewTransaction(state State, name string) Transition {
 	return &TransitionService{
 		state,
 		name,
-		make([]Condition, 1),
-		make([]Action, 1),
+		make([]Condition, 0),
+		make([]Action, 0),
 	}
 }
 
@@ -85,27 +85,27 @@ func (t *TransitionService) GetActions() []Action {
 func (t *TransitionService) StringFormat(format string) string {
 	var sb strings.Builder
 	if format == util.GraphivizFormat {
-		sb.WriteString(fmt.Sprintf(" -> %v", t.GetTo()))
+		sb.WriteString(fmt.Sprintf(" -> %v", t.GetTo().GetName()))
 		sb.WriteString(" [ label = \"")
 		first := true
 		for _, condition := range t.GetConditions() {
 			if !first {
 				sb.WriteString(" \n ")
-				sb.WriteString(fmt.Sprintf("%v ", condition.GetName()))
 			}
+			sb.WriteString(fmt.Sprintf("%s ", condition.GetName()))
 			first = false
 		}
 		for _, action := range t.GetActions() {
 			if !first {
 				sb.WriteString(" \n ")
-				sb.WriteString(fmt.Sprintf("%v ", action.GetName()))
 			}
+			sb.WriteString(fmt.Sprintf("%s ", action.GetName()))
 			first = false
 		}
 		sb.WriteString("\"];")
 	} else {
 		sb.WriteString(fmt.Sprintf("t() => {name = '%v',", t.GetName()))
-		sb.WriteString(fmt.Sprintf("to='%v',", t.GetTo()))
+		sb.WriteString(fmt.Sprintf("to='%v',", t.GetTo().StringRecursive(false)))
 		sb.WriteString("conditions=[")
 		for _, condition := range t.GetConditions() {
 			sb.WriteString(fmt.Sprintf("%v;", condition))

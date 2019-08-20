@@ -50,8 +50,8 @@ func main() {
 	check(err)
 	imageName := "fgraph_STSM.png"
 
-	fmt.Printf("Generating image '%v'\n", imageName)
-	out, err := exec.Command(fmt.Sprintf("dot -Tpng %v -o %v", fileName, imageName)).Output()
-	check(err)
-	fmt.Printf("%v\n", out)
+	//fmt.Printf("Generating image '%v'\n", imageName)
+	//cmd := exec.Command("dot", fmt.Sprintf("-Tpng %v -o %v", fileName, imageName))
+	//err = cmd.Run()
+	//check(err)
 }

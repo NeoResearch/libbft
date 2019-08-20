@@ -17,11 +17,11 @@ type TimedStateMachine interface {
 	OnEnterState(current single.State, param single.Param)
 	BeforeUpdateState(current single.State, param single.Param) bool
 	AfterUpdateState(current single.State, param single.Param, updated bool) bool
-	UpdateState(current single.State, param single.Param) (single.State, bool)
+	UpdateState(current single.State, param single.Param) (single.State, bool, error)
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
-	Run(current single.State, param single.Param) single.State
+	Run(current single.State, param single.Param) (single.State, error)
 
 	String() string
 }
@@ -56,7 +56,7 @@ func (t *TimedStateMachineService) BeforeUpdateState(current single.State, param
 	panic("interface method")
 }
 
-func (t *TimedStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool) {
+func (t *TimedStateMachineService) UpdateState(current single.State, param single.Param) (single.State, bool, error) {
 	panic("interface method")
 }
 
@@ -83,29 +83,8 @@ func (t *TimedStateMachineService) OnFinished(current single.State, param single
 	panic("interface method")
 }
 
-func (t *TimedStateMachineService) Run(initial single.State, param single.Param) single.State {
-	current := t.Initialize(initial, param)
-	if current == nil {
-		return nil
-	}
-	t.OnEnterState(current, param)
-	for !t.IsFinal(current, param) {
-		if t.BeforeUpdateState(current, param) {
-			return nil
-		}
-		updated := false
-		current, updated := t.UpdateState(current, param)
-		if updated {
-			t.OnEnterState(current, param)
-		}
-		if t.AfterUpdateState(current, param, updated) {
-			return nil
-		}
-	}
-
-	t.OnFinished(current, param)
-
-	return current
+func (t *TimedStateMachineService) Run(initial single.State, param single.Param) (single.State, error) {
+	return RunMachine(t, initial, param)
 }
 
 func (t *TimedStateMachineService) String() string {
@@ -119,4 +98,34 @@ func (t *TimedStateMachineService) String() string {
 
 func (t *TimedStateMachineService) GetName() string {
 	return t.name
+}
+
+func RunMachine(t TimedStateMachine, initial single.State, param single.Param) (single.State, error) {
+	current := t.Initialize(initial, param)
+	if current == nil {
+		return nil, nil
+	}
+	t.OnEnterState(current, param)
+
+	for !t.IsFinal(current, param) {
+		var err error
+		if t.BeforeUpdateState(current, param) {
+			return nil, nil
+		}
+		updated := false
+		current, updated, err = t.UpdateState(current, param)
+		if err != nil {
+			return nil, nil
+		}
+		if updated {
+			t.OnEnterState(current, param)
+		}
+		if t.AfterUpdateState(current, param, updated) {
+			return nil, nil
+		}
+	}
+
+	t.OnFinished(current, param)
+
+	return current, nil
 }

@@ -21,11 +21,11 @@ type DBFT2Machine interface {
 	OnEnterState(current single.State, param single.Param)
 	BeforeUpdateState(current single.State, param single.Param) bool
 	AfterUpdateState(current single.State, param single.Param, updated bool) bool
-	UpdateState(current single.State, param single.Param) (single.State, bool)
+	UpdateState(current single.State, param single.Param) (single.State, bool, error)
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
-	Run(current single.State, param single.Param) single.State
+	Run(current single.State, param single.Param) (single.State, error)
 
 	// superclass
 	getReplicatedSTSM() replicated.ReplicatedSTSM
@@ -136,7 +136,7 @@ func (d *DBFT2MachineService) AfterUpdateState(current single.State, param singl
 	return d.getReplicatedSTSM().AfterUpdateState(current, param, updated)
 }
 
-func (d *DBFT2MachineService) UpdateState(current single.State, param single.Param) (single.State, bool) {
+func (d *DBFT2MachineService) UpdateState(current single.State, param single.Param) (single.State, bool, error) {
 	return d.getReplicatedSTSM().UpdateState(current, param)
 }
 
@@ -152,7 +152,7 @@ func (d *DBFT2MachineService) OnFinished(current single.State, param single.Para
 	d.getReplicatedSTSM().OnFinished(current, param)
 }
 
-func (d *DBFT2MachineService) Run(current single.State, param single.Param) single.State {
+func (d *DBFT2MachineService) Run(current single.State, param single.Param) (single.State, error) {
 	return d.getReplicatedSTSM().Run(current, param)
 }
 

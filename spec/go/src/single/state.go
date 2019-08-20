@@ -35,7 +35,7 @@ func NewState(isFinal bool, name string) State {
 	return &StateService{
 		name,
 		isFinal,
-		make([]Transition, 1),
+		make([]Transition, 0),
 	}
 }
 
@@ -49,9 +49,9 @@ func (s *StateService) AddTransition(transition Transition) {
 
 func (s *StateService) TryGetTransition(timer timing.Timer, param Param, me int) (Transition, error) {
 	rand.Seed(time.Now().UnixNano())
-	transitions := make([]Transition, len(s.transitions))
-	copy(transitions, s.transitions)
-	rand.Shuffle(len(s.transitions), func(i, j int) { s.transitions[i], s.transitions[j] = s.transitions[j], s.transitions[i] })
+	transitions := make([]Transition, len(s.GetTransitions()))
+	copy(transitions, s.GetTransitions())
+	rand.Shuffle(len(s.GetTransitions()), func(i, j int) { s.GetTransitions()[i], s.GetTransitions()[j] = s.GetTransitions()[j], s.GetTransitions()[i] })
 	for _, transition := range transitions {
 		resp, err := transition.IsValid(timer, param, me)
 		if err != nil {
@@ -75,7 +75,7 @@ func (s *StateService) String() string {
 func (s *StateService) StringRecursive(recursive bool) string {
 	var sb strings.Builder
 	sb.WriteString("state:{")
-	sb.WriteString(fmt.Sprintf("name='%v';", s.name))
+	sb.WriteString(fmt.Sprintf("name='%v';", s.GetName()))
 	if s.IsFinal() {
 		sb.WriteString("FINAL")
 	}

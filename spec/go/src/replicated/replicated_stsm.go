@@ -24,11 +24,11 @@ type ReplicatedSTSM interface {
 	OnEnterState(current single.State, param single.Param)
 	BeforeUpdateState(current single.State, param single.Param) bool
 	AfterUpdateState(current single.State, param single.Param, updated bool) bool
-	UpdateState(current single.State, param single.Param) (single.State, bool)
+	UpdateState(current single.State, param single.Param) (single.State, bool, error)
 	IsFinal(current single.State, param single.Param) bool
 	Initialize(current single.State, param single.Param) single.State
 	OnFinished(current single.State, param single.Param)
-	Run(current single.State, param single.Param) single.State
+	Run(current single.State, param single.Param) (single.State, error)
 
 	// get / set
 	GetMachines() []machine.SingleTimerStateMachine
@@ -97,7 +97,7 @@ func (r *ReplicatedSTSMService) AfterUpdateState(current single.State, param sin
 	return r.getTimedStateMachine().AfterUpdateState(current, param, updated)
 }
 
-func (r *ReplicatedSTSMService) UpdateState(current single.State, param single.Param) (single.State, bool) {
+func (r *ReplicatedSTSMService) UpdateState(current single.State, param single.Param) (single.State, bool, error) {
 	return r.getTimedStateMachine().UpdateState(current, param)
 }
 
@@ -116,7 +116,7 @@ func (r *ReplicatedSTSMService) OnFinished(current single.State, param single.Pa
 	fmt.Println("=================")
 }
 
-func (r *ReplicatedSTSMService) Run(current single.State, param single.Param) single.State {
+func (r *ReplicatedSTSMService) Run(current single.State, param single.Param) (single.State, error) {
 	return r.getTimedStateMachine().Run(current, param)
 }
 
