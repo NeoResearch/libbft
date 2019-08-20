@@ -28,7 +28,7 @@ public:
    int f; // max number of faulty nodes
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, int _me = 0, string _name = "replicated_dBFT")
+   dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
      : f(_f)
      , ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
    {
@@ -96,51 +96,51 @@ public:
       // -------------------------
 
       auto machine = this->machines[m];
-      int id = this->machines[m]->me;
+      int id = this->machines[m]->me.id;
 
       // preinitial -> started
       preinitial->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
            cout << "Waiting for OnStart..." << endl;
-           return d->hasEvent("OnStart", me, vector<string>(0)); // no parameters on event
+           return d->hasEvent("OnStart", me.id, vector<string>(0)); // no parameters on event
         })));
 
       // initial -> backup
       started->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
            cout << "lambda1" << endl;
-           return !((d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me);
+           return !((d->vm[me.id].params->H + d->vm[me.id].params->v) % d->vm[me.id].params->R == me.id);
         })));
 
       // initial -> primary
       started->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
-           cout << "lambda2 H=" << d->vm[me].params->H << " v=" << d->vm[me].params->v << " me=" << me << endl;
-           return (d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me;
+        (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+           cout << "lambda2 H=" << d->vm[me.id].params->H << " v=" << d->vm[me.id].params->v << " me=" << me.id << endl;
+           return (d->vm[me.id].params->H + d->vm[me.id].params->v) % d->vm[me.id].params->R == me.id;
         })));
 
       // backup -> reqSentOrRecv
       auto toReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
       backup->addTransition(
-        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
-           cout << "waiting for event OnPrepareRequest at " << me << " for view " << d->vm[me].params->v << endl;
+        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+           cout << "waiting for event OnPrepareRequest at " << me.id << " for view " << d->vm[me.id].params->v << endl;
            stringstream ss;
-           ss << d->vm[me].params->v;
+           ss << d->vm[me.id].params->v;
            vector<string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
-           return d->hasEvent("OnPrepareRequest", me, params);
+           return d->hasEvent("OnPrepareRequest", me.id, params);
         })));
 
       // reqSentOrRecv -> commitSent
       reqSentOrRecv->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
            cout << "nothing to do... assuming all preparations were received!" << endl;
            return true;
         })));
 
       // commitSent -> blockSent
       commitSent->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
            cout << "nothing to do... assuming all commits were received!" << endl;
            return true;
         })));

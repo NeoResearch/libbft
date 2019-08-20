@@ -12,6 +12,7 @@
 
 // standard Transition
 #include "../timing/Timer.hpp"
+#include "../machine/MachineId.hpp"
 //#include "State.h"
 
 using namespace std; // TODO: remove
@@ -72,12 +73,12 @@ protected:
    // event name (used to matching)
    std::string name;
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
-   int from;
+   MachineId from;
    // extra parameter to compare
    vector<string> parameters;
 
 public:
-   Event(string _name, int _from = -1, vector<string> _parameters = vector<string>(0))
+   Event(string _name, MachineId _from = MachineId(-1), vector<string> _parameters = vector<string>(0))
      : name(_name)
      , from(_from)
      , parameters(_parameters)
@@ -93,7 +94,7 @@ public:
       return (name == _name) && (parameters == _parameters);
    }
 
-   virtual int getFrom() const
+   virtual MachineId getFrom() const
    {
       return from;
    }
@@ -116,7 +117,7 @@ protected:
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _name, int _from = -1, vector<string> _parameters = vector<string>(0))
+   TimedEvent(double countdown, string _name, MachineId _from = MachineId(-1), vector<string> _parameters = vector<string>(0))
      : Event(_name, _from, _parameters)
    {
       timer = (new Timer())->init(countdown);

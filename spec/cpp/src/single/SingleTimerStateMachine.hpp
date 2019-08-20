@@ -226,7 +226,7 @@ public:
          // standard text
 
          ss << "STSM {";
-         ss << "#id = " << this->me << ";";
+         ss << "#id = " << this->me.id << ";";
          ss << "Timer='" << timer->toString() << "';";
          ss << "States=[";
          for (unsigned i = 0; i < states.size(); i++)

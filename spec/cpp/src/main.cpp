@@ -34,7 +34,7 @@ simpleExample()
    //initial->addTransition(alwaysTrue); // (unused)
 
    initial->addTransition(
-     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& c, Data* d, int) -> bool {
+     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& c, Data* d, MachineId) -> bool {
         cout << "WAITING TRANSITION TO HAPPEN" << c.elapsedTime() << "s" << endl;
         return c.elapsedTime() >= 3.0;
      })));
@@ -90,36 +90,36 @@ simpleMultiMachineExample(int id)
 
    // initial -> backup
    started->addTransition(
-     (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+     (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
         cout << "lambda1" << endl;
-        return !((d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me);
+        return !((d->vm[me.id].params->H + d->vm[me.id].params->v) % d->vm[me.id].params->R == me.id);
      })));
 
    // initial -> primary
    started->addTransition(
-     (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
-        cout << "lambda2 H=" << d->vm[me].params->H << " v=" << d->vm[me].params->v << " me=" << me << endl;
-        return (d->vm[me].params->H + d->vm[me].params->v) % d->vm[me].params->R == me;
+     (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        cout << "lambda2 H=" << d->vm[me.id].params->H << " v=" << d->vm[me.id].params->v << " me=" << me.id << endl;
+        return (d->vm[me.id].params->H + d->vm[me.id].params->v) % d->vm[me.id].params->R == me.id;
      })));
 
    // backup -> reqSentOrRecv
    auto toReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
    backup->addTransition(
-     toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
-        cout << "waiting for event OnPrepareRequest at " << me << endl;
-        return d->hasEvent("OnPrepareRequest", me, vector<string>(0)); // no parameters on event
+     toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        cout << "waiting for event OnPrepareRequest at " << me.id << endl;
+        return d->hasEvent("OnPrepareRequest", me.id, vector<string>(0)); // no parameters on event
      })));
 
    // reqSentOrRecv -> commitSent
    reqSentOrRecv->addTransition(
-     (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+     (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
         cout << "nothing to do... assuming all preparations were received!" << endl;
         return true;
      })));
 
    // commitSent -> blockSent
    commitSent->addTransition(
-     (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+     (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
         cout << "nothing to do... assuming all commits were received!" << endl;
         return true;
      })));
@@ -141,15 +141,15 @@ dbft_test_real_dbft2_primary()
    // ==============================
    // event scheduled to raise "OnStart" machine 0, after 1 seconds
    machine->scheduleEvent(
-     1.0, // 1 second to expire: after initialize()
-     0,   // machine 0
+     1.0,          // 1 second to expire: after initialize()
+     MachineId(0), // machine 0
      "OnStart",
      vector<string>(0)); // no parameters
 
    // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
    machine->scheduleEvent(
-     3.0, // 3 second to expire: after initialize()
-     0,   // machine 0
+     3.0,          // 3 second to expire: after initialize()
+     MachineId(0), // machine 0
      "OnPrepareRequest",
      vector<string>(1, "0")); // view = 0
    // ==============================
@@ -212,33 +212,33 @@ dbft_test_backup_multi()
      (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Initial")))
        ->add(Action<MultiContext<dBFT2Context>>(
          "C := 0 | v := 0",
-         [](Timer& C, MultiContext<dBFT2Context>* d, int me) -> void {
+         [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
             cout << " => action: C := 0" << endl;
             C.reset();
             cout << " => action: v := 0" << endl;
-            d->vm[me].params->v = 0;
+            d->vm[me.id].params->v = 0;
          })));
    */
 
    // transition for PreInitial to Started
    // preinitial -> started
    preinitial->addTransition(
-     (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Started")))->add(Condition<MultiContext<dBFT2Context>>("OnStart", [](const Timer& t, MultiContext<dBFT2Context>* d, int me) -> bool {
+     (new Transition<MultiContext<dBFT2Context>>(machine0->getStateByName("Started")))->add(Condition<MultiContext<dBFT2Context>>("OnStart", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
         cout << "Waiting for OnStart..." << endl;
-        return d->hasEvent("OnStart", me, vector<string>(0));
+        return d->hasEvent("OnStart", me.id, vector<string>(0));
      })));
 
    // event scheduled to raise "OnStart" machine 0, after 1 seconds
    multiMachine.scheduleEvent(
-     1.0, // 1 second to expire: after initialize()
-     0,   // machine 0
+     1.0,          // 1 second to expire: after initialize()
+     MachineId(0), // machine 0
      "OnStart",
      vector<string>(0)); // no parameters
 
    // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
    multiMachine.scheduleEvent(
-     3.0, // 3 second to expire: after initialize()
-     0,   // machine 0
+     3.0,          // 3 second to expire: after initialize()
+     MachineId(0), // machine 0
      "OnPrepareRequest",
      vector<string>(0)); // no parameters
 

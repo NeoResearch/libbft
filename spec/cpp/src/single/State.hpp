@@ -44,7 +44,7 @@ public:
       transitions.push_back(t);
    }
 
-   Transition<Param>* tryGetTransition(Timer& timer, Param* p, int me)
+   Transition<Param>* tryGetTransition(Timer& timer, Param* p, MachineId me)
    {
       //cout << "Trying to Get Transition" << endl;
       // should be non-deterministic and asynchronous...

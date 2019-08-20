@@ -30,29 +30,29 @@ struct MultiContext
    vector<MachineContext<Param>> vm;
 
    // from may be -1, if broadcasted from system
-   void broadcast(string event, int from, vector<string> eventParams)
+   void broadcast(string event, MachineId from, vector<string> eventParams)
    {
       broadcast(new Event(event, from, eventParams), from);
    }
 
    // from may be -1, if broadcasted from system
-   void broadcast(Event* event, int from)
+   void broadcast(Event* event, MachineId from)
    {
       for (unsigned i = 0; vm.size(); i++)
-         if (i != from)
+         if (i != from.id)
             sendTo(event, i); // this may break with memory leaks (TODO: use shared_ptr, or copy-based final class)
    }
 
    // 'to' should be valid (0 <= to <= R)
-   void sendTo(Event* event, int to)
+   void sendTo(Event* event, MachineId to)
    {
-      assert((to >= 0) && (to < vm.size()));
-      vm[to].events.push_back(event);
+      assert((to.id >= 0) && (to.id < vm.size()));
+      vm[to.id].events.push_back(event);
    }
 
    // 'from' may be -1, if broadcasted from system
    // 'to' should be valid (0 <= to <= R)
-   void sendTo(string event, int from, int to, vector<string> eventParams)
+   void sendTo(string event, MachineId from, MachineId to, vector<string> eventParams)
    {
       sendTo(new Event(event, from, eventParams), to);
    }

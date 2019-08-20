@@ -63,13 +63,13 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, int machine, string name, vector<string> eventParams)
+   void scheduleEvent(double countdown, MachineId machine, string name, vector<string> eventParams)
    {
       scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, eventParams));
    }
 
 public:
-   ReplicatedSTSM(Clock* _clock = nullptr, int _me = 0, string _name = "")
+   ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = 0, string _name = "")
      : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
    {
    }
@@ -92,7 +92,7 @@ public:
       // launch all scheduled events
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
          ScheduledEvent e = scheduledEvents[i];
-         if (e.machine == -1) {
+         if (e.machine.id == -1) {
             // broadcast event
             p->broadcast(new TimedEvent(e.countdown, e.name, -1, e.eventParams), -1);
          } else {
