@@ -2,6 +2,7 @@
 // system
 #include <iostream>
 #include <vector>
+#include<thread>
 
 // lib
 
@@ -284,6 +285,11 @@ main()
 
    // real thing starting to happen here
    dbft_test_real_dbft2_primary();
+
+   
+
+   //std::thread t([](bool b){return true;});
+   //t.join();
 
    cout << "finished successfully!" << endl;
 
