@@ -222,7 +222,7 @@ public:
    {
       // check watchdog
       if (watchdog && watchdog->expired()) {
-         cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
+         cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << endl;
          return true;
       }
       /*
