@@ -1,19 +1,7 @@
-#include <sstream>
+
 #include <string>
 
-#include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
-#include <grpcpp/grpcpp.h>
-
 #include "BFTEventsServer.hpp"
-
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::Status;
-
-using bftevent::BFTEvent;
-using bftevent::EventInform;
-using bftevent::EventReply;
 
 using namespace std;
 

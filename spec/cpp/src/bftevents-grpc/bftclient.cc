@@ -6,15 +6,6 @@
 
 #include "BFTEventsClient.hpp"
 
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::Status;
-
-using bftevent::BFTEvent;
-using bftevent::EventInform;
-using bftevent::EventReply;
-
-
 void
 Run(int me, int to)
 {
@@ -24,12 +15,10 @@ Run(int me, int to)
 
    BFTEventsClient client(me, toAddress);
 
-   int response;
-
    int from = me;
    std::string event = "MustStart()";
 
-   response = client.informEvent(from, event);
+   int response = client.informEvent(from, event);
    std::cout << "Answer received: " << from << " ; " << event << " => " << response << std::endl;
 }
 
