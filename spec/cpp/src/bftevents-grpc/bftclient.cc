@@ -1,3 +1,4 @@
+#include <sstream>
 #include <string>
 
 #include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
@@ -7,9 +8,9 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
-using bftevent::EventReply;
-using bftevent::EventInform;
 using bftevent::BFTEvent;
+using bftevent::EventInform;
+using bftevent::EventReply;
 
 class BFTEventClient
 {
@@ -45,14 +46,17 @@ private:
 };
 
 void
-Run()
+Run(int me, int to)
 {
-   std::string address("0.0.0.0:5000");
+   std::stringstream ss;
+   ss << "0.0.0.0:500" << to; // 0 -> 5000
+   std::string address(ss.str());
+
    BFTEventClient client(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 
    int response;
 
-   int from = 0;
+   int from = me;
    std::string message = "MustStart()";
 
    response = client.sendRequest(from, message);
@@ -62,7 +66,22 @@ Run()
 int
 main(int argc, char* argv[])
 {
-   Run();
+   int me = 0;
+   if (argc >= 2) {
+      std::string s(argv[1]); // get value
+      me = stoi(s);
+   }
+   int to = me;
+
+   if (argc >= 3) {
+      std::string s(argv[2]); // get value
+      to = stoi(s);
+   }
+
+   std::cout << "I am # " << me << std::endl;
+   std::cout << "will send to # " << to << std::endl;
+
+   Run(me, to);
 
    return 0;
 }

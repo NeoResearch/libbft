@@ -1,3 +1,4 @@
+#include <sstream>
 #include <string>
 
 #include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
@@ -16,8 +17,12 @@ class BFTEventService final : public BFTEvent::Service
 {
    Status sendRequest(ServerContext* context, const EventInform* request, EventReply* reply) override
    {
+      std::cout << "received inform!" << std::endl;
       int from = request->from();
       std::string message = request->message();
+
+      std::cout << "from = " << from << std::endl;
+      std::cout << "message = " << message << std::endl;
 
       int gotit = 99;
 
@@ -30,9 +35,12 @@ class BFTEventService final : public BFTEvent::Service
 using namespace std;
 
 void
-Run()
+Run(int me)
 {
-   std::string address("0.0.0.0:5000");
+   std::stringstream ss;
+   ss << "0.0.0.0:500" << me; // 0 -> 5000
+   std::string address(ss.str());
+
    BFTEventService service;
 
    ServerBuilder builder;
@@ -49,7 +57,15 @@ Run()
 int
 main(int argc, char** argv)
 {
-   Run();
+   int me = 0;
+   if (argc >= 2) {
+      std::string s(argv[1]); // get value
+      me = stoi(s);
+   }
+
+   std::cout << "I am # " << me << std::endl;
+
+   Run(me);
 
    return 0;
 }
