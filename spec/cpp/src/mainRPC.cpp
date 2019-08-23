@@ -1,8 +1,8 @@
 
 // system
 #include <iostream>
+#include <thread>
 #include <vector>
-#include<thread>
 
 // lib
 
@@ -322,7 +322,12 @@ RPC_dbft_test_real_dbft2_primary()
 
    cout << graphviz << endl;
 
-   machine->run(nullptr, &ctx);
+   // TODO: this is where we need two threads at least...
+   // one to hear external RPC events
+   // another to execute our independent machine
+
+   machine->runEventsServer();  // cannot do both here
+   machine->run(nullptr, &ctx); // cannot do both here
 
    // show
    FILE* fgraph = fopen("fgraph.dot", "w");
@@ -332,7 +337,6 @@ RPC_dbft_test_real_dbft2_primary()
    system("dot -Tpng fgraph.dot -o fgraph.png");
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
-
 
 int
 main()
@@ -350,8 +354,6 @@ main()
 
    // real thing starting to happen here
    RPC_dbft_test_real_dbft2_primary();
-
-   
 
    //std::thread t([](bool b){return true;});
    //t.join();

@@ -1,13 +1,10 @@
 #include <sstream>
 #include <string>
 
-#include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
-#include <grpcpp/grpcpp.h>
-
 #include "BFTEventsClient.hpp"
 
 void
-Run(int me, int to)
+RunTest(int me, int to)
 {
    std::stringstream ss;
    ss << "0.0.0.0:500" << to; // 0 -> 5000
@@ -40,7 +37,7 @@ main(int argc, char* argv[])
    std::cout << "I am # " << me << std::endl;
    std::cout << "will send to # " << to << std::endl;
 
-   Run(me, to);
+   RunTest(me, to);
 
    return 0;
 }

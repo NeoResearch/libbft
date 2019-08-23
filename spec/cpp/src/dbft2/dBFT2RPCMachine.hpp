@@ -14,11 +14,16 @@
 // standard Transition
 //#include "../replicated/ReplicatedSTSM.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
-#include "../rpc-replicated/RPCMachineContext.hpp"
 #include "../single/Transition.hpp"
 #include "../timing/Timer.hpp"
 
+// dbft specific
 #include "dBFT2Context.hpp"
+
+// rpc part
+#include "../rpc-replicated/RPCMachineContext.hpp"
+#include "../bftevents-grpc/BFTEventsServer.hpp"
+
 
 using namespace std; // TODO: remove
 
@@ -30,6 +35,9 @@ class dBFT2RPCMachine : public SingleTimerStateMachine<RPCMachineContext<dBFT2Co
 {
 public:
    int f; // max number of faulty nodes
+
+   // events server to receive info from other nodes
+   BFTEventsServer eventsServer;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
    dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
@@ -141,6 +149,11 @@ public:
            cout << "nothing to do... assuming all commits were received!" << endl;
            return true;
         })));
+   }
+
+   virtual void runEventsServer()
+   {
+      eventsServer.RunForever(me.id);
    }
 
    // official method
