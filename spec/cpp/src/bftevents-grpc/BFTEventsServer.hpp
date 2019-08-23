@@ -49,7 +49,7 @@ public:
       builder.RegisterService(this); // &service
 
       std::unique_ptr<Server> server(builder.BuildAndStart());
-      std::cout << "BFT Events Server listening on port: " << address << std::endl;
+      std::cout << "  =>=>=> BFT Events Server listening on port: " << address << std::endl;
 
       server->Wait();
    }

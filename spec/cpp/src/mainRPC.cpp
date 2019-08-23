@@ -270,6 +270,22 @@ dbft_test_primary()
    machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
+
+// TODO: working with threads on global scope... improve this.
+
+dBFT2RPCMachine* global_dBFT_machine = nullptr;
+
+void globalRunRPCServer()
+{
+   if(global_dBFT_machine)
+   {
+      cout << "will launch RPC events server on machine: " << global_dBFT_machine->me.id << endl;
+      global_dBFT_machine->runEventsServer();
+   }
+   else
+      cerr << "PLEASE SET 'global_dBFT_machine'" << endl;
+}
+
 void
 RPC_dbft_test_real_dbft2_primary()
 {
@@ -326,8 +342,15 @@ RPC_dbft_test_real_dbft2_primary()
    // one to hear external RPC events
    // another to execute our independent machine
 
-   machine->runEventsServer();  // cannot do both here
+   cout << "Starting thread to handle RPC messages:" << endl;
+   global_dBFT_machine = machine;
+   std::thread threadRPC(std::bind(globalRunRPCServer)); //machine->runEventsServer();
+   // run dBFT on main thread (RPC is running on background)  
    machine->run(nullptr, &ctx); // cannot do both here
+
+   cout << "FINISHED WORK ON MAIN THREAD... JUST WAITING FOR RPC TO FINISH NOW." << endl;
+   // do we need to join? or let it expire?
+   threadRPC.join();
 
    // show
    FILE* fgraph = fopen("fgraph.dot", "w");
@@ -338,19 +361,36 @@ RPC_dbft_test_real_dbft2_primary()
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
+void nothing()
+{
+   std::cout << "OI" << std::endl;
+}
+
 int
 main()
 {
+   /*
+      cout << "binding thread" << endl;
+   std::thread t(std::bind(nothing));
+   sleep(1);
+   cout << "will join thread" << endl;
+   t.join();
+   cout << "after join thread" << endl;
+
+   return 1;
+   */
+
    cout << "begin test state machines!" << endl;
 
    // simple example: wait one second and quit
-   simpleExample();
+   //simpleExample();
 
    // Neo dbft modeling as example
    //dbft_test_primary();
 
    // warm-up
    //dbft_test_backup_multi();
+
 
    // real thing starting to happen here
    RPC_dbft_test_real_dbft2_primary();
