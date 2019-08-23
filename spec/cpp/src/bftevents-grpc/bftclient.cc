@@ -4,6 +4,8 @@
 #include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
 #include <grpcpp/grpcpp.h>
 
+#include "BFTEventsClient.hpp"
+
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
@@ -12,55 +14,23 @@ using bftevent::BFTEvent;
 using bftevent::EventInform;
 using bftevent::EventReply;
 
-class BFTEventClient
-{
-public:
-   BFTEventClient(std::shared_ptr<Channel> channel)
-     : stub_(BFTEvent::NewStub(channel))
-   {
-   }
-
-   int sendRequest(int from, std::string message)
-   {
-      EventInform request;
-
-      request.set_from(from);
-      request.set_message(message);
-
-      EventReply reply;
-
-      ClientContext context;
-
-      Status status = stub_->sendRequest(&context, request, &reply);
-
-      if (status.ok()) {
-         return reply.gotit();
-      } else {
-         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-         return -1;
-      }
-   }
-
-private:
-   std::unique_ptr<BFTEvent::Stub> stub_;
-};
 
 void
 Run(int me, int to)
 {
    std::stringstream ss;
    ss << "0.0.0.0:500" << to; // 0 -> 5000
-   std::string address(ss.str());
+   std::string toAddress(ss.str());
 
-   BFTEventClient client(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+   BFTEventsClient client(me, toAddress);
 
    int response;
 
    int from = me;
-   std::string message = "MustStart()";
+   std::string event = "MustStart()";
 
-   response = client.sendRequest(from, message);
-   std::cout << "Answer received: " << from << " ; " << message << " => " << response << std::endl;
+   response = client.informEvent(from, event);
+   std::cout << "Answer received: " << from << " ; " << event << " => " << response << std::endl;
 }
 
 int

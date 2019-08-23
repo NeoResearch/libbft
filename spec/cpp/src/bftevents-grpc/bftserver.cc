@@ -15,14 +15,14 @@ using bftevent::EventReply;
 
 class BFTEventService final : public BFTEvent::Service
 {
-   Status sendRequest(ServerContext* context, const EventInform* request, EventReply* reply) override
+   Status informEvent(ServerContext* context, const EventInform* request, EventReply* reply) override
    {
       std::cout << "received inform!" << std::endl;
       int from = request->from();
-      std::string message = request->message();
+      std::string event = request->event();
 
       std::cout << "from = " << from << std::endl;
-      std::cout << "message = " << message << std::endl;
+      std::cout << "event = " << event << std::endl;
 
       int gotit = 99;
 

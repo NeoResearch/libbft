@@ -7,13 +7,13 @@ package bftevent;
 // Defines the service
 service BFTEvent {
     // Function invoked to send the request
-    rpc sendRequest (EventInform) returns (EventReply) {}
+    rpc informEvent (EventInform) returns (EventReply) {}
 }
 
 // The request message containing requested numbers
 message EventInform {
     int32 from = 1; // right now, untrusted from (TODO: pass crypto key here)
-    string message = 2;
+    string event = 2;
 }
 
 // The response message containing response

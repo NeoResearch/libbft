@@ -179,17 +179,17 @@ class EventInform :
 
   // accessors -------------------------------------------------------
 
-  // string message = 2;
-  void clear_message();
-  static const int kMessageFieldNumber = 2;
-  const std::string& message() const;
-  void set_message(const std::string& value);
-  void set_message(std::string&& value);
-  void set_message(const char* value);
-  void set_message(const char* value, size_t size);
-  std::string* mutable_message();
-  std::string* release_message();
-  void set_allocated_message(std::string* message);
+  // string event = 2;
+  void clear_event();
+  static const int kEventFieldNumber = 2;
+  const std::string& event() const;
+  void set_event(const std::string& value);
+  void set_event(std::string&& value);
+  void set_event(const char* value);
+  void set_event(const char* value, size_t size);
+  std::string* mutable_event();
+  std::string* release_event();
+  void set_allocated_event(std::string* event);
 
   // int32 from = 1;
   void clear_from();
@@ -202,7 +202,7 @@ class EventInform :
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr message_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr event_;
   ::PROTOBUF_NAMESPACE_ID::int32 from_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_bftevent_2eproto;
@@ -358,55 +358,55 @@ inline void EventInform::set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
   // @@protoc_insertion_point(field_set:bftevent.EventInform.from)
 }
 
-// string message = 2;
-inline void EventInform::clear_message() {
-  message_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+// string event = 2;
+inline void EventInform::clear_event() {
+  event_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline const std::string& EventInform::message() const {
-  // @@protoc_insertion_point(field_get:bftevent.EventInform.message)
-  return message_.GetNoArena();
+inline const std::string& EventInform::event() const {
+  // @@protoc_insertion_point(field_get:bftevent.EventInform.event)
+  return event_.GetNoArena();
 }
-inline void EventInform::set_message(const std::string& value) {
+inline void EventInform::set_event(const std::string& value) {
   
-  message_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:bftevent.EventInform.message)
+  event_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:bftevent.EventInform.event)
 }
-inline void EventInform::set_message(std::string&& value) {
+inline void EventInform::set_event(std::string&& value) {
   
-  message_.SetNoArena(
+  event_.SetNoArena(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:bftevent.EventInform.message)
+  // @@protoc_insertion_point(field_set_rvalue:bftevent.EventInform.event)
 }
-inline void EventInform::set_message(const char* value) {
+inline void EventInform::set_event(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  message_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:bftevent.EventInform.message)
+  event_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:bftevent.EventInform.event)
 }
-inline void EventInform::set_message(const char* value, size_t size) {
+inline void EventInform::set_event(const char* value, size_t size) {
   
-  message_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+  event_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:bftevent.EventInform.message)
+  // @@protoc_insertion_point(field_set_pointer:bftevent.EventInform.event)
 }
-inline std::string* EventInform::mutable_message() {
+inline std::string* EventInform::mutable_event() {
   
-  // @@protoc_insertion_point(field_mutable:bftevent.EventInform.message)
-  return message_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  // @@protoc_insertion_point(field_mutable:bftevent.EventInform.event)
+  return event_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline std::string* EventInform::release_message() {
-  // @@protoc_insertion_point(field_release:bftevent.EventInform.message)
+inline std::string* EventInform::release_event() {
+  // @@protoc_insertion_point(field_release:bftevent.EventInform.event)
   
-  return message_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return event_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline void EventInform::set_allocated_message(std::string* message) {
-  if (message != nullptr) {
+inline void EventInform::set_allocated_event(std::string* event) {
+  if (event != nullptr) {
     
   } else {
     
   }
-  message_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), message);
-  // @@protoc_insertion_point(field_set_allocated:bftevent.EventInform.message)
+  event_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), event);
+  // @@protoc_insertion_point(field_set_allocated:bftevent.EventInform.event)
 }
 
 // -------------------------------------------------------------------

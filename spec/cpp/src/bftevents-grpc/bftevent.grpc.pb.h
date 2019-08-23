@@ -45,44 +45,44 @@ class BFTEvent final {
    public:
     virtual ~StubInterface() {}
     // Function invoked to send the request
-    virtual ::grpc::Status sendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::bftevent::EventReply* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>> AsyncsendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>>(AsyncsendRequestRaw(context, request, cq));
+    virtual ::grpc::Status informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::bftevent::EventReply* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>> AsyncinformEvent(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>>(AsyncinformEventRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>> PrepareAsyncsendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>>(PrepareAsyncsendRequestRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>> PrepareAsyncinformEvent(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>>(PrepareAsyncinformEventRaw(context, request, cq));
     }
     class experimental_async_interface {
      public:
       virtual ~experimental_async_interface() {}
       // Function invoked to send the request
-      virtual void sendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void sendRequest(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void sendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-      virtual void sendRequest(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>* AsyncsendRequestRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>* PrepareAsyncsendRequestRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>* AsyncinformEventRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::bftevent::EventReply>* PrepareAsyncinformEventRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
     Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
-    ::grpc::Status sendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::bftevent::EventReply* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>> AsyncsendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>>(AsyncsendRequestRaw(context, request, cq));
+    ::grpc::Status informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::bftevent::EventReply* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>> AsyncinformEvent(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>>(AsyncinformEventRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>> PrepareAsyncsendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>>(PrepareAsyncsendRequestRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>> PrepareAsyncinformEvent(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>>(PrepareAsyncinformEventRaw(context, request, cq));
     }
     class experimental_async final :
       public StubInterface::experimental_async_interface {
      public:
-      void sendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) override;
-      void sendRequest(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) override;
-      void sendRequest(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
-      void sendRequest(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) override;
+      void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) override;
+      void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -94,9 +94,9 @@ class BFTEvent final {
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     class experimental_async async_stub_{this};
-    ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>* AsyncsendRequestRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>* PrepareAsyncsendRequestRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) override;
-    const ::grpc::internal::RpcMethod rpcmethod_sendRequest_;
+    ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>* AsyncinformEventRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::bftevent::EventReply>* PrepareAsyncinformEventRaw(::grpc::ClientContext* context, const ::bftevent::EventInform& request, ::grpc::CompletionQueue* cq) override;
+    const ::grpc::internal::RpcMethod rpcmethod_informEvent_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -105,146 +105,146 @@ class BFTEvent final {
     Service();
     virtual ~Service();
     // Function invoked to send the request
-    virtual ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response);
+    virtual ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response);
   };
   template <class BaseClass>
-  class WithAsyncMethod_sendRequest : public BaseClass {
+  class WithAsyncMethod_informEvent : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
    public:
-    WithAsyncMethod_sendRequest() {
+    WithAsyncMethod_informEvent() {
       ::grpc::Service::MarkMethodAsync(0);
     }
-    ~WithAsyncMethod_sendRequest() override {
+    ~WithAsyncMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
+    ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestsendRequest(::grpc::ServerContext* context, ::bftevent::EventInform* request, ::grpc::ServerAsyncResponseWriter< ::bftevent::EventReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestinformEvent(::grpc::ServerContext* context, ::bftevent::EventInform* request, ::grpc::ServerAsyncResponseWriter< ::bftevent::EventReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_sendRequest<Service > AsyncService;
+  typedef WithAsyncMethod_informEvent<Service > AsyncService;
   template <class BaseClass>
-  class ExperimentalWithCallbackMethod_sendRequest : public BaseClass {
+  class ExperimentalWithCallbackMethod_informEvent : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
    public:
-    ExperimentalWithCallbackMethod_sendRequest() {
+    ExperimentalWithCallbackMethod_informEvent() {
       ::grpc::Service::experimental().MarkMethodCallback(0,
         new ::grpc::internal::CallbackUnaryHandler< ::bftevent::EventInform, ::bftevent::EventReply>(
           [this](::grpc::ServerContext* context,
                  const ::bftevent::EventInform* request,
                  ::bftevent::EventReply* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   return this->sendRequest(context, request, response, controller);
+                   return this->informEvent(context, request, response, controller);
                  }));
     }
-    void SetMessageAllocatorFor_sendRequest(
+    void SetMessageAllocatorFor_informEvent(
         ::grpc::experimental::MessageAllocator< ::bftevent::EventInform, ::bftevent::EventReply>* allocator) {
       static_cast<::grpc::internal::CallbackUnaryHandler< ::bftevent::EventInform, ::bftevent::EventReply>*>(
           ::grpc::Service::experimental().GetHandler(0))
               ->SetMessageAllocator(allocator);
     }
-    ~ExperimentalWithCallbackMethod_sendRequest() override {
+    ~ExperimentalWithCallbackMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
+    ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
-  typedef ExperimentalWithCallbackMethod_sendRequest<Service > ExperimentalCallbackService;
+  typedef ExperimentalWithCallbackMethod_informEvent<Service > ExperimentalCallbackService;
   template <class BaseClass>
-  class WithGenericMethod_sendRequest : public BaseClass {
+  class WithGenericMethod_informEvent : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
    public:
-    WithGenericMethod_sendRequest() {
+    WithGenericMethod_informEvent() {
       ::grpc::Service::MarkMethodGeneric(0);
     }
-    ~WithGenericMethod_sendRequest() override {
+    ~WithGenericMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
+    ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
   };
   template <class BaseClass>
-  class WithRawMethod_sendRequest : public BaseClass {
+  class WithRawMethod_informEvent : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
    public:
-    WithRawMethod_sendRequest() {
+    WithRawMethod_informEvent() {
       ::grpc::Service::MarkMethodRaw(0);
     }
-    ~WithRawMethod_sendRequest() override {
+    ~WithRawMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
+    ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestsendRequest(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestinformEvent(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_sendRequest : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_informEvent : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
    public:
-    ExperimentalWithRawCallbackMethod_sendRequest() {
+    ExperimentalWithRawCallbackMethod_informEvent() {
       ::grpc::Service::experimental().MarkMethodRawCallback(0,
         new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->sendRequest(context, request, response, controller);
+                   this->informEvent(context, request, response, controller);
                  }));
     }
-    ~ExperimentalWithRawCallbackMethod_sendRequest() override {
+    ~ExperimentalWithRawCallbackMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
+    ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void sendRequest(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void informEvent(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
-  class WithStreamedUnaryMethod_sendRequest : public BaseClass {
+  class WithStreamedUnaryMethod_informEvent : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service *service) {}
    public:
-    WithStreamedUnaryMethod_sendRequest() {
+    WithStreamedUnaryMethod_informEvent() {
       ::grpc::Service::MarkMethodStreamed(0,
-        new ::grpc::internal::StreamedUnaryHandler< ::bftevent::EventInform, ::bftevent::EventReply>(std::bind(&WithStreamedUnaryMethod_sendRequest<BaseClass>::StreamedsendRequest, this, std::placeholders::_1, std::placeholders::_2)));
+        new ::grpc::internal::StreamedUnaryHandler< ::bftevent::EventInform, ::bftevent::EventReply>(std::bind(&WithStreamedUnaryMethod_informEvent<BaseClass>::StreamedinformEvent, this, std::placeholders::_1, std::placeholders::_2)));
     }
-    ~WithStreamedUnaryMethod_sendRequest() override {
+    ~WithStreamedUnaryMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status sendRequest(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
+    ::grpc::Status informEvent(::grpc::ServerContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedsendRequest(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::bftevent::EventInform,::bftevent::EventReply>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedinformEvent(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::bftevent::EventInform,::bftevent::EventReply>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_sendRequest<Service > StreamedUnaryService;
+  typedef WithStreamedUnaryMethod_informEvent<Service > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_sendRequest<Service > StreamedService;
+  typedef WithStreamedUnaryMethod_informEvent<Service > StreamedService;
 };
 
 }  // namespace bftevent
