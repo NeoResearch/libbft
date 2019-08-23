@@ -17,26 +17,6 @@ using bftevent::EventReply;
 
 using namespace std;
 
-void
-Run(int me)
-{
-   std::stringstream ss;
-   ss << "0.0.0.0:500" << me; // 0 -> 5000
-   std::string address(ss.str());
-
-   BFTEventsService service;
-
-   ServerBuilder builder;
-
-   builder.AddListeningPort(address, grpc::InsecureServerCredentials());
-   builder.RegisterService(&service);
-
-   std::unique_ptr<Server> server(builder.BuildAndStart());
-   std::cout << "Server listening on port: " << address << std::endl;
-
-   server->Wait();
-}
-
 int
 main(int argc, char** argv)
 {
@@ -48,7 +28,8 @@ main(int argc, char** argv)
 
    std::cout << "I am # " << me << std::endl;
 
-   Run(me);
+   BFTEventsServer server;
+   server.RunForever(me);
 
    return 0;
 }
