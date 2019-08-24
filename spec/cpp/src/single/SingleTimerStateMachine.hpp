@@ -33,11 +33,7 @@ public: // perhaps protect
    // global transitions: may come from any state
    vector<Transition<Param>*> globalTransitions;
 
-public: // real public
-   // pending events (external queue may affect this one)
-   std::vector<Event*> pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)
-
-private:
+protected:
    // watchdog timer
    Timer* watchdog{ nullptr };
 

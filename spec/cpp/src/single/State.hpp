@@ -46,7 +46,7 @@ public:
 
    Transition<Param>* tryGetTransition(Timer& timer, Param* p, MachineId me)
    {
-      //cout << "Trying to Get Transition" << endl;
+      // cout << "Trying to Get Transition" << endl;
       // should be non-deterministic and asynchronous...
       // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
       vector<Transition<Param>*> _transitions = transitions;

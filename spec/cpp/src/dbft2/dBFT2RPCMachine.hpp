@@ -21,9 +21,8 @@
 #include "dBFT2Context.hpp"
 
 // rpc part
-#include "../rpc-replicated/RPCMachineContext.hpp"
 #include "../bftevents-grpc/BFTEventsServer.hpp"
-
+#include "../rpc-replicated/RPCMachineContext.hpp"
 
 using namespace std; // TODO: remove
 
@@ -43,7 +42,7 @@ public:
    dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
      : f(_f)
      , SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
-     //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
+   //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
    {
       assert(f >= 0);
       assert(N >= 1);
@@ -149,6 +148,28 @@ public:
            cout << "nothing to do... assuming all commits were received!" << endl;
            return true;
         })));
+   }
+
+public: // real public
+   using Events = std::vector<Event*>;
+
+   // pending events (external queue may affect this one)
+   Events pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)
+
+   // override beforeUpdateState to include pendingEvents
+   virtual bool beforeUpdateState(State<RPCMachineContext<dBFT2Context>>& current, RPCMachineContext<dBFT2Context>* p) override
+   {
+      if (this->watchdog && this->watchdog->expired()) {
+         cout << "dBFT2 RPC StateMachine FAILED: MAXTIME = " << this->watchdog->getCountdown() << endl;
+         return true;
+      }
+
+      // update states (TODO: update to do in concurrent)
+      p->events.insert(p->events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+      pendingEvents.clear();
+
+      // nothing to do?
+      return false;
    }
 
    virtual void runEventsServer()
