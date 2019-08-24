@@ -279,6 +279,7 @@ void globalRunRPCServer()
 {
    if(global_dBFT_machine)
    {
+      // prepare to launch RPC server
       cout << "will launch RPC events server on machine: " << global_dBFT_machine->me.id << endl;
       global_dBFT_machine->runEventsServer();
    }
@@ -344,13 +345,15 @@ RPC_dbft_test_real_dbft2_primary()
 
    cout << "Starting thread to handle RPC messages:" << endl;
    global_dBFT_machine = machine;
-   std::thread threadRPC(std::bind(globalRunRPCServer)); //machine->runEventsServer();
+   std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
+
+
    // run dBFT on main thread (RPC is running on background)  
    machine->run(nullptr, &ctx); // cannot do both here
 
    cout << "FINISHED WORK ON MAIN THREAD... JUST WAITING FOR RPC TO FINISH NOW." << endl;
    // do we need to join? or let it expire?
-   threadRPC.join();
+   //threadRPC.join();
 
    // show
    FILE* fgraph = fopen("fgraph.dot", "w");

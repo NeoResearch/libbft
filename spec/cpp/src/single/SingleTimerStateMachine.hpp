@@ -25,13 +25,17 @@ namespace libbft {
 template<class Param = nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
-public:
+public: // perhaps protect
    // state machine timer
    Timer* timer;
    // states for the state machine
    vector<State<Param>*> states;
    // global transitions: may come from any state
    vector<Transition<Param>*> globalTransitions;
+
+public: // real public
+   // pending events (external queue may affect this one)
+   std::vector<Event*> pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)
 
 private:
    // watchdog timer
