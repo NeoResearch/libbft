@@ -41,6 +41,7 @@ public:
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
    dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
      : f(_f)
+     , eventsServer(_me.id)
      , SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
    //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
    {
@@ -164,9 +165,13 @@ public: // real public
          return true;
       }
 
-      // update states (TODO: update to do in concurrent)
-      p->events.insert(p->events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
-      pendingEvents.clear();
+      if(pendingEvents.size() > 0)
+      {
+         cout << "Has some pending events to process! size = " << pendingEvents.size() << endl;
+         // update states (TODO: update to do in concurrent)
+         p->events.insert(p->events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+         pendingEvents.clear();
+      }
 
       // nothing to do?
       return false;
@@ -174,8 +179,14 @@ public: // real public
 
    virtual void runEventsServer()
    {
-      eventsServer.RunForever(me.id);
+      eventsServer.RunForever();
    }
+
+   virtual void killEventsServer()
+   {
+      eventsServer.Stop();
+   }
+
 
    // official method
    virtual void fillStatesForMachine()

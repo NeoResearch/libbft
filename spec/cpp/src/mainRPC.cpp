@@ -270,20 +270,18 @@ dbft_test_primary()
    machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
-
 // TODO: working with threads on global scope... improve this.
 
 dBFT2RPCMachine* global_dBFT_machine = nullptr;
 
-void globalRunRPCServer()
+void
+globalRunRPCServer()
 {
-   if(global_dBFT_machine)
-   {
+   if (global_dBFT_machine) {
       // prepare to launch RPC server
       cout << "will launch RPC events server on machine: " << global_dBFT_machine->me.id << endl;
       global_dBFT_machine->runEventsServer();
-   }
-   else
+   } else
       cerr << "PLEASE SET 'global_dBFT_machine'" << endl;
 }
 
@@ -347,13 +345,12 @@ RPC_dbft_test_real_dbft2_primary()
    global_dBFT_machine = machine;
    std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
 
-
-   // run dBFT on main thread (RPC is running on background)  
+   // run dBFT on main thread (RPC is running on background)
    machine->run(nullptr, &ctx); // cannot do both here
 
    cout << "FINISHED WORK ON MAIN THREAD... JUST WAITING FOR RPC TO FINISH NOW." << endl;
-   // do we need to join? or let it expire?
-   //threadRPC.join();
+   global_dBFT_machine->killEventsServer();
+   threadRPC.join(); // wait for RPC to end
 
    // show
    FILE* fgraph = fopen("fgraph.dot", "w");
@@ -364,7 +361,8 @@ RPC_dbft_test_real_dbft2_primary()
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
-void nothing()
+void
+nothing()
 {
    std::cout << "OI" << std::endl;
 }
@@ -393,7 +391,6 @@ main()
 
    // warm-up
    //dbft_test_backup_multi();
-
 
    // real thing starting to happen here
    RPC_dbft_test_real_dbft2_primary();

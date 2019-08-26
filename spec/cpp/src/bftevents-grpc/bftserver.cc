@@ -16,8 +16,8 @@ main(int argc, char** argv)
 
    std::cout << "I am # " << me << std::endl;
 
-   BFTEventsServer server;
-   server.RunForever(me);
+   BFTEventsServer server(me);
+   server.RunForever();
 
    return 0;
 }
