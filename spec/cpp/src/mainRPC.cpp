@@ -270,21 +270,6 @@ dbft_test_primary()
    machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
-// TODO: working with threads on global scope... improve this.
-
-dBFT2RPCMachine* global_dBFT_machine = nullptr;
-
-void
-globalRunRPCServer()
-{
-   if (global_dBFT_machine) {
-      // prepare to launch RPC server
-      cout << "will launch RPC events server on machine: " << global_dBFT_machine->me.id << endl;
-      global_dBFT_machine->runEventsServer();
-   } else
-      cerr << "PLEASE SET 'global_dBFT_machine'" << endl;
-}
-
 void
 RPC_dbft_test_real_dbft2_primary()
 {
@@ -342,15 +327,21 @@ RPC_dbft_test_real_dbft2_primary()
    // another to execute our independent machine
 
    cout << "Starting thread to handle RPC messages:" << endl;
-   global_dBFT_machine = machine;
-   std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
+   //global_dBFT_machine = machine;
+   //std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
+
+   // this will run on a dettached (background) thread
+   machine->runEventsServer();
 
    // run dBFT on main thread (RPC is running on background)
    machine->run(nullptr, &ctx); // cannot do both here
 
    cout << "FINISHED WORK ON MAIN THREAD... JUST WAITING FOR RPC TO FINISH NOW." << endl;
-   global_dBFT_machine->killEventsServer();
-   threadRPC.join(); // wait for RPC to end
+   //global_dBFT_machine->killEventsServer();
+   //threadRPC.join(); // wait for RPC to end
+
+   // stops events server and join its thread
+   machine->killEventsServer();
 
    // show
    FILE* fgraph = fopen("fgraph.dot", "w");

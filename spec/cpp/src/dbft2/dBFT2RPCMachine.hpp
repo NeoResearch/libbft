@@ -165,8 +165,7 @@ public: // real public
          return true;
       }
 
-      if(pendingEvents.size() > 0)
-      {
+      if (pendingEvents.size() > 0) {
          cout << "Has some pending events to process! size = " << pendingEvents.size() << endl;
          // update states (TODO: update to do in concurrent)
          p->events.insert(p->events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
@@ -177,16 +176,26 @@ public: // real public
       return false;
    }
 
+private:
+   std::thread rpcThread;
+
+   static void startEventsServer(dBFT2RPCMachine* machine)
+   {
+      machine->eventsServer.RunForever();
+   }
+
+public:
    virtual void runEventsServer()
    {
-      eventsServer.RunForever();
+      // starts rpc thread in background
+      rpcThread = std::thread(startEventsServer, this);
    }
 
    virtual void killEventsServer()
    {
       eventsServer.Stop();
+      rpcThread.join();
    }
-
 
    // official method
    virtual void fillStatesForMachine()
