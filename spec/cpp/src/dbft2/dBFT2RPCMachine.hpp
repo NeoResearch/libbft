@@ -24,6 +24,8 @@
 #include "../bftevents-grpc/BFTEventsServer.hpp"
 #include "../rpc-replicated/RPCMachineContext.hpp"
 
+#include "../events/ScheduledEvent.hpp"
+
 using namespace std; // TODO: remove
 
 namespace libbft {
@@ -37,6 +39,8 @@ public:
 
    // events server to receive info from other nodes
    BFTEventsServer eventsServer;
+
+   std::vector<ScheduledEvent> schedEvents;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
    dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
@@ -234,6 +238,23 @@ public:
 
    */
 
+   void OnInitialize(RPCMachineContext<dBFT2Context>* p) override
+   {
+      launchSchedEvents(p);
+   }
+
+private:
+   void launchSchedEvents(RPCMachineContext<dBFT2Context>* p)
+   {
+      cout << "launching scheduled events!" << endl;
+      // launch all scheduled events
+      for (unsigned i = 0; i < schedEvents.size(); i++) {
+         ScheduledEvent e = schedEvents[i];
+         p->events.push_back(new TimedEvent(e.countdown, e.name, e.machine.id, e.eventParams));
+      }
+   }
+   
+public:
    string toString(string format = "") override
    {
       stringstream ss;

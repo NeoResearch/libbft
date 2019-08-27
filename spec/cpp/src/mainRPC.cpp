@@ -330,6 +330,9 @@ RPC_dbft_test_real_dbft2_primary()
    //global_dBFT_machine = machine;
    //std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
 
+   // schedule local OnStart() after 1 second
+   machine->schedEvents.push_back(ScheduledEvent("OnStart", 1.0, MachineId(0), vector<string>(0)));   
+
    // this will run on a dettached (background) thread
    machine->runEventsServer();
 

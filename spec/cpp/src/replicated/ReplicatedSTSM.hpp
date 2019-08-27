@@ -18,7 +18,7 @@
 
 #include "MachineContext.hpp"
 #include "MultiContext.hpp"
-#include "ScheduledEvent.hpp"
+#include "../events/ScheduledEvent.hpp"
 
 using namespace std; // TODO: remove
 

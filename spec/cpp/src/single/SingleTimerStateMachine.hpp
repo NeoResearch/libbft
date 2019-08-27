@@ -144,6 +144,11 @@ public:
       return r;
    }
 
+   // just for inherited classes
+   virtual void OnInitialize(Param* p)
+   {
+   }
+
    // initialize timer, etc, and also, setup first state (if not given)
    virtual State<Param>* initialize(State<Param>* current, Param* p) override
    {
@@ -157,6 +162,7 @@ public:
       cout << "===========" << endl;
 
       cout << "OnInitialize() Single MACHINE!" << endl;
+      this->OnInitialize(p); // some inherited methods perhaps need this
 
       if (watchdog)
          watchdog->reset();
@@ -171,6 +177,7 @@ public:
 
       if (!current)
          current = getDefaultState();
+
       return current;
    }
 
