@@ -10,3 +10,4 @@ vendor/
 
 *.dot
 *.png
+*.o

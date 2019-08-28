@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LIBBFT_SRC_CPP_MULTI_CONTEXT_HPP
-#define LIBBFT_SRC_CPP_MULTI_CONTEXT_HPP
+#ifndef LIBBFT_SRC_CPP_RPC_MULTI_CONTEXT_HPP
+#define LIBBFT_SRC_CPP_RPC_MULTI_CONTEXT_HPP
 
 // system includes
 #include <iostream> // TODO: remove
@@ -92,4 +92,4 @@ struct MultiContext
 // forward declaration
 #include "MachineContext.hpp"
 
-#endif // LIBBFT_SRC_CPP_MULTI_CONTEXT_HPP
+#endif // LIBBFT_SRC_CPP_RPC_MULTI_CONTEXT_HPP

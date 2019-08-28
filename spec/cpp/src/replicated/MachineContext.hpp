@@ -26,9 +26,11 @@ struct MultiContext;
 template<class Param = nullptr_t>
 struct MachineContext
 {
+   using Events = std::vector<Event*>;
+
    Param* params;
    SingleTimerStateMachine<MultiContext<Param>>* machine;
-   vector<Event*> events;
+   Events events;
 
    //void addEvent(Event<MultiContext<Param>>* e)
    //{

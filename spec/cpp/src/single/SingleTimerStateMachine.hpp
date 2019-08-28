@@ -25,7 +25,7 @@ namespace libbft {
 template<class Param = nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
-public:
+public: // perhaps protect
    // state machine timer
    Timer* timer;
    // states for the state machine
@@ -33,7 +33,7 @@ public:
    // global transitions: may come from any state
    vector<Transition<Param>*> globalTransitions;
 
-private:
+protected:
    // watchdog timer
    Timer* watchdog{ nullptr };
 
@@ -48,7 +48,7 @@ public:
    }
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM")
+   SingleTimerStateMachine(Timer* t = nullptr, MachineId me = 0, Clock* _clock = nullptr, string name = "STSM")
      : timer(t)
      , TimedStateMachine<State<Param>, Param>(_clock, me, name)
    {
@@ -97,7 +97,7 @@ public:
       // TODO: shuffle global?
       vector<Transition<Param>*> _transitions = globalTransitions;
       for (unsigned i = 0; i < _transitions.size(); i++) {
-         if (_transitions[i]->isValid(*timer, p, this->me))
+         if (_transitions[i]->isValid(*timer, p, this->me.id))
             return _transitions[i];
       }
       return nullptr;
@@ -127,21 +127,26 @@ public:
       if (gt) {
          // found global transition
          cout << "-> found valid global transition! " << gt->toString() << endl;
-         current = gt->execute(*timer, p, this->me);
+         current = gt->execute(*timer, p, this->me.id);
          r = true;
       }
 
       //cout << "finding transition! ...";
       if (current) {
-         Transition<Param>* go = current->tryGetTransition(*timer, p, this->me);
+         Transition<Param>* go = current->tryGetTransition(*timer, p, this->me.id);
          if (go) {
             cout << "-> found valid transition! " << go->toString() << endl;
-            current = go->execute(*timer, p, this->me);
+            current = go->execute(*timer, p, this->me.id);
             r = true;
          }
       }
       outcurrent = current;
       return r;
+   }
+
+   // just for inherited classes
+   virtual void OnInitialize(Param* p)
+   {
    }
 
    // initialize timer, etc, and also, setup first state (if not given)
@@ -157,6 +162,7 @@ public:
       cout << "===========" << endl;
 
       cout << "OnInitialize() Single MACHINE!" << endl;
+      this->OnInitialize(p); // some inherited methods perhaps need this
 
       if (watchdog)
          watchdog->reset();
@@ -171,6 +177,7 @@ public:
 
       if (!current)
          current = getDefaultState();
+
       return current;
    }
 
@@ -186,7 +193,7 @@ public:
    virtual bool beforeUpdateState(State<Param>& current, Param* p) override
    {
       if (watchdog && watchdog->expired()) {
-         cout << "StateMachine FAILED MAXTIME" << watchdog->getCountdown() << endl;
+         cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << endl;
          return true;
       }
 
@@ -226,7 +233,7 @@ public:
          // standard text
 
          ss << "STSM {";
-         ss << "#id = " << this->me << ";";
+         ss << "#id = " << this->me.id << ";";
          ss << "Timer='" << timer->toString() << "';";
          ss << "States=[";
          for (unsigned i = 0; i < states.size(); i++)

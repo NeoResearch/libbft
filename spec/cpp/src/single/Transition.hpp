@@ -28,9 +28,9 @@ template<class Param = nullptr_t>
 struct Condition
 {
    std::string name = "true";
-   std::function<bool(const Timer&, Param*, int)> timedFunction = [](const Timer& t, Param* p, int) -> bool { return true; };
+   std::function<bool(const Timer&, Param*, MachineId)> timedFunction = [](const Timer& t, Param* p, MachineId) -> bool { return true; };
 
-   Condition(std::string _name, std::function<bool(const Timer&, Param*, int)> _timedFunction)
+   Condition(std::string _name, std::function<bool(const Timer&, Param*, MachineId)> _timedFunction)
      : name(_name)
      , timedFunction(_timedFunction)
    {
@@ -47,9 +47,9 @@ template<class Param = nullptr_t>
 struct Action
 {
    std::string name = "nop";
-   std::function<void(Timer&, Param*, int)> timedAction = [](Timer& t, Param* p, int) -> void {};
+   std::function<void(Timer&, Param*, MachineId)> timedAction = [](Timer& t, Param* p, MachineId) -> void {};
 
-   Action(std::string _name, std::function<void(Timer&, Param*, int)> _timedAction)
+   Action(std::string _name, std::function<void(Timer&, Param*, MachineId)> _timedAction)
      : name(_name)
      , timedAction(_timedAction)
    {
@@ -98,7 +98,7 @@ public:
    }
 
    // returns 'true' if all conditions are valid (or no conditions are required)
-   virtual bool isValid(const Timer& timer, Param* p, int me)
+   virtual bool isValid(const Timer& timer, Param* p, MachineId me)
    {
       for (unsigned i = 0; i < conditions.size(); i++)
          if (!conditions[i].timedFunction(timer, p, me))
@@ -107,7 +107,7 @@ public:
    }
 
    // execute transition and returns the next State
-   virtual State<Param>* execute(Timer& timer, Param* p, int me)
+   virtual State<Param>* execute(Timer& timer, Param* p, MachineId me)
    {
       for (unsigned i = 0; i < actions.size(); i++)
          actions[i].timedAction(timer, p, me);

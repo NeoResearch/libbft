@@ -27,9 +27,9 @@ struct ScheduledEvent
    string name;                // event name
    vector<string> eventParams; // event parameters
    double countdown;
-   int machine;
+   MachineId machine;
 
-   ScheduledEvent(string _name, double _countdown, int _machine, vector<string> _eventParams)
+   ScheduledEvent(string _name, double _countdown, MachineId _machine, vector<string> _eventParams)
      : name(_name)
      , eventParams(_eventParams)
      , countdown(_countdown)

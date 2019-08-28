@@ -1,64 +1,70 @@
+// From: https://medium.com/@andrewvetovitz/grpc-c-introduction-45a66ca9461f
+
 #include <string>
 
-#include <grpcpp/grpcpp.h>
 #include "mathtest.grpc.pb.h"
+#include <grpcpp/grpcpp.h>
 
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
-using mathtest::MathTest;
-using mathtest::MathRequest;
 using mathtest::MathReply;
+using mathtest::MathRequest;
+using mathtest::MathTest;
 
-class MathTestClient {
-    public:
-        MathTestClient(std::shared_ptr<Channel> channel) : stub_(MathTest::NewStub(channel)) {}
+class MathTestClient
+{
+public:
+   MathTestClient(std::shared_ptr<Channel> channel)
+     : stub_(MathTest::NewStub(channel))
+   {
+   }
 
-    int sendRequest(int a, int b) {
-        MathRequest request;
+   int sendRequest(int a, int b)
+   {
+      MathRequest request;
 
-        request.set_a(a);
-        request.set_b(b);
+      request.set_a(a);
+      request.set_b(b);
 
-        MathReply reply;
+      MathReply reply;
 
-        ClientContext context;
+      ClientContext context;
 
-        Status status = stub_->sendRequest(&context, request, &reply);
+      Status status = stub_->sendRequest(&context, request, &reply);
 
-        if(status.ok()){
-            return reply.result();
-        } else {
-            std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-            return -1;
-        }
-    }
+      if (status.ok()) {
+         return reply.result();
+      } else {
+         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
+         return -1;
+      }
+   }
 
-    private:
-        std::unique_ptr<MathTest::Stub> stub_;
+private:
+   std::unique_ptr<MathTest::Stub> stub_;
 };
 
-void Run() {
-    std::string address("0.0.0.0:5000");
-    MathTestClient client(
-        grpc::CreateChannel(
-            address, 
-            grpc::InsecureChannelCredentials()
-        )
-    );
+void
+Run()
+{
+   std::string address("0.0.0.0:5000");
+   MathTestClient client(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 
-    int response;
+   int response;
 
-    int a = 5;
-    int b = 10;
+   int a = 5;
+   int b = 10;
 
-    response = client.sendRequest(a, b);
-    std::cout << "Answer received: " << a << " * " << b << " = " << response << std::endl;
+   response = client.sendRequest(a, b);
+   std::cout << "Answer received: " << a << " * " << b << " = " << response << std::endl;
 }
 
-int main(int argc, char* argv[]){
-    Run();
+int
+main(int argc, char* argv[])
+{
+   Run();
 
-    return 0;
+   return 0;
 }

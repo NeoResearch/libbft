@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_package = "ex.grpc";
+
+package bftevent;
+
+// Defines the service
+service BFTEvent {
+    // Function invoked to send the request
+    rpc informEvent (EventInform) returns (EventReply) {}
+}
+
+// The request message containing requested numbers
+message EventInform {
+    int32 from = 1; // right now, untrusted from (TODO: pass crypto key here)
+    string event = 2;
+}
+
+// The response message containing response
+message EventReply {
+    int32 gotit = 1;
+}

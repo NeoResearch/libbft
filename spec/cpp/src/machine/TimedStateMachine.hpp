@@ -4,6 +4,7 @@
 
 // default clock
 #include "../timing/Clock.hpp"
+#include "MachineId.hpp"
 
 using namespace std; // TODO: remove
 
@@ -17,12 +18,12 @@ public:
    // state machine clock
    Clock* clock;
    // an identifier for itself
-   int me{ 0 };
+   MachineId me{ 0 };
    // string name
    string name{ "" };
 
    // a Timed State Machine requires a global clock, and a unique personal identifier
-   TimedStateMachine(Clock* _clock = nullptr, int _me = 0, string _name = "")
+   TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, string _name = "")
      : clock(_clock)
      , me(_me)
      , name(_name)
@@ -109,7 +110,7 @@ public:
          // standard text
 
          ss << "TSM {";
-         ss << "#id = " << me << ";";
+         ss << "#id = " << me.id << ";";
          ss << "clock = " << clock->toString() << ";";
          ss << "}";
       }
