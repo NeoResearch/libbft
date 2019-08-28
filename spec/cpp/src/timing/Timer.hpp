@@ -17,12 +17,12 @@ namespace libbft {
 class Timer
 {
 private:
+   // object name
+   string name;
    // beware if clock precision is terrible
    Clock* clock;
    // nice precision timer
    double mytime;
-   // object name
-   string name;
    // countdown timer (if value is positive)
    double countdown{ -1.0 };
 

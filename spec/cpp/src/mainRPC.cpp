@@ -31,7 +31,8 @@ simpleExample()
    State<Data>* final = new State<Data>(true, "Final");
 
    // unused (demonstration)
-   Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
+   //// Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
+   
    //alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*, int) -> bool { return true; }));
    //initial->addTransition(alwaysTrue); // (unused)
 
@@ -330,8 +331,8 @@ RPC_dbft_test_real_dbft2_primary()
    //global_dBFT_machine = machine;
    //std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
 
-   // schedule local OnStart() after 1 second
-   machine->schedEvents.push_back(ScheduledEvent("OnStart", 1.0, MachineId(0), vector<string>(0)));   
+   // schedule local OnStart() after 1 second (from myself)
+   machine->schedEvents.push_back(ScheduledEvent("OnStart", 1.0, ctx.me));
 
    // this will run on a dettached (background) thread
    machine->runEventsServer();

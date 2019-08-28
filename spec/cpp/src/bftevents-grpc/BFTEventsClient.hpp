@@ -17,6 +17,9 @@ using bftevent::EventReply;
 
 class BFTEventsClient
 {
+private:
+   std::unique_ptr<BFTEvent::Stub> stub_;
+
 public:
    int me{ 0 };
 
@@ -51,8 +54,6 @@ public:
       }
    }
 
-private:
-   std::unique_ptr<BFTEvent::Stub> stub_;
 };
 
 #endif // BFTEVENTSCLIENT_HPP

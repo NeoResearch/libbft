@@ -38,7 +38,7 @@ struct MultiContext
    // from may be -1, if broadcasted from system
    void broadcast(Event* event, MachineId from)
    {
-      for (unsigned i = 0; vm.size(); i++)
+      for (int i = 0; ((int)vm.size()); i++)
          if (i != from.id)
             sendTo(event, i); // this may break with memory leaks (TODO: use shared_ptr, or copy-based final class)
    }
@@ -46,7 +46,7 @@ struct MultiContext
    // 'to' should be valid (0 <= to <= R)
    void sendTo(Event* event, MachineId to)
    {
-      assert((to.id >= 0) && (to.id < vm.size()));
+      assert((to.id >= 0) && (to.id < (int)vm.size()));
       vm[to.id].events.push_back(event);
    }
 

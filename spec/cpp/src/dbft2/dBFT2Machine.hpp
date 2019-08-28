@@ -29,8 +29,8 @@ public:
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
    dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
-     : f(_f)
-     , ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
+     : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
+     , f(_f)
    {
       assert(f >= 0);
       assert(N >= 1);
@@ -40,25 +40,25 @@ public:
 
       // initialize independent machines (each one with its Timer, sharing same global Clock)
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
-      for (unsigned i = 0; i < N; i++) {
+      for (int i = 0; i < N; i++) {
          this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C", this->clock), i, this->clock, "dBFT");
       }
 
       // fill states and transitions on each machine
-      for (unsigned i = 0; i < N; i++)
+      for (int i = 0; i < N; i++)
          fillStatesForMachine(i);
    }
 
    // already pre-initialized machines (including states, I suppose...)
    // Each one has its clock and timer
    dBFT2Machine(int _f, vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines, Clock* _clock = nullptr, int _me = 0, string _name = "replicated_dBFT")
-     : f(_f)
-     , ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
+     : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
+     , f(_f)
    {
       this->machines = _machines;
       assert(f >= 0);
       assert(machines.size() >= 1);
-      assert(f <= machines.size());
+      assert(f <= (int)machines.size());
    }
 
    virtual ~dBFT2Machine()
@@ -95,8 +95,8 @@ public:
       // creating dBFT transitions
       // -------------------------
 
-      auto machine = this->machines[m];
-      int id = this->machines[m]->me.id;
+      //auto machine = this->machines[m];
+      //int id = this->machines[m]->me.id;
 
       // preinitial -> started
       preinitial->addTransition(
