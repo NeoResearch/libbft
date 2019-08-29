@@ -15,7 +15,11 @@ RunTest(int me, int to)
    int from = me;
    std::string event = "MustStart()";
 
-   int response = client.informEvent(from, event);
+   std::vector<std::string> eventArgs;
+   eventArgs.push_back("a1");
+   eventArgs.push_back("a2");
+
+   int response = client.informEvent(from, event, eventArgs);
    std::cout << "Answer received: " << from << " ; " << event << " => " << response << std::endl;
 }
 

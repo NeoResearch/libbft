@@ -81,7 +81,7 @@ public:
    }
 */
 
-   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters = vector<string>(0))
+   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters)
    {
       registerEvent(new Event(_name, _from, _parameters));
    }

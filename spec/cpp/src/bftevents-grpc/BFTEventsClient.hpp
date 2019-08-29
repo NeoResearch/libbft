@@ -52,12 +52,15 @@ public:
       return _address;
    }
 
-   bool informEvent(int from, std::string event)
+   bool informEvent(int from, std::string event, std::vector<std::string> eventArgs)
    {
       EventInform request;
 
       request.set_from(from);
       request.set_event(event);
+
+      for(unsigned i=0; i<eventArgs.size(); i++)
+         request.add_event_args(eventArgs[i]);
 
       EventReply reply;
 

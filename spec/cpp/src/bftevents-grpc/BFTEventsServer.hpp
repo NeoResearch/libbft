@@ -30,7 +30,17 @@ private:
       std::cout << "  ->-> RPC received inform!" << std::endl;
       int from = request->from();
       std::string event = request->event();
-      std::cout << "  ->-> RPC inform is event '" << event << "'" << std::endl;
+
+      std::vector<std::string> eventArgs(request->event_args_size());
+      for (unsigned i = 0; i < eventArgs.size(); i++)
+         eventArgs[i] = request->event_args(i);
+
+      //std::string event = request->event();
+
+      std::cout << "  ->-> RPC inform is event '" << event << "' with args = " << eventArgs.size() << std::endl;
+
+      for (unsigned i = 0; i < eventArgs.size(); i++)
+         std::cout << eventArgs[i] << std::endl;
 
       if (myMachine == nullptr) {
          std::cout << "  ->-> RPC no machine to respond to!!! Print!" << std::endl;
@@ -38,8 +48,8 @@ private:
          std::cout << "  ->-> RPC event = " << event << std::endl;
       } else {
          std::cout << "  ->-> RPC Sending event to myMachine!" << std::endl;
-         MachineId mFrom(from);                    // TODO(@igormcoelho): find address of sender machine
-         myMachine->addEventFromRPC(event, mFrom); // TODO(@igormcoelho): capture event args/parameters
+         MachineId mFrom(from); // TODO(@igormcoelho): find address of sender machine
+         myMachine->addEventFromRPC(event, mFrom, eventArgs);
       }
 
       int gotit = 99;

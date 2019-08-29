@@ -277,7 +277,8 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 {
    std::this_thread::sleep_for(std::chrono::milliseconds(delayMS)); // 1000 ms -> 1 sec
    std::cout << " -x-x-> Will deliver message 'OnStart'" << std::endl;
-   bool output = myClient->informEvent(-1, "OnStart");
+   std::vector<std::string> eventArgs;
+   bool output = myClient->informEvent(-1, "OnStart", eventArgs);
    if (output)
       std::cout << " -x-x-> Event message 'OnStart' delivered!" << std::endl;
 }
