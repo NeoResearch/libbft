@@ -20,6 +20,10 @@ Quick test using RPC:
 ```
 make cpp && ./spec/cpp/bin/runRPCtest.sh 
 ```
+This should be equivalent to:
+```
+(cd spec/cpp/build/src && c++ -g -Wall -Ofast -lpthread -L/usr/local/lib -lprotobuf -lgrpc++ -lgrpc++_reflection -dl `pwd`/../../src/bftevents-grpc/bftevent.grpc.pb.o `pwd`/../../src/bftevents-grpc/bftevent.pb.o CMakeFiles/app_RPCtest.dir/mainRPC.cpp.o -o ../app_RPCtest)
+```
 
 ## Elaborate build: gRPC and protobuf
 
