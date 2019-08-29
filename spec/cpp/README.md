@@ -37,9 +37,9 @@ apt-get install clang libc++-dev
 My advice is (it will take around 3 GB from your computer, be prepared!):
 
 ```
+cd ../../
 git submodule update --init --recursive   # get submodules for libbft (including grpc)
-cd grpc
-cd third_party/protobuf                   # install protobuf first
+cd spec/cpp/grpc/third_party/protobuf     # install protobuf first
 git submodule update --init --recursive   # get submodules (for protobuf)
 ./autogen.sh                              # generate installation files
 ./configure
