@@ -65,13 +65,14 @@ If you want to test `protobuf`:
 cd grpc/third_party/protobuf/examples
 make clean
 make
+touch book.txt
 ./add_person_cpp book.txt   # put some data
 ./list_people_cpp book.txt  # get info
 ```
 
 If you want to test `grpc`, do this simple test (_huge thanks to the authors of `https://medium.com/@andrewvetovitz/grpc-c-introduction-45a66ca9461f`_):
 ```
-cd test-grpc
+cd spec/cpp/test-grpc
 make clean
 make
 ./server   # open ./client in other window
