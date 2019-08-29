@@ -18,7 +18,7 @@ cd build
 
 Quick test using RPC:
 ```
-make cpp && ./spec/cpp/bin/runRPCtest.sh 
+BFTPATH=`pwd`/spec/cpp/src/bftevents-grpc make cpp && ./spec/cpp/bin/runRPCtest.sh 
 ```
 
 ## Elaborate build: gRPC and protobuf
