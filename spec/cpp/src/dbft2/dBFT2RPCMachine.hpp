@@ -35,8 +35,8 @@ namespace libbft {
 class dBFT2RPCMachine : public SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>
 {
 public:
-   int f; // max number of faulty nodes
-
+   // max number of faulty nodes
+   int f;
    // events server to receive info from other nodes
    BFTEventsServer eventsServer;
 
@@ -44,9 +44,9 @@ public:
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
    dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
-     : f(_f)
+     : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
+     , f(_f)
      , eventsServer(_me.id)
-     , SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
    //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
    {
       assert(f >= 0);
@@ -104,8 +104,8 @@ public:
       // creating dBFT transitions
       // -------------------------
 
-      auto machine = this;
-      int id = this->me.id;
+      //auto machine = this;
+      //int id = this->me.id;
 
       // preinitial -> started
       preinitial->addTransition(
@@ -253,7 +253,7 @@ private:
          p->events.push_back(new TimedEvent(e.countdown, e.name, e.machine.id, e.eventParams));
       }
    }
-   
+
 public:
    string toString(string format = "") override
    {

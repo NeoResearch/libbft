@@ -11,8 +11,8 @@
 #include <random>
 
 // standard Transition
-#include "../timing/Timer.hpp"
 #include "../machine/MachineId.hpp"
+#include "../timing/Timer.hpp"
 //#include "State.h"
 
 using namespace std; // TODO: remove
@@ -103,7 +103,7 @@ public:
    {
       stringstream ss;
       ss << "Event " << name << "(";
-      for (int i = 0; i < this->parameters.size(); i++)
+      for (int i = 0; i < ((int)this->parameters.size()); i++)
          ss << ((i != ((int)parameters.size()) - 1) ? "," : "") << this->parameters[i];
       ss << ")";
       return ss.str();
@@ -137,7 +137,7 @@ public:
    {
       stringstream ss;
       ss << "TimedEvent " << this->name << "(";
-      for (int i = 0; i < this->parameters.size(); i++)
+      for (int i = 0; i < ((int)this->parameters.size()); i++)
          ss << ((i != ((int)parameters.size()) - 1) ? "," : "") << this->parameters[i];
       ss << ") " << (timer->expired() ? "expired" : "notexpired"); // default suffix '()' (empty parameters)
       return ss.str();

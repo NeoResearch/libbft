@@ -1,8 +1,8 @@
 
 // system
 #include <iostream>
+#include <thread>
 #include <vector>
-#include<thread>
 
 // lib
 
@@ -30,7 +30,8 @@ simpleExample()
    State<Data>* final = new State<Data>(true, "Final");
 
    // unused (demonstration)
-   Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
+   //// Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
+
    //alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*, int) -> bool { return true; }));
    //initial->addTransition(alwaysTrue); // (unused)
 
@@ -285,8 +286,6 @@ main()
 
    // real thing starting to happen here
    dbft_test_real_dbft2_primary();
-
-   
 
    //std::thread t([](bool b){return true;});
    //t.join();

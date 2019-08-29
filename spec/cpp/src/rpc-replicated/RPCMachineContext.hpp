@@ -12,10 +12,10 @@
 // libbft includes
 
 // Prototype?
+#include "../bftevents-grpc/BFTEventsClient.hpp"
 #include "../events/Event.hpp"
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
-#include "../bftevents-grpc/BFTEventsClient.hpp"
 
 using namespace std; // TODO: remove
 
@@ -24,13 +24,14 @@ namespace libbft {
 template<class Param = nullptr_t>
 struct RPCMachineContext
 {
-   int me;
    // my params
    Param* params;
-   // my events
-   vector<Event*> events;
+   // my id
+   int me;
    // the world I can connect to
    vector<BFTEventsClient*> world;
+   // my events
+   vector<Event*> events;
 
    // Different from MultiContext... in this one, I can only access my own events
    bool hasEvent(string name, vector<string> eventParams)

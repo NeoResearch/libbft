@@ -49,8 +49,8 @@ public:
 
    // specific timer
    SingleTimerStateMachine(Timer* t = nullptr, MachineId me = 0, Clock* _clock = nullptr, string name = "STSM")
-     : timer(t)
-     , TimedStateMachine<State<Param>, Param>(_clock, me, name)
+     : TimedStateMachine<State<Param>, Param>(_clock, me, name)
+     , timer(t)
    {
       // timer must exist
       if (!timer)
