@@ -284,11 +284,13 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 }
 
 void
-RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T)
+RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int DelayMS)
 {
    cout << "will create RPC machine context!" << endl;
-   // v = me, H = 1501, T = 3 (secs), R = N (multi-node network)
-   dBFT2Context data(me, H, T, N); // 1500 -> primary (R=1)
+   // v = 0, H = 1501, T = 3 (secs), R = N (multi-node network)
+   int v = 0;
+   dBFT2Context data(v, H, T, N); // 1500 -> primary (R=1)
+   // dBFT2Context(int _v, int _H, int _T, int _R)
 
    // initialize my world: one RPC Client for every other node (including myself)
    vector<BFTEventsClient*> worldCom(N, nullptr);
@@ -310,7 +312,7 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T)
    cout << graphviz << endl;
 
    // send OnStart event, after 1 second
-   std::thread threadOnStart(sendOnStart, worldCom[me], 1000);
+   std::thread threadOnStart(sendOnStart, worldCom[me], DelayMS);
 
    // run dBFT on main thread and start RPC on background
    // TODO: 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
@@ -333,9 +335,9 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T)
 int
 main(int argc, char* argv[])
 {
-   if (argc != 6) {
-      std::cout << "missing parameters! argc=" << argc << " and should be 6" << std::endl;
-      std::cout << "requires: my_index N f H T" << std::endl;
+   if (argc != 7) {
+      std::cout << "missing parameters! argc=" << argc << " and should be 7" << std::endl;
+      std::cout << "requires: my_index N f H T DelayMS" << std::endl;
       return 1;
    }
 
@@ -344,8 +346,9 @@ main(int argc, char* argv[])
    int f = stoi(std::string(argv[3]));        // number of max faulty nodes
    int H = stoi(std::string(argv[4]));        // initial height
    int T = stoi(std::string(argv[5]));        // block time (3 secs)
+   int DelayMS = stoi(std::string(argv[6]));  // initial delay for OnStart (in MS)
 
-   RPC_dbft_test_real_dbft2(my_index, N, f, H, T);
+   RPC_dbft_test_real_dbft2(my_index, N, f, H, T, DelayMS);
 
    cout << "finished successfully!" << endl;
 

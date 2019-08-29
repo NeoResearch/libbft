@@ -138,7 +138,7 @@ public:
            ss << d->params->v;
            vector<string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
-           return d->hasEvent("OnPrepareRequest", params);
+           return d->hasEvent("PrepareRequest", params);
         })));
 
       // primary -> reqSentOrRecv
@@ -148,13 +148,12 @@ public:
                                // C >= T?
                                return C.elapsedTime() >= d->params->T;
                             }))
-          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest()", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              cout << "sending PrepareRequest from " << me.id << " for view " << d->params->v << endl;
              // TODO: attach v=... H=... here?  block hash as well?
-             //stringstream ss;
-             //ss << d->params->v;
-             //vector<string> params(1, ss.str());
-             vector<string> evArgs;
+             stringstream ss;
+             ss << d->params->v;
+             vector<string> evArgs(1, ss.str());
              d->broadcast("PrepareRequest", evArgs);
           }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {

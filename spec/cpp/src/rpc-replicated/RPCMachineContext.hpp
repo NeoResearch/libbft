@@ -71,8 +71,11 @@ public:
 
    void broadcast(std::string event, std::vector<std::string> eventArgs)
    {
-      for(unsigned i=0; i<world.size(); i++)
+      std::cout << "  -~-~:broadcasting event '" << event << "' with params = " << eventArgs.size() << std::endl;
+      for (unsigned i = 0; i < world.size(); i++) {
+         std::cout << "  -~-~:sending to " << i << " event '" << event << "' with params = " << eventArgs.size() << std::endl;
          world[i]->informEvent(me, event, eventArgs);
+      }
    }
 
    /*
