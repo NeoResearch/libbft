@@ -30,9 +30,12 @@ struct RPCMachineContext
    int me;
    // the world I can connect to
    vector<BFTEventsClient*> world;
+
+private:
    // my events
    vector<Event*> events;
 
+public:
    // Different from MultiContext... in this one, I can only access my own events
    bool hasEvent(string name, vector<string> eventParams)
    {
@@ -48,6 +51,26 @@ struct RPCMachineContext
      , me(_me)
      , world(_world)
    {
+   }
+
+   void addEvents(vector<Event*> pendingEvents)
+   {
+      events.insert(events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+   }
+
+   bool launchTimedEvent(ScheduledEvent se)
+   {
+      if (se.machineTo.id != me)
+         return false; // not for me
+
+      // launch TimedEvent, from -1 (broadcast/system style..). Could be from 'me' too.
+      events.push_back(new TimedEvent(se.countdown, se.name, MachineId(-1), se.eventParams));
+      return true;
+   }
+
+   bool launchEventRPC()
+   {
+      return false;
    }
 };
 

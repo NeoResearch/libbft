@@ -43,7 +43,7 @@ public:
    std::vector<ScheduledEvent> schedEvents;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
+   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(), string _name = "replicated_dBFT", Clock* _clock = nullptr)
      : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
      , f(_f)
      , eventsServer(_me.id)
@@ -171,8 +171,8 @@ public: // real public
 
       if (pendingEvents.size() > 0) {
          cout << "Has some pending events to process! size = " << pendingEvents.size() << endl;
-         // update states (TODO: update to do in concurrent)
-         p->events.insert(p->events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+         // update states (TODO: update to do in concurrent) .. make some lock here?
+         p->addEvents(pendingEvents);
          pendingEvents.clear();
       }
 
@@ -249,9 +249,10 @@ private:
       cout << "launching scheduled events!" << endl;
       // launch all scheduled events
       for (unsigned i = 0; i < schedEvents.size(); i++) {
-         ScheduledEvent e = schedEvents[i];
-         p->events.push_back(new TimedEvent(e.countdown, e.name, e.machine.id, e.eventParams));
+         p->launchTimedEvent(schedEvents[i]);
       }
+      // clear all scheduled events
+      schedEvents.clear();
    }
 
 public:

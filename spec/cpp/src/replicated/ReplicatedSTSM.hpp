@@ -92,12 +92,12 @@ public:
       // launch all scheduled events
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
          ScheduledEvent e = scheduledEvents[i];
-         if (e.machine.id == -1) {
+         if (e.machineTo.id == -1) {
             // broadcast event
             p->broadcast(new TimedEvent(e.countdown, e.name, -1, e.eventParams), -1);
          } else {
             // target machine event
-            p->sendTo(new TimedEvent(e.countdown, e.name, -1, e.eventParams), e.machine);
+            p->sendTo(new TimedEvent(e.countdown, e.name, -1, e.eventParams), e.machineTo);
          }
       }
    }

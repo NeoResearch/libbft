@@ -26,14 +26,16 @@ struct ScheduledEvent
 {
    string name;                // event name
    vector<string> eventParams; // event parameters
-   double countdown;
-   MachineId machine;
+   double countdown;           // countdown in seconds for event
+   MachineId machineTo;        // machine to send event
+   // machine 'from' is not needed, as this is usually seen as a system event,
+   // but if necessary, we can add this option here, to "simulate" a timed message from other nodes
 
-   ScheduledEvent(string _name, double _countdown, MachineId _machine, vector<string> _eventParams = vector<string>(0))
+   ScheduledEvent(string _name, double _countdown, MachineId _machineTo, vector<string> _eventParams = vector<string>(0))
      : name(_name)
      , eventParams(_eventParams)
      , countdown(_countdown)
-     , machine(_machine)
+     , machineTo(_machineTo)
    {
    }
 };

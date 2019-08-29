@@ -32,7 +32,7 @@ simpleExample()
 
    // unused (demonstration)
    //// Transition<Data>* alwaysTrue = new Transition<Data>(final, "always true");
-   
+
    //alwaysTrue->add(Condition<Data>("true", [](const Timer& t, Data*, int) -> bool { return true; }));
    //initial->addTransition(alwaysTrue); // (unused)
 
@@ -272,10 +272,12 @@ dbft_test_primary()
 }
 
 void
-RPC_dbft_test_real_dbft2_primary()
+RPC_dbft_test_real_dbft2_primary(int my_index, int N, int f, int H, int T)
 {
+   int me = my_index;
+
    cout << "will create RPC machine!" << endl;
-   auto machine = new dBFT2RPCMachine(0, 1); // f=0, N=1
+   auto machine = new dBFT2RPCMachine(f, N, MachineId(me));
 
    //This machine doesn't have all stuff for testing... real RPC one
 
@@ -301,13 +303,11 @@ RPC_dbft_test_real_dbft2_primary()
 
    cout << "RPC Machine => " << machine->toString() << endl;
 
-   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1501, 3, 2); // 1500 -> primary (R=1)
+   // v = me, H = 1501, T = 3 (secs), R = N (multi-node network)
+   dBFT2Context data(me, H, T, N); // 1500 -> primary (R=1)
 
    // TODO: should initialize world here... how many of us exist? get from main?
    vector<BFTEventsClient*> world;
-   // should get from main // TODO:
-   int me = 0;
 
    RPCMachineContext<dBFT2Context> ctx(&data, me, world);
    // create world here? // TODO:
@@ -363,7 +363,7 @@ nothing()
 }
 
 int
-main()
+main(int argc, char* argv[])
 {
    /*
       cout << "binding thread" << endl;
@@ -388,7 +388,14 @@ main()
    //dbft_test_backup_multi();
 
    // real thing starting to happen here
-   RPC_dbft_test_real_dbft2_primary();
+
+   int my_index = 0; // GET FROM MAIN()
+   int N = 4;        // total number of nodes
+   int f = 1;        // number of max faulty nodes
+   int H = 1500;     // initial height
+   int T = 3;        // block time (3 secs)
+
+   RPC_dbft_test_real_dbft2_primary(my_index, N, f, H, T);
 
    //std::thread t([](bool b){return true;});
    //t.join();
