@@ -35,8 +35,6 @@ private:
       for (unsigned i = 0; i < eventArgs.size(); i++)
          eventArgs[i] = request->event_args(i);
 
-      //std::string event = request->event();
-
       std::cout << "  ->-> RPC inform is event '" << event << "' with args = " << eventArgs.size() << std::endl;
 
       for (unsigned i = 0; i < eventArgs.size(); i++)
@@ -107,6 +105,6 @@ public:
    }
 };
 
-} // libbft
+} // namespace libbft
 
 #endif // BFTEVENTSSERVER_HPP

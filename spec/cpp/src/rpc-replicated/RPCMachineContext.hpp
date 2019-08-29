@@ -69,6 +69,12 @@ public:
       //events.insert(events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
    }
 
+   void broadcast(std::string event, std::vector<std::string> eventArgs)
+   {
+      for(unsigned i=0; i<world.size(); i++)
+         world[i]->informEvent(me, event, eventArgs);
+   }
+
    /*
    bool launchTimedEvent(ScheduledEvent se)
    {

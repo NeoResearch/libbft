@@ -141,6 +141,26 @@ public:
            return d->hasEvent("OnPrepareRequest", params);
         })));
 
+      // primary -> reqSentOrRecv
+      auto primToReqSentOrRecv1 = new Transition<RPCMachineContext<dBFT2Context>>(reqSentOrRecv);
+      primary->addTransition(
+        primToReqSentOrRecv1->add(Condition<RPCMachineContext<dBFT2Context>>("C >= T?", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
+                               // C >= T?
+                               return C.elapsedTime() >= d->params->T;
+                            }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest()", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             cout << "sending PrepareRequest from " << me.id << " for view " << d->params->v << endl;
+             // TODO: attach v=... H=... here?  block hash as well?
+             //stringstream ss;
+             //ss << d->params->v;
+             //vector<string> params(1, ss.str());
+             vector<string> evArgs;
+             d->broadcast("PrepareRequest", evArgs);
+          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             C.reset();
+          })));
+
       // reqSentOrRecv -> commitSent
       reqSentOrRecv->addTransition(
         (new Transition<RPCMachineContext<dBFT2Context>>(commitSent))->add(Condition<RPCMachineContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
