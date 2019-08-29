@@ -312,7 +312,7 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T)
    std::thread threadOnStart(sendOnStart, worldCom[me], 1000);
 
    // run dBFT on main thread and start RPC on background
-   // TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
+   // TODO: 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
    machine->runWithEventsServer(nullptr, &ctx);
 
    cout << "FINISHED WORK ON MAIN THREAD... JUST JOIN OnStart THREAD" << endl;
@@ -329,49 +329,22 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T)
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
-void
-nothing()
-{
-   std::cout << "OI" << std::endl;
-}
-
 int
 main(int argc, char* argv[])
 {
-   /*
-      cout << "binding thread" << endl;
-   std::thread t(std::bind(nothing));
-   sleep(1);
-   cout << "will join thread" << endl;
-   t.join();
-   cout << "after join thread" << endl;
+   if (argc != 6) {
+      std::cout << "missing parameters! argc=" << argc << " and should be 6" << std::endl;
+      std::cout << "requires: my_index N f H T" << std::endl;
+      return 1;
+   }
 
-   return 1;
-   */
-
-   cout << "begin test state machines!" << endl;
-
-   // simple example: wait one second and quit
-   //simpleExample();
-
-   // Neo dbft modeling as example
-   //dbft_test_primary();
-
-   // warm-up
-   //dbft_test_backup_multi();
-
-   // real thing starting to happen here
-
-   int my_index = 0; // GET FROM MAIN()
-   int N = 4;        // total number of nodes
-   int f = 1;        // number of max faulty nodes
-   int H = 1501;     // initial height
-   int T = 3;        // block time (3 secs)
+   int my_index = stoi(std::string(argv[1])); // GET FROM MAIN()
+   int N = stoi(std::string(argv[2]));        // total number of nodes
+   int f = stoi(std::string(argv[3]));        // number of max faulty nodes
+   int H = stoi(std::string(argv[4]));        // initial height
+   int T = stoi(std::string(argv[5]));        // block time (3 secs)
 
    RPC_dbft_test_real_dbft2(my_index, N, f, H, T);
-
-   //std::thread t([](bool b){return true;});
-   //t.join();
 
    cout << "finished successfully!" << endl;
 
