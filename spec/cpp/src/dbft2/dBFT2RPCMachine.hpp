@@ -38,15 +38,16 @@ public:
    // max number of faulty nodes
    int f;
    // events server to receive info from other nodes
-   BFTEventsServer eventsServer;
+   BFTEventsServer<dBFT2Context> eventsServer;
 
-   std::vector<ScheduledEvent> schedEvents;
+   // trying to avoid scheduled events here... this is a real machine, not for testing.
+   ///std::vector<ScheduledEvent> schedEvents;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(), string _name = "replicated_dBFT", Clock* _clock = nullptr)
+   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(), RPCMachineContext<dBFT2Context>* myCtx = nullptr, string _name = "replicated_dBFT", Clock* _clock = nullptr)
      : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
      , f(_f)
-     , eventsServer(_me.id)
+     , eventsServer(_me.id, myCtx)
    //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
    {
       assert(f >= 0);
@@ -240,9 +241,11 @@ public:
 
    void OnInitialize(RPCMachineContext<dBFT2Context>* p) override
    {
-      launchSchedEvents(p);
+      //launchSchedEvents(p);
    }
 
+// no scheduled events on a real machine (try to avoid this, and only put on testing with mocking)
+/*
 private:
    void launchSchedEvents(RPCMachineContext<dBFT2Context>* p)
    {
@@ -254,6 +257,7 @@ private:
       // clear all scheduled events
       schedEvents.clear();
    }
+*/
 
 public:
    string toString(string format = "") override

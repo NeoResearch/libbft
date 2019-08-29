@@ -33,7 +33,26 @@ public:
       //
    }
 
-   int informEvent(int from, std::string event)
+   BFTEventsClient(int _me)
+     : stub_(
+         BFTEvent::NewStub(
+           std::shared_ptr<Channel>(
+             grpc::CreateChannel(getAddress(_me), grpc::InsecureChannelCredentials()))))
+     , me(_me)
+   {
+      //
+   }
+
+   // helper function to calculate address
+   static std::string getAddress(int me)
+   {
+      std::stringstream ss;
+      ss << "0.0.0.0:500" << me; // 0 -> 5000
+      std::string _address = ss.str();
+      return _address;
+   }
+
+   bool informEvent(int from, std::string event)
    {
       EventInform request;
 
@@ -46,14 +65,16 @@ public:
 
       Status status = stub_->informEvent(&context, request, &reply);
 
+      return status.ok();
+      /*
       if (status.ok()) {
          return reply.gotit();
       } else {
          std::cout << status.error_code() << ": " << status.error_message() << std::endl;
          return -1;
       }
+      */
    }
-
 };
 
 #endif // BFTEVENTSCLIENT_HPP

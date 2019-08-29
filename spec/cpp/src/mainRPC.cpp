@@ -276,9 +276,6 @@ RPC_dbft_test_real_dbft2_primary(int my_index, int N, int f, int H, int T)
 {
    int me = my_index;
 
-   cout << "will create RPC machine!" << endl;
-   auto machine = new dBFT2RPCMachine(f, N, MachineId(me));
-
    //This machine doesn't have all stuff for testing... real RPC one
 
    /*
@@ -301,16 +298,21 @@ RPC_dbft_test_real_dbft2_primary(int my_index, int N, int f, int H, int T)
    // ==============================
    */
 
-   cout << "RPC Machine => " << machine->toString() << endl;
-
+   cout << "will create RPC machine context!" << endl;
    // v = me, H = 1501, T = 3 (secs), R = N (multi-node network)
    dBFT2Context data(me, H, T, N); // 1500 -> primary (R=1)
 
-   // TODO: should initialize world here... how many of us exist? get from main?
-   vector<BFTEventsClient*> world;
+   // initialize my world
+   vector<BFTEventsClient*> world(N, nullptr);
+   for (unsigned i = 0; i < world.size(); i++)
+      world[i] = new BFTEventsClient(i);
 
    RPCMachineContext<dBFT2Context> ctx(&data, me, world);
-   // create world here? // TODO:
+
+   cout << "will create RPC machine!" << endl;
+   auto machine = new dBFT2RPCMachine(f, N, MachineId(me), &ctx);
+
+   cout << "RPC Machine => " << machine->toString() << endl;
 
    //ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine->machines[0]));
 
@@ -332,10 +334,19 @@ RPC_dbft_test_real_dbft2_primary(int my_index, int N, int f, int H, int T)
    //std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
 
    // schedule local OnStart() after 1 second (from myself)
-   machine->schedEvents.push_back(ScheduledEvent("OnStart", 1.0, ctx.me));
+   //machine->schedEvents.push_back(ScheduledEvent("OnStart", 10.0, ctx.me));
 
    // this will run on a dettached (background) thread
    machine->runEventsServer();
+
+   // wait a little bit for RPC server to get up
+   // TODO(@igormcoelho): find a condition_variable to attach here (from RPC started), instead of sleep
+   std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 100 ms
+
+   // inform OnStart event, for this machine
+   bool output = world[me]->informEvent(-1, "OnStart");
+   if (output)
+      std::cout << "Event message 'OnStart' delivered!" << std::endl;
 
    // run dBFT on main thread (RPC is running on background)
    machine->run(nullptr, &ctx); // cannot do both here
@@ -392,7 +403,7 @@ main(int argc, char* argv[])
    int my_index = 0; // GET FROM MAIN()
    int N = 4;        // total number of nodes
    int f = 1;        // number of max faulty nodes
-   int H = 1500;     // initial height
+   int H = 1501;     // initial height
    int T = 3;        // block time (3 secs)
 
    RPC_dbft_test_real_dbft2_primary(my_index, N, f, H, T);

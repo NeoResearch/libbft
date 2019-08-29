@@ -4,6 +4,7 @@
 #include "BFTEventsServer.hpp"
 
 using namespace std;
+using namespace libbft;
 
 int
 main(int argc, char** argv)
@@ -16,7 +17,7 @@ main(int argc, char** argv)
 
    std::cout << "I am # " << me << std::endl;
 
-   BFTEventsServer server(me);
+   BFTEventsServer<> server(me);
    server.RunForever();
 
    return 0;

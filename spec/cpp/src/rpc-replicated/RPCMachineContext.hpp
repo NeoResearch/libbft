@@ -14,6 +14,7 @@
 // Prototype?
 #include "../bftevents-grpc/BFTEventsClient.hpp"
 #include "../events/Event.hpp"
+#include "../events/ScheduledEvent.hpp"
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
 
@@ -53,11 +54,22 @@ public:
    {
    }
 
-   void addEvents(vector<Event*> pendingEvents)
+   void registerEvent(Event* event)
    {
-      events.insert(events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+      std::cout << "RPCMachineContext registering event '" << event->toString() << "'" << std::endl;
+      events.push_back(event);
    }
 
+   // this is used to add events that come from any other sources, and get pending. TODO(@igormcoelho): is this the best design?
+   void addEvents(vector<Event*> pendingEvents)
+   {
+      // do manual insertion of events, because of print messages
+      for (unsigned i = 0; i < pendingEvents.size(); i++)
+         registerEvent(pendingEvents[i]);
+      //events.insert(events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+   }
+
+   /*
    bool launchTimedEvent(ScheduledEvent se)
    {
       if (se.machineTo.id != me)
@@ -67,10 +79,11 @@ public:
       events.push_back(new TimedEvent(se.countdown, se.name, MachineId(-1), se.eventParams));
       return true;
    }
+*/
 
-   bool launchEventRPC()
+   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters = vector<string>(0))
    {
-      return false;
+      registerEvent(new Event(_name, _from, _parameters));
    }
 };
 
