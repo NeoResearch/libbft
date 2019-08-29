@@ -28,7 +28,7 @@ This should be equivalent to (after manually building on `bftevents-grpc`):
 
 This should build everything (even `bftevents-grpc`):
 ```
-(cd spec/cpp/src/bftevents-grpc/ && protoc --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` bftevent.proto && protoc --cpp_out=. bftevent.proto && g++ -c -std=c++11 `pkg-config --cflags protobuf grpc` bftevent.pb.cc -L/usr/local/lib `pkg-config --libs protobuf grpc++` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o bftevent.pb.o && g++ -c -std=c++11 `pkg-config --cflags protobuf grpc` bftevent.grpc.pb.cc -L/usr/local/lib `pkg-config --libs protobuf grpc++` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o bftevent.grpc.pb.o && cd ../../src && g++ -g -Wall -Ofast mainRPC.cpp -o ../app_RPCtest ./bftevents-grpc/bftevent.grpc.pb.o ./bftevents-grpc/bftevent.pb.o -lpthread -L/usr/local/lib -lprotobuf -lgrpc++ -lgrpc++_reflection -ldl)
+(cd spec/cpp/src/bftevents-grpc/ && protoc --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` bftevent.proto && protoc --cpp_out=. bftevent.proto && g++ -c -std=c++11 `pkg-config --cflags protobuf grpc` bftevent.pb.cc -L/usr/local/lib `pkg-config --libs protobuf grpc++` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o bftevent.pb.o && g++ -c -std=c++11 `pkg-config --cflags protobuf grpc` bftevent.grpc.pb.cc -L/usr/local/lib `pkg-config --libs protobuf grpc++` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o bftevent.grpc.pb.o && cd ../../src && g++ -g -Wall -Ofast mainRPC.cpp -o ../build/app_RPCtest ./bftevents-grpc/bftevent.grpc.pb.o ./bftevents-grpc/bftevent.pb.o -lpthread -L/usr/local/lib -lprotobuf -lgrpc++ -lgrpc++_reflection -ldl)
 ```
 
 
