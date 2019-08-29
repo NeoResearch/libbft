@@ -27,21 +27,20 @@ class BFTEventsServer final : public BFTEvent::Service
 private:
    Status informEvent(ServerContext* context, const EventInform* request, EventReply* reply) override
    {
-      std::cout << "  ->-> received inform!" << std::endl;
+      std::cout << "  ->-> RPC received inform!" << std::endl;
       int from = request->from();
       std::string event = request->event();
+      std::cout << "  ->-> RPC inform is event '" << event << "'" << std::endl;
 
       if (myMachine == nullptr) {
-         std::cout << "no machine to respond to!!! Print!" << std::endl;
-         std::cout << "from = " << from << std::endl;
-         std::cout << "event = " << event << std::endl;
-      } else
-      {
-         std::cout << "  ->-> Sending event to myMachine!" << std::endl;
-         MachineId mFrom(from); // TODO(@igormcoelho): find address of sender machine
+         std::cout << "  ->-> RPC no machine to respond to!!! Print!" << std::endl;
+         std::cout << "  ->-> RPC from = " << from << std::endl;
+         std::cout << "  ->-> RPC event = " << event << std::endl;
+      } else {
+         std::cout << "  ->-> RPC Sending event to myMachine!" << std::endl;
+         MachineId mFrom(from);                    // TODO(@igormcoelho): find address of sender machine
          myMachine->addEventFromRPC(event, mFrom); // TODO(@igormcoelho): capture event args/parameters
       }
-      
 
       int gotit = 99;
 

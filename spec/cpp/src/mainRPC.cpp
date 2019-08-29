@@ -271,92 +271,54 @@ dbft_test_primary()
    machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
+// helper method: will send OnStart after 1 second
 void
-RPC_dbft_test_real_dbft2_primary(int my_index, int N, int f, int H, int T)
+sendOnStart(BFTEventsClient* myClient, int delayMS)
 {
-   int me = my_index;
+   std::this_thread::sleep_for(std::chrono::milliseconds(delayMS)); // 1000 ms -> 1 sec
+   std::cout << " -x-x-> Will deliver message 'OnStart'" << std::endl;
+   bool output = myClient->informEvent(-1, "OnStart");
+   if (output)
+      std::cout << " -x-x-> Event message 'OnStart' delivered!" << std::endl;
+}
 
-   //This machine doesn't have all stuff for testing... real RPC one
-
-   /*
-   // ==============================
-   // prepare two events for testing
-   // ==============================
-   // event scheduled to raise "OnStart" machine 0, after 1 seconds
-   machine->scheduleEvent(
-     1.0,          // 1 second to expire: after initialize()
-     MachineId(0), // machine 0
-     "OnStart",
-     vector<string>(0)); // no parameters
-
-   // event scheduled to raise "OnPrepareRequest" machine 0, after 3 seconds
-   machine->scheduleEvent(
-     3.0,          // 3 second to expire: after initialize()
-     MachineId(0), // machine 0
-     "OnPrepareRequest",
-     vector<string>(1, "0")); // view = 0
-   // ==============================
-   */
-
+void
+RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T)
+{
    cout << "will create RPC machine context!" << endl;
    // v = me, H = 1501, T = 3 (secs), R = N (multi-node network)
    dBFT2Context data(me, H, T, N); // 1500 -> primary (R=1)
 
-   // initialize my world
-   vector<BFTEventsClient*> world(N, nullptr);
-   for (unsigned i = 0; i < world.size(); i++)
-      world[i] = new BFTEventsClient(i);
+   // initialize my world: one RPC Client for every other node (including myself)
+   vector<BFTEventsClient*> worldCom(N, nullptr);
+   for (unsigned i = 0; i < worldCom.size(); i++)
+      worldCom[i] = new BFTEventsClient(i);
 
-   RPCMachineContext<dBFT2Context> ctx(&data, me, world);
+   // my own context: including my data, my name and my world
+   RPCMachineContext<dBFT2Context> ctx(&data, me, worldCom);
 
    cout << "will create RPC machine!" << endl;
+   // ctx is passed here just to initialize my server... ctx is not stored.
    auto machine = new dBFT2RPCMachine(f, N, MachineId(me), &ctx);
-
-   cout << "RPC Machine => " << machine->toString() << endl;
-
-   //ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine->machines[0]));
-
    // run for 5.0 seconds max
    machine->setWatchdog(5.0);
+   cout << "RPC Machine => " << machine->toString() << endl;
 
    cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
-
    string graphviz = machine->toString("graphviz");
-
    cout << graphviz << endl;
 
-   // TODO: this is where we need two threads at least...
-   // one to hear external RPC events
-   // another to execute our independent machine
+   // send OnStart event, after 1 second
+   std::thread threadOnStart(sendOnStart, worldCom[me], 1000);
 
-   cout << "Starting thread to handle RPC messages:" << endl;
-   //global_dBFT_machine = machine;
-   //std::thread threadRPC(globalRunRPCServer); //machine->runEventsServer();
+   // run dBFT on main thread and start RPC on background
+   // TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
+   machine->runWithEventsServer(nullptr, &ctx);
 
-   // schedule local OnStart() after 1 second (from myself)
-   //machine->schedEvents.push_back(ScheduledEvent("OnStart", 10.0, ctx.me));
+   cout << "FINISHED WORK ON MAIN THREAD... JUST JOIN OnStart THREAD" << endl;
 
-   // this will run on a dettached (background) thread
-   machine->runEventsServer();
-
-   // wait a little bit for RPC server to get up
-   // TODO(@igormcoelho): find a condition_variable to attach here (from RPC started), instead of sleep
-   std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 100 ms
-
-   // inform OnStart event, for this machine
-   bool output = world[me]->informEvent(-1, "OnStart");
-   if (output)
-      std::cout << "Event message 'OnStart' delivered!" << std::endl;
-
-   // run dBFT on main thread (RPC is running on background)
-   machine->run(nullptr, &ctx); // cannot do both here
-
-   cout << "FINISHED WORK ON MAIN THREAD... JUST WAITING FOR RPC TO FINISH NOW." << endl;
-   //global_dBFT_machine->killEventsServer();
-   //threadRPC.join(); // wait for RPC to end
-
-   // stops events server and join its thread
-   machine->killEventsServer();
+   // finishes thread OnStart
+   threadOnStart.join();
 
    // show
    FILE* fgraph = fopen("fgraph.dot", "w");
@@ -406,7 +368,7 @@ main(int argc, char* argv[])
    int H = 1501;     // initial height
    int T = 3;        // block time (3 secs)
 
-   RPC_dbft_test_real_dbft2_primary(my_index, N, f, H, T);
+   RPC_dbft_test_real_dbft2(my_index, N, f, H, T);
 
    //std::thread t([](bool b){return true;});
    //t.join();

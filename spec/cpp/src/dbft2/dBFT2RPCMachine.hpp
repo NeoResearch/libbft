@@ -44,7 +44,7 @@ public:
    ///std::vector<ScheduledEvent> schedEvents;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(), RPCMachineContext<dBFT2Context>* myCtx = nullptr, string _name = "replicated_dBFT", Clock* _clock = nullptr)
+   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(), RPCMachineContext<dBFT2Context>* myCtx = nullptr, string _name = "dBFT2_RPC_machine", Clock* _clock = nullptr)
      : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
      , f(_f)
      , eventsServer(_me.id, myCtx)
@@ -190,6 +190,20 @@ private:
    }
 
 public:
+   // TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
+   virtual void runWithEventsServer(State<RPCMachineContext<dBFT2Context>>* initial, RPCMachineContext<dBFT2Context>* ctx)
+   {
+      cout << "Starting thread to handle RPC messages:" << endl;
+      runEventsServer(); // this will run on a dettached (background) thread
+      // will wait few ms, just for RPC to start. TODO(@igormcoelho): should sync on some condition_variable from RPC (indicating 'started')
+      std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 100 ms
+      // run dBFT on main thread (RPC is already running on background)
+      this->run(initial, ctx);
+      // stops events server and join its thread
+      killEventsServer();
+   }
+
+private:
    virtual void runEventsServer()
    {
       // starts rpc thread in background
@@ -209,6 +223,7 @@ public:
       fillSimpleCycle();
    }
 
+public:
    /*
 
    virtual State<dBFT2Context>* initialize(State<dBFT2Context>* current, RPCMachineContext<dBFT2Context>* p) override
@@ -244,8 +259,8 @@ public:
       //launchSchedEvents(p);
    }
 
-// no scheduled events on a real machine (try to avoid this, and only put on testing with mocking)
-/*
+   // no scheduled events on a real machine (try to avoid this, and only put on testing with mocking)
+   /*
 private:
    void launchSchedEvents(RPCMachineContext<dBFT2Context>* p)
    {
