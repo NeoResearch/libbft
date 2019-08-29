@@ -16,6 +16,11 @@ cd build
 ./app_test
 ```
 
+Quick test using RPC:
+```
+make cpp && ./spec/cpp/bin/runRPCtest.sh 
+```
+
 ## Elaborate build: gRPC and protobuf
 
 It's possible to build without gRPC, in a raw prototype version, however a real RPC can be build using gRPC and protobuf libraries.
