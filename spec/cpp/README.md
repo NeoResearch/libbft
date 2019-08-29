@@ -5,7 +5,7 @@
 Just enter `build` and use cmake.
 
 ```
-cd build
+cd spec/cpp/build
 cmake ..
 make
 ```
@@ -87,7 +87,12 @@ If this works, you're good to go! \o/
 
 ## Final build: libbft + gRPC
 
-Next steps...
+```
+cd spec/cpp/src/bftevents-grpc
+make
+./bftserver # open ./bftclient in another terminal
+
+```
 
 
 ## License
