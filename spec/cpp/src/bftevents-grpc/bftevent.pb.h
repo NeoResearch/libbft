@@ -179,6 +179,24 @@ class EventInform :
 
   // accessors -------------------------------------------------------
 
+  // repeated string event_args = 3;
+  int event_args_size() const;
+  void clear_event_args();
+  static const int kEventArgsFieldNumber = 3;
+  const std::string& event_args(int index) const;
+  std::string* mutable_event_args(int index);
+  void set_event_args(int index, const std::string& value);
+  void set_event_args(int index, std::string&& value);
+  void set_event_args(int index, const char* value);
+  void set_event_args(int index, const char* value, size_t size);
+  std::string* add_event_args();
+  void add_event_args(const std::string& value);
+  void add_event_args(std::string&& value);
+  void add_event_args(const char* value);
+  void add_event_args(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& event_args() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_event_args();
+
   // string event = 2;
   void clear_event();
   static const int kEventFieldNumber = 2;
@@ -202,6 +220,7 @@ class EventInform :
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> event_args_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr event_;
   ::PROTOBUF_NAMESPACE_ID::int32 from_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -407,6 +426,71 @@ inline void EventInform::set_allocated_event(std::string* event) {
   }
   event_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), event);
   // @@protoc_insertion_point(field_set_allocated:bftevent.EventInform.event)
+}
+
+// repeated string event_args = 3;
+inline int EventInform::event_args_size() const {
+  return event_args_.size();
+}
+inline void EventInform::clear_event_args() {
+  event_args_.Clear();
+}
+inline const std::string& EventInform::event_args(int index) const {
+  // @@protoc_insertion_point(field_get:bftevent.EventInform.event_args)
+  return event_args_.Get(index);
+}
+inline std::string* EventInform::mutable_event_args(int index) {
+  // @@protoc_insertion_point(field_mutable:bftevent.EventInform.event_args)
+  return event_args_.Mutable(index);
+}
+inline void EventInform::set_event_args(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:bftevent.EventInform.event_args)
+  event_args_.Mutable(index)->assign(value);
+}
+inline void EventInform::set_event_args(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:bftevent.EventInform.event_args)
+  event_args_.Mutable(index)->assign(std::move(value));
+}
+inline void EventInform::set_event_args(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  event_args_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:bftevent.EventInform.event_args)
+}
+inline void EventInform::set_event_args(int index, const char* value, size_t size) {
+  event_args_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:bftevent.EventInform.event_args)
+}
+inline std::string* EventInform::add_event_args() {
+  // @@protoc_insertion_point(field_add_mutable:bftevent.EventInform.event_args)
+  return event_args_.Add();
+}
+inline void EventInform::add_event_args(const std::string& value) {
+  event_args_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:bftevent.EventInform.event_args)
+}
+inline void EventInform::add_event_args(std::string&& value) {
+  event_args_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:bftevent.EventInform.event_args)
+}
+inline void EventInform::add_event_args(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  event_args_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:bftevent.EventInform.event_args)
+}
+inline void EventInform::add_event_args(const char* value, size_t size) {
+  event_args_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:bftevent.EventInform.event_args)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+EventInform::event_args() const {
+  // @@protoc_insertion_point(field_list:bftevent.EventInform.event_args)
+  return event_args_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+EventInform::mutable_event_args() {
+  // @@protoc_insertion_point(field_mutable_list:bftevent.EventInform.event_args)
+  return &event_args_;
 }
 
 // -------------------------------------------------------------------

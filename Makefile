@@ -5,6 +5,7 @@ all: cpp
 #	(cd ~/go/src/github.com/NeoResearch/libbft && dep ensure && go run main.go)
 
 cpp:
+	#export BFTEVENTS=`pwd`/spec/cpp/src/bftevents-grpc
 	(mkdir -p $(projects_folder)/cpp/build && cd $(projects_folder)/cpp/build && cmake .. && make)
 
 cpp_test: cpp

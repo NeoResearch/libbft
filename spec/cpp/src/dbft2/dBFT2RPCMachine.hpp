@@ -38,15 +38,16 @@ public:
    // max number of faulty nodes
    int f;
    // events server to receive info from other nodes
-   BFTEventsServer eventsServer;
+   BFTEventsServer<dBFT2Context> eventsServer;
 
-   std::vector<ScheduledEvent> schedEvents;
+   // trying to avoid scheduled events here... this is a real machine, not for testing.
+   ///std::vector<ScheduledEvent> schedEvents;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2RPCMachine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
+   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(), RPCMachineContext<dBFT2Context>* myCtx = nullptr, string _name = "dBFT2_RPC_machine", Clock* _clock = nullptr)
      : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
      , f(_f)
-     , eventsServer(_me.id)
+     , eventsServer(_me.id, myCtx)
    //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
    {
       assert(f >= 0);
@@ -137,8 +138,27 @@ public:
            ss << d->params->v;
            vector<string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
-           return d->hasEvent("OnPrepareRequest", params);
+           return d->hasEvent("PrepareRequest", params);
         })));
+
+      // primary -> reqSentOrRecv
+      auto primToReqSentOrRecv1 = new Transition<RPCMachineContext<dBFT2Context>>(reqSentOrRecv);
+      primary->addTransition(
+        primToReqSentOrRecv1->add(Condition<RPCMachineContext<dBFT2Context>>("C >= T?", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
+                               // C >= T?
+                               return C.elapsedTime() >= d->params->T;
+                            }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             cout << "sending PrepareRequest from " << me.id << " for view " << d->params->v << endl;
+             // TODO: attach v=... H=... here?  block hash as well?
+             stringstream ss;
+             ss << d->params->v;
+             vector<string> evArgs(1, ss.str());
+             d->broadcast("PrepareRequest", evArgs);
+          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             C.reset();
+          })));
 
       // reqSentOrRecv -> commitSent
       reqSentOrRecv->addTransition(
@@ -171,8 +191,8 @@ public: // real public
 
       if (pendingEvents.size() > 0) {
          cout << "Has some pending events to process! size = " << pendingEvents.size() << endl;
-         // update states (TODO: update to do in concurrent)
-         p->events.insert(p->events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
+         // update states (TODO: update to do in concurrent) .. make some lock here?
+         p->addEvents(pendingEvents);
          pendingEvents.clear();
       }
 
@@ -189,6 +209,20 @@ private:
    }
 
 public:
+   // TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
+   virtual void runWithEventsServer(State<RPCMachineContext<dBFT2Context>>* initial, RPCMachineContext<dBFT2Context>* ctx)
+   {
+      cout << "Starting thread to handle RPC messages:" << endl;
+      runEventsServer(); // this will run on a dettached (background) thread
+      // will wait few ms, just for RPC to start. TODO(@igormcoelho): should sync on some condition_variable from RPC (indicating 'started')
+      std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 100 ms
+      // run dBFT on main thread (RPC is already running on background)
+      this->run(initial, ctx);
+      // stops events server and join its thread
+      killEventsServer();
+   }
+
+private:
    virtual void runEventsServer()
    {
       // starts rpc thread in background
@@ -208,6 +242,7 @@ public:
       fillSimpleCycle();
    }
 
+public:
    /*
 
    virtual State<dBFT2Context>* initialize(State<dBFT2Context>* current, RPCMachineContext<dBFT2Context>* p) override
@@ -240,19 +275,23 @@ public:
 
    void OnInitialize(RPCMachineContext<dBFT2Context>* p) override
    {
-      launchSchedEvents(p);
+      //launchSchedEvents(p);
    }
 
+   // no scheduled events on a real machine (try to avoid this, and only put on testing with mocking)
+   /*
 private:
    void launchSchedEvents(RPCMachineContext<dBFT2Context>* p)
    {
       cout << "launching scheduled events!" << endl;
       // launch all scheduled events
       for (unsigned i = 0; i < schedEvents.size(); i++) {
-         ScheduledEvent e = schedEvents[i];
-         p->events.push_back(new TimedEvent(e.countdown, e.name, e.machine.id, e.eventParams));
+         p->launchTimedEvent(schedEvents[i]);
       }
+      // clear all scheduled events
+      schedEvents.clear();
    }
+*/
 
 public:
    string toString(string format = "") override

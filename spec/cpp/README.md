@@ -5,7 +5,7 @@
 Just enter `build` and use cmake.
 
 ```
-cd build
+cd spec/cpp/build
 cmake ..
 make
 ```
@@ -15,6 +15,22 @@ To quickly test it:
 cd build
 ./app_test
 ```
+
+Quick test using RPC:
+```
+make cpp && ./spec/cpp/bin/runRPCtest.sh 
+```
+
+This should be equivalent to (after manually building on `bftevents-grpc`):
+```
+(cd spec/cpp/build/src && c++ -g -Wall -Ofast -lpthread -L/usr/local/lib -lprotobuf -lgrpc++ -lgrpc++_reflection -dl `pwd`/../../src/bftevents-grpc/bftevent.grpc.pb.o `pwd`/../../src/bftevents-grpc/bftevent.pb.o CMakeFiles/app_RPCtest.dir/mainRPC.cpp.o -o ../app_RPCtest)
+```
+
+This should build everything (even `bftevents-grpc`):
+```
+(cd spec/cpp/src/bftevents-grpc/ && protoc --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` bftevent.proto && protoc --cpp_out=. bftevent.proto && g++ -c -std=c++11 `pkg-config --cflags protobuf grpc` bftevent.pb.cc -L/usr/local/lib `pkg-config --libs protobuf grpc++` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o bftevent.pb.o && g++ -c -std=c++11 `pkg-config --cflags protobuf grpc` bftevent.grpc.pb.cc -L/usr/local/lib `pkg-config --libs protobuf grpc++` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o bftevent.grpc.pb.o && cd ../../src && g++ -g -Wall -Ofast mainRPC.cpp -o ../build/app_RPCtest ./bftevents-grpc/bftevent.grpc.pb.o ./bftevents-grpc/bftevent.pb.o -lpthread -L/usr/local/lib -lprotobuf -lgrpc++ -lgrpc++_reflection -ldl)
+```
+
 
 ## Elaborate build: gRPC and protobuf
 
@@ -37,9 +53,9 @@ apt-get install clang libc++-dev
 My advice is (it will take around 3 GB from your computer, be prepared!):
 
 ```
+cd ../../
 git submodule update --init --recursive   # get submodules for libbft (including grpc)
-cd grpc
-cd third_party/protobuf                   # install protobuf first
+cd spec/cpp/grpc/third_party/protobuf     # install protobuf first
 git submodule update --init --recursive   # get submodules (for protobuf)
 ./autogen.sh                              # generate installation files
 ./configure
@@ -65,13 +81,14 @@ If you want to test `protobuf`:
 cd grpc/third_party/protobuf/examples
 make clean
 make
+touch book.txt
 ./add_person_cpp book.txt   # put some data
 ./list_people_cpp book.txt  # get info
 ```
 
 If you want to test `grpc`, do this simple test (_huge thanks to the authors of `https://medium.com/@andrewvetovitz/grpc-c-introduction-45a66ca9461f`_):
 ```
-cd test-grpc
+cd spec/cpp/test-grpc
 make clean
 make
 ./server   # open ./client in other window
@@ -81,7 +98,12 @@ If this works, you're good to go! \o/
 
 ## Final build: libbft + gRPC
 
-Next steps...
+```
+cd spec/cpp/src/bftevents-grpc
+make
+./bftserver # open ./bftclient in another terminal
+
+```
 
 
 ## License

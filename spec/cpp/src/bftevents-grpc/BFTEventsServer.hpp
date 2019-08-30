@@ -7,6 +7,9 @@
 #include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
 #include <grpcpp/grpcpp.h>
 
+// machine using this server
+#include "../rpc-replicated/RPCMachineContext.hpp"
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -16,16 +19,36 @@ using bftevent::BFTEvent;
 using bftevent::EventInform;
 using bftevent::EventReply;
 
+namespace libbft {
+
+template<class Params = nullptr_t>
 class BFTEventsServer final : public BFTEvent::Service
 {
+private:
    Status informEvent(ServerContext* context, const EventInform* request, EventReply* reply) override
    {
-      std::cout << "received inform!" << std::endl;
+      std::cout << "  ->-> RPC received inform!" << std::endl;
       int from = request->from();
       std::string event = request->event();
 
-      std::cout << "from = " << from << std::endl;
-      std::cout << "event = " << event << std::endl;
+      std::vector<std::string> eventArgs(request->event_args_size());
+      for (unsigned i = 0; i < eventArgs.size(); i++)
+         eventArgs[i] = request->event_args(i);
+
+      std::cout << "  ->-> RPC inform is event '" << event << "' with args = " << eventArgs.size() << std::endl;
+
+      for (unsigned i = 0; i < eventArgs.size(); i++)
+         std::cout << eventArgs[i] << std::endl;
+
+      if (myMachine == nullptr) {
+         std::cout << "  ->-> RPC no machine to respond to!!! Print!" << std::endl;
+         std::cout << "  ->-> RPC from = " << from << std::endl;
+         std::cout << "  ->-> RPC event = " << event << std::endl;
+      } else {
+         std::cout << "  ->-> RPC Sending event to myMachine!" << std::endl;
+         MachineId mFrom(from); // TODO(@igormcoelho): find address of sender machine
+         myMachine->addEventFromRPC(event, mFrom, eventArgs);
+      }
 
       int gotit = 99;
 
@@ -35,11 +58,15 @@ class BFTEventsServer final : public BFTEvent::Service
    }
 
 public:
+   // rpc machine context to serve event responses
+   RPCMachineContext<Params>* myMachine = nullptr;
+
    // pair of server pointer and string address
    std::pair<std::unique_ptr<Server>, std::string> server;
 
-   BFTEventsServer(int me)
-     : server(setupServer(me))
+   BFTEventsServer(int me, RPCMachineContext<Params>* _myMachine = nullptr)
+     : myMachine(_myMachine)
+     , server(setupServer(me))
    {
    }
 
@@ -77,5 +104,7 @@ public:
       server.first->Shutdown();
    }
 };
+
+} // namespace libbft
 
 #endif // BFTEVENTSSERVER_HPP
