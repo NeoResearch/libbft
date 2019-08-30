@@ -235,9 +235,9 @@ public:
                                      if (events[e]->isActivated("PrepareResponse", evArgs))
                                         countPrepResp++;
                             }
-                            cout << "count PrepareResponse = " << countPrepResp << " / " << d->params->M() << endl;
-                            // count >= 2f+1 (or M)
-                            return countPrepResp >= d->params->M();
+                            cout << "count PrepareResponse = " << countPrepResp << " / " << (d->params->M() - 1) << endl;
+                            // count >= 2f+1 (or M) -1 (because Prepare Request also counts)
+                            return countPrepResp >= (d->params->M() - 1);
                          }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("send: Commit(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              cout << "sending Commit from " << me.id << " for view " << d->params->v << endl;
