@@ -1,3 +1,4 @@
+#pragma once
 #ifndef BFTEVENTSSERVER_HPP
 #define BFTEVENTSSERVER_HPP
 
@@ -35,10 +36,9 @@ private:
       for (unsigned i = 0; i < eventArgs.size(); i++)
          eventArgs[i] = request->event_args(i);
 
-      std::cout << "  ->-> RPC inform is event '" << event << "' with args = " << eventArgs.size() << std::endl;
-
+      std::cout << "  ->-> RPC inform from " << from << " is event '" << event << "' with args = " << eventArgs.size() << std::endl;
       for (unsigned i = 0; i < eventArgs.size(); i++)
-         std::cout << eventArgs[i] << std::endl;
+         std::cout << "  ->-> RPC arg " << i << ":" << eventArgs[i] << std::endl;
 
       if (myMachine == nullptr) {
          std::cout << "  ->-> RPC no machine to respond to!!! Print!" << std::endl;
@@ -97,7 +97,6 @@ public:
       std::cout << "  =>=>=> BFT Events Server listening on port: " << server.second << std::endl;
       server.first->Wait();
    }
-
    void Stop()
    {
       std::cout << "  =>=>=> Stopping BFT Events Server at " << server.second << std::endl;

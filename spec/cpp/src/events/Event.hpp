@@ -125,9 +125,9 @@ public:
    virtual string toString() const
    {
       stringstream ss;
-      ss << "Event " << name << "(";
+      ss << "Event [args=" << parameters.size() << "] " << name << "(";
       for (int i = 0; i < ((int)this->parameters.size()); i++)
-         ss << ((i != ((int)parameters.size()) - 1) ? "," : "") << this->parameters[i];
+         ss << this->parameters[i] << ((i != ((int)parameters.size()) - 1) ? "," : "");
       ss << ")";
       return ss.str();
    }
@@ -161,7 +161,7 @@ public:
       stringstream ss;
       ss << "TimedEvent " << this->name << "(";
       for (int i = 0; i < ((int)this->parameters.size()); i++)
-         ss << ((i != ((int)parameters.size()) - 1) ? "," : "") << this->parameters[i];
+         ss << this->parameters[i] << ((i != ((int)parameters.size()) - 1) ? "," : "");
       ss << ") " << (timer->expired() ? "expired" : "notexpired"); // default suffix '()' (empty parameters)
       return ss.str();
    }
