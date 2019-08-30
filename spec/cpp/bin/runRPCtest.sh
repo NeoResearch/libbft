@@ -24,7 +24,7 @@ echo "shared random = $rand"
 #(cd `dirname "$0"` && ../build/app_RPCtest 2 4 1 S3_1000_0_Commit1 $rand > /dev/null &)  # backup  (1 secs)
 #(cd `dirname "$0"` && ../build/app_RPCtest 3 4 1 S3_1000_0_Commit1 $rand)  # backup  (1 secs)
 
-# test 5: no primary (dead). 2 backups on background and backup on front (4/4 nodes) - delay 200 ms
+# test 5: no primary (dead). 2 backups on background and backup on front (4/4 nodes) - delay 500 ms
 ###(cd `dirname "$0"` && ../build/app_RPCtest 0 4 1 S3_2000_500_Commit1 $rand > /dev/null &)  # primary (2 secs)
 (cd `dirname "$0"` && ../build/app_RPCtest 1 4 1 S3_1000_500_Commit1 $rand > /dev/null &)  # backup  (1 secs)
 (cd `dirname "$0"` && ../build/app_RPCtest 2 4 1 S3_1000_500_Commit1 $rand > /dev/null &)  # backup  (1 secs)

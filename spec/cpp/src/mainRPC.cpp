@@ -30,7 +30,7 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 }
 
 void
-RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS, std::string scenario, std::string dbft_type, int RANDOM)
+RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS, double dropRate, std::string scenario, std::string dbft_type, int RANDOM)
 {
    std::stringstream ssbasefile;
    ssbasefile << scenario << "-r" << RANDOM << "-id" << me << "_N" << N;
@@ -59,7 +59,10 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    // my own context: including my data, my name and my world
    // random 'seed' is added to '_me' identifier, to get independent (but deterministic) values on different nodes
    RPCMachineContext<dBFT2Context> ctx(&data, me, worldCom, RANDOM + me);
+   std::cout << " delayMS = " << RegularDelayMS << std::endl;
    ctx.testSetRegularDelay(RegularDelayMS);
+   std::cout << " dropRate = " << dropRate << std::endl;
+   ctx.testSetDropRate(dropRate);
 
    cout << "will create RPC machine!" << endl;
    // ctx is passed here just to initialize my server... ctx is not stored.
@@ -132,6 +135,7 @@ main(int argc, char* argv[])
    int InitDelayMS = 1000;       // initial delay for OnStart (in MS)
    int RegularDelayMS = 0;       // regular delay (in MS)
    std::string type = "Commit1"; // dbft type
+   double dropRate = 0.0;        // 0% drop rate
 
    std::cout << "Loading test scenario: " << scenario << std::endl;
    if (scenario == "S3_1000_0_Commit1") {
@@ -162,11 +166,19 @@ main(int argc, char* argv[])
       H = 100;              // initial height
       InitDelayMS = 2000;   // initial delay for OnStart (in MS)
       RegularDelayMS = 500; // regular delay (in MS)
+   } else if (scenario == "S_drop_3_1000_500_Commit1") {
+      // single cycle (single block relay commit phase)
+      T = 3;                // block time (3 secs)
+      W = 10;               // watchdog - 10 secs
+      H = 100;              // initial height
+      InitDelayMS = 2000;   // initial delay for OnStart (in MS)
+      RegularDelayMS = 500; // regular delay (in MS)
+      dropRate = 0.2;       // 20% drop rate (permanent failure of message!)
    } else {
       std::cerr << "NO SCENARIO PASSED! USING DEFAULT!" << std::endl;
    }
 
-   RPC_dbft_test_real_dbft2(my_index, N, f, H, T, W, InitDelayMS, RegularDelayMS, scenario, type, RANDOM);
+   RPC_dbft_test_real_dbft2(my_index, N, f, H, T, W, InitDelayMS, RegularDelayMS, dropRate, scenario, type, RANDOM);
 
    std::cout << "finished successfully!" << std::endl;
 

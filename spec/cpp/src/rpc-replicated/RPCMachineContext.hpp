@@ -37,6 +37,8 @@ private:
    vector<Event*> events;
    // regular delay (in MS): for testing purposes only (fork simulation)
    int testRegularDelayMS{ 0 };
+   // regular drop rate: for testing purposes only (fork simulation)
+   double testDropRate{ 0.0 };
    // machine random
    std::mt19937 generator;
    //std::uniform_real_distribution<double> dis(0.0, 1.0);
@@ -47,7 +49,7 @@ public:
      : params(_params)
      , me(_me)
      , world(_world)
-     , generator(seed) 
+     , generator(seed)
    {
    }
 
@@ -55,6 +57,12 @@ public:
    void testSetRegularDelay(int _testRegularDelayMS)
    {
       this->testRegularDelayMS = _testRegularDelayMS;
+   }
+
+   // just to test purposes: force a drop rate on message passing
+   void testSetDropRate(double _dropRate)
+   {
+      this->testDropRate = _dropRate;
    }
 
    // Different from MultiContext... in this one, I can only access my own events
@@ -98,6 +106,16 @@ public:
             std::uniform_int_distribution<> dis(0, testRegularDelayMS);
             delay = dis(this->generator);
          }
+
+         if (testDropRate > 0.0) {
+            std::uniform_real_distribution<double> dis(0.0, 1.0);
+            double x = dis(this->generator);
+            if (x < testDropRate) {
+               std::cout << "LOST EVENT '" << event << "' for " << i << std::endl;
+               continue; // do not send message
+            }
+         }
+
          world[i]->informEvent(me, event, eventArgs, delay);
       }
    }
