@@ -89,15 +89,38 @@ public:
    {
    }
 
-   virtual bool isActivated(string _name, vector<string> _parameters) const
+   // TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
+   virtual bool isActivated(string _name, vector<string> pattern) const
    {
-      return (name == _name) && (parameters == _parameters);
+      //return (name == _name) && checkEventArgs(parameters, pattern, matching);
+      return (name == _name) && (parameters == pattern);
    }
 
    virtual MachineId getFrom() const
    {
       return from;
    }
+
+   /*
+   static bool checkEventArgs(vector<string> myArgs, vector<string> pattern, bool matching)
+   {
+      // if not matching, a raw comparison is made (no wildcards)
+      if (!matching)
+         return myArgs == pattern;
+      else {
+         // perform matching. wilcard * is supported here.. suppressing event
+         if (myArgs.size() != pattern.size())
+            return false;
+         for (unsigned i = 0; myArgs.size(); i++) {
+            if (pattern[i] == "*")
+               continue; // always accepts
+            else if (pattern[i] != myArgs[i])
+               return false;
+         }
+         return true;
+      }
+   }
+   */
 
    virtual string toString() const
    {
@@ -128,9 +151,9 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _name, vector<string> _parameters) const override
+   virtual bool isActivated(string _name, vector<string> pattern) const override
    {
-      return (this->name == _name) && (timer->expired()) && (this->parameters == _parameters);
+      return (this->name == _name) && (timer->expired()) && (this->parameters == pattern);
    }
 
    virtual string toString() const override

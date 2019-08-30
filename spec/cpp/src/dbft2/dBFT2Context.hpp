@@ -17,18 +17,19 @@ struct dBFT2Context
    int H;
    // block time (in seconds)
    int T;
-   // number of nodes (TODO: better solution for this?)
+   // number of nodes/replicas
    int R;
+   // number of allowed faulty nodes
+   int f;
 
-   // cached events
+   // add extra ConsensusContext information here
 
-   // add ConsensusContext information here
-
-   dBFT2Context(int _v, int _H, int _T, int _R)
+   dBFT2Context(int _v, int _H, int _T, int _R, int _f)
      : v(_v)
      , H(_H)
      , T(_T)
      , R(_R)
+     , f(_f)
    {
    }
 };

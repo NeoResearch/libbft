@@ -159,8 +159,8 @@ dbft_test_real_dbft2_primary()
 
    cout << "Machine => " << machine->toString() << endl;
 
-   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1501, 3, 2); // 1500 -> primary (R=1)
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0
+   dBFT2Context data(0, 1501, 3, 2, 0); // 1500 -> primary (R=1)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine->machines[0]));
@@ -197,8 +197,8 @@ dbft_test_backup_multi()
 
    cout << "Machine => " << machine0->toString() << endl;
 
-   // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1501, 3, 2); // 1501 -> backup (R=2)
+   // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network), f=0
+   dBFT2Context data(0, 1501, 3, 2, 0); // 1501 -> backup (R=2)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
@@ -260,8 +260,8 @@ dbft_test_primary()
 
    cout << "Machine => " << machine0->toString() << endl;
 
-   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1500, 3, 1); // 1500 -> primary (R=1)
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0
+   dBFT2Context data(0, 1500, 3, 1, 0); // 1500 -> primary (R=1)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
@@ -289,7 +289,7 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int DelayMS)
    cout << "will create RPC machine context!" << endl;
    // v = 0, H = 1501, T = 3 (secs), R = N (multi-node network)
    int v = 0;
-   dBFT2Context data(v, H, T, N); // 1500 -> primary (R=1)
+   dBFT2Context data(v, H, T, N, f); // 1500 -> primary (R=1)
    // dBFT2Context(int _v, int _H, int _T, int _R)
 
    // initialize my world: one RPC Client for every other node (including myself)

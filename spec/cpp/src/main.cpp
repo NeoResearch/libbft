@@ -158,8 +158,8 @@ dbft_test_real_dbft2_primary()
 
    cout << "Machine => " << machine->toString() << endl;
 
-   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1501, 3, 2); // 1500 -> primary (R=1)
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0
+   dBFT2Context data(0, 1501, 3, 2, 0); // 1500 -> primary (R=1)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine->machines[0]));
@@ -196,8 +196,8 @@ dbft_test_backup_multi()
 
    cout << "Machine => " << machine0->toString() << endl;
 
-   // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1501, 3, 2); // 1501 -> backup (R=2)
+   // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network), f=0
+   dBFT2Context data(0, 1501, 3, 2, 0); // 1501 -> backup (R=2)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
@@ -259,8 +259,8 @@ dbft_test_primary()
 
    cout << "Machine => " << machine0->toString() << endl;
 
-   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network)
-   dBFT2Context data(0, 1500, 3, 1); // 1500 -> primary (R=1)
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0
+   dBFT2Context data(0, 1500, 3, 1, 0); // 1500 -> primary (R=1)
 
    MultiContext<dBFT2Context> ctx;
    ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));

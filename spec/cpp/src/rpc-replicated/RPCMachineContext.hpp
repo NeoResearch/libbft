@@ -37,21 +37,26 @@ private:
    vector<Event*> events;
 
 public:
-   // Different from MultiContext... in this one, I can only access my own events
-   bool hasEvent(string name, vector<string> eventParams)
-   {
-      for (unsigned i = 0; i < events.size(); i++) {
-         if (events[i]->isActivated(name, eventParams))
-            return true;
-      }
-      return false;
-   }
-
    RPCMachineContext(Param* _params, int _me, vector<BFTEventsClient*> _world)
      : params(_params)
      , me(_me)
      , world(_world)
    {
+   }
+
+   // Different from MultiContext... in this one, I can only access my own events
+   bool hasEvent(string name, vector<string> eventArgs)
+   {
+      for (unsigned i = 0; i < events.size(); i++) {
+         if (events[i]->isActivated(name, eventArgs))
+            return true;
+      }
+      return false;
+   }
+
+   vector<Event*> getEvents()
+   {
+      return events;
    }
 
    void registerEvent(Event* event)
