@@ -35,6 +35,8 @@ struct RPCMachineContext
 private:
    // my events
    vector<Event*> events;
+   // regular delay (in MS): for testing purposes only (fork simulation)
+   int testRegularDelayMS{ 0 };
 
 public:
    RPCMachineContext(Param* _params, int _me, vector<BFTEventsClient*> _world)
@@ -42,6 +44,12 @@ public:
      , me(_me)
      , world(_world)
    {
+   }
+
+   // just to test purposes: force a delay on message passing
+   void testSetRegularDelay(int _testRegularDelayMS)
+   {
+      this->testRegularDelayMS = _testRegularDelayMS;
    }
 
    // Different from MultiContext... in this one, I can only access my own events
