@@ -242,7 +242,7 @@ public:
           ->add(Action<RPCMachineContext<dBFT2Context>>("send: Commit(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              cout << "sending Commit from " << me.id << " for view " << d->params->v << endl;
              // TODO: attach  block hash as well?
-             vector<string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
+             vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
              d->broadcast("Commit", evArgs);
           }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
@@ -250,11 +250,33 @@ public:
           })));
 
       // commitSent -> blockSent
+      auto commitSentToBlockSent = new Transition<RPCMachineContext<dBFT2Context>>(blockSent);
       commitSent->addTransition(
-        (new Transition<RPCMachineContext<dBFT2Context>>(blockSent))->add(Condition<RPCMachineContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
-           cout << "nothing to do... assuming all commits were received!" << endl;
-           return true;
-        })));
+        commitSentToBlockSent->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughCommits", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
+                                vector<Event*> events = d->getEvents();
+                                cout << "waiting for 2f+1 Commits" << endl;
+                                // waiting for 2f+1 Commit(v,H)
+                                vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                                int count = 0;
+                                for (int id = 0; id < d->params->R; id++) {
+                                   for (unsigned e = 0; e < events.size(); e++)
+                                      if (events[e]->getFrom().id == id)
+                                         if (events[e]->isActivated("Commit", evArgs))
+                                            count++;
+                                }
+                                cout << "count Commit = " << count << " / " << d->params->M() << endl;
+                                // count >= 2f+1 (or M)
+                                return count >= d->params->M();
+                             }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: BlockRelay(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             cout << "sending BlockRelay for H=" << d->params->H << endl;
+             // TODO: attach  block hash as well?
+             vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+             d->broadcast("BlockRelay", evArgs);
+          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             C.reset();
+          })));
    }
 
 public: // real public
