@@ -304,7 +304,7 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int DelayMS)
    // ctx is passed here just to initialize my server... ctx is not stored.
    auto machine = new dBFT2RPCMachine(f, N, MachineId(me), &ctx);
    // run for 5.0 seconds max
-   machine->setWatchdog(5.0);
+   machine->setWatchdog(10.0); // TODO: receive as parameter? disable on practice?
    cout << "RPC Machine => " << machine->toString() << endl;
 
    cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;

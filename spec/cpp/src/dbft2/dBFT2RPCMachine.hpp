@@ -148,9 +148,27 @@ public:
                             }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              cout << "sending PrepareRequest from " << me.id << " for view " << d->params->v << endl;
-             // TODO: attach v=... H=... here?  block hash as well?
+             // TODO: attach  block hash as well?
              vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
              d->broadcast("PrepareRequest", evArgs);
+          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             C.reset();
+          })));
+
+      // primary -> viewChanging
+      auto primToViewChanging = new Transition<RPCMachineContext<dBFT2Context>>(viewChanging);
+      primary->addTransition(
+        primToViewChanging->add(Condition<RPCMachineContext<dBFT2Context>>("(C >= T exp(v+1))?", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
+                             // C >= T?
+                             //cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
+                             return C.elapsedTime() >= (d->params->T * std::pow(2, d->params->v+1));
+                          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             cout << "sending ChangeView from " << me.id << " for view " << d->params->v << endl;
+             // TODO: attach  block hash as well?
+             vector<string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
+             d->broadcast("ChangeView", evArgs);
           }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              C.reset();
