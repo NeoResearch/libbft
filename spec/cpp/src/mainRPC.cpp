@@ -57,7 +57,8 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
       worldCom[i] = new BFTEventsClient(i);
 
    // my own context: including my data, my name and my world
-   RPCMachineContext<dBFT2Context> ctx(&data, me, worldCom);
+   // random 'seed' is added to '_me' identifier, to get independent (but deterministic) values on different nodes
+   RPCMachineContext<dBFT2Context> ctx(&data, me, worldCom, RANDOM + me);
    ctx.testSetRegularDelay(RegularDelayMS);
 
    cout << "will create RPC machine!" << endl;
@@ -134,20 +135,33 @@ main(int argc, char* argv[])
 
    std::cout << "Loading test scenario: " << scenario << std::endl;
    if (scenario == "S3_1000_0_Commit1") {
-      // single cycle (single block relay)
+      // single cycle (single block relay commit phase)
       T = 3;              // block time (3 secs)
       W = 10;             // watchdog - 10 secs
       H = 100;            // initial height
       InitDelayMS = 1000; // initial delay for OnStart (in MS)
       RegularDelayMS = 0; // regular delay (in MS)
-
    } else if (scenario == "S3_2000_0_Commit1") {
-      // single cycle (single block relay)
+      // single cycle (single block relay commit phase)
       T = 3;              // block time (3 secs)
       W = 10;             // watchdog - 10 secs
       H = 100;            // initial height
       InitDelayMS = 2000; // initial delay for OnStart (in MS)
       RegularDelayMS = 0; // regular delay (in MS)
+   } else if (scenario == "S3_1000_500_Commit1") {
+      // single cycle (single block relay commit phase)
+      T = 3;                // block time (3 secs)
+      W = 10;               // watchdog - 10 secs
+      H = 100;              // initial height
+      InitDelayMS = 1000;   // initial delay for OnStart (in MS)
+      RegularDelayMS = 500; // regular delay (in MS)
+   } else if (scenario == "S3_2000_500_Commit1") {
+      // single cycle (single block relay commit phase)
+      T = 3;                // block time (3 secs)
+      W = 10;               // watchdog - 10 secs
+      H = 100;              // initial height
+      InitDelayMS = 2000;   // initial delay for OnStart (in MS)
+      RegularDelayMS = 500; // regular delay (in MS)
    } else {
       std::cerr << "NO SCENARIO PASSED! USING DEFAULT!" << std::endl;
    }

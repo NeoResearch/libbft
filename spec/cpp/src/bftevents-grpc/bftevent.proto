@@ -15,6 +15,7 @@ message EventInform {
     int32 from = 1; // right now, untrusted from (TODO: pass crypto key here)
     string event = 2;
     repeated string event_args = 3;
+    int32 delay = 4; // optional (add delay in ms to message). for testing purposes only
 }
 
 // The response message containing response

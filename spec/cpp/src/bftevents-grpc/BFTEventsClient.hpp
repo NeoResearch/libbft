@@ -52,12 +52,13 @@ public:
       return _address;
    }
 
-   bool informEvent(int from, std::string event, std::vector<std::string> eventArgs)
+   bool informEvent(int from, std::string event, std::vector<std::string> eventArgs, int delayMS = 0)
    {
       EventInform request;
 
       request.set_from(from);
       request.set_event(event);
+      request.set_delay(delayMS);
 
       for(unsigned i=0; i<eventArgs.size(); i++)
          request.add_event_args(eventArgs[i]);

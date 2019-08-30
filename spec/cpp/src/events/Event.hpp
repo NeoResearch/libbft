@@ -162,7 +162,7 @@ public:
       ss << "TimedEvent " << this->name << "(";
       for (int i = 0; i < ((int)this->parameters.size()); i++)
          ss << this->parameters[i] << ((i != ((int)parameters.size()) - 1) ? "," : "");
-      ss << ") " << (timer->expired() ? "expired" : "notexpired"); // default suffix '()' (empty parameters)
+      ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime(); // default suffix '()' (empty parameters)
       return ss.str();
    }
 };

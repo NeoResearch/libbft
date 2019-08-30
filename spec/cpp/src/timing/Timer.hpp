@@ -23,7 +23,7 @@ private:
    Clock* clock;
    // nice precision timer
    double mytime;
-   // countdown timer (if value is positive)
+   // countdown timer (if value is positive) - in seconds
    double countdown{ -1.0 };
 
 public:
@@ -34,6 +34,7 @@ public:
       init();
    }
 
+   // countdown in seconds
    Timer* init(double _countdown = -1.0)
    {
       // update countdown

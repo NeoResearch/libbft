@@ -215,6 +215,12 @@ class EventInform :
   ::PROTOBUF_NAMESPACE_ID::int32 from() const;
   void set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
 
+  // int32 delay = 4;
+  void clear_delay();
+  static const int kDelayFieldNumber = 4;
+  ::PROTOBUF_NAMESPACE_ID::int32 delay() const;
+  void set_delay(::PROTOBUF_NAMESPACE_ID::int32 value);
+
   // @@protoc_insertion_point(class_scope:bftevent.EventInform)
  private:
   class HasBitSetters;
@@ -223,6 +229,7 @@ class EventInform :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> event_args_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr event_;
   ::PROTOBUF_NAMESPACE_ID::int32 from_;
+  ::PROTOBUF_NAMESPACE_ID::int32 delay_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_bftevent_2eproto;
 };
@@ -491,6 +498,20 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
 EventInform::mutable_event_args() {
   // @@protoc_insertion_point(field_mutable_list:bftevent.EventInform.event_args)
   return &event_args_;
+}
+
+// int32 delay = 4;
+inline void EventInform::clear_delay() {
+  delay_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 EventInform::delay() const {
+  // @@protoc_insertion_point(field_get:bftevent.EventInform.delay)
+  return delay_;
+}
+inline void EventInform::set_delay(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  delay_ = value;
+  // @@protoc_insertion_point(field_set:bftevent.EventInform.delay)
 }
 
 // -------------------------------------------------------------------

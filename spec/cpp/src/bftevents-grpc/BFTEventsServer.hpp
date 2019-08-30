@@ -31,6 +31,7 @@ private:
       std::cout << "  ->-> RPC received inform!" << std::endl;
       int from = request->from();
       std::string event = request->event();
+      int delay = request->delay();
 
       std::vector<std::string> eventArgs(request->event_args_size());
       for (unsigned i = 0; i < eventArgs.size(); i++)
@@ -45,9 +46,9 @@ private:
          std::cout << "  ->-> RPC from = " << from << std::endl;
          std::cout << "  ->-> RPC event = " << event << std::endl;
       } else {
-         std::cout << "  ->-> RPC Sending event to myMachine!" << std::endl;
+         std::cout << "  ->-> RPC Sending event to myMachine! delay=" << delay << std::endl;
          MachineId mFrom(from); // TODO(@igormcoelho): find address of sender machine
-         myMachine->addEventFromRPC(event, mFrom, eventArgs);
+         myMachine->addEventFromRPC(event, mFrom, eventArgs, delay);
       }
 
       int gotit = 99;

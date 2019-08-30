@@ -37,12 +37,17 @@ private:
    vector<Event*> events;
    // regular delay (in MS): for testing purposes only (fork simulation)
    int testRegularDelayMS{ 0 };
+   // machine random
+   std::mt19937 generator;
+   //std::uniform_real_distribution<double> dis(0.0, 1.0);
+   //double randomRealBetweenZeroAndOne = dis(generator);
 
 public:
-   RPCMachineContext(Param* _params, int _me, vector<BFTEventsClient*> _world)
+   RPCMachineContext(Param* _params, int _me, vector<BFTEventsClient*> _world, int seed = 99)
      : params(_params)
      , me(_me)
      , world(_world)
+     , generator(seed) 
    {
    }
 
@@ -87,7 +92,13 @@ public:
       std::cout << "  -~-~:broadcasting event '" << event << "' with params = " << eventArgs.size() << std::endl;
       for (unsigned i = 0; i < world.size(); i++) {
          std::cout << "  -~-~:sending to " << i << " event '" << event << "' with params = " << eventArgs.size() << std::endl;
-         world[i]->informEvent(me, event, eventArgs);
+         // if send with delay
+         int delay = 0;
+         if (testRegularDelayMS > 0) {
+            std::uniform_int_distribution<> dis(0, testRegularDelayMS);
+            delay = dis(this->generator);
+         }
+         world[i]->informEvent(me, event, eventArgs, delay);
       }
    }
 
@@ -103,9 +114,12 @@ public:
    }
 */
 
-   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters)
+   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters, int delay = 0)
    {
-      registerEvent(new Event(_name, _from, _parameters));
+      if (delay == 0)
+         registerEvent(new Event(_name, _from, _parameters));
+      else
+         registerEvent(new TimedEvent(delay / 1000.0, _name, _from, _parameters));
    }
 };
 
