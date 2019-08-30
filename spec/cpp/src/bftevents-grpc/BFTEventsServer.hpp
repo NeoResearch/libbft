@@ -97,6 +97,7 @@ public:
       std::cout << "  =>=>=> BFT Events Server listening on port: " << server.second << std::endl;
       server.first->Wait();
    }
+   
    void Stop()
    {
       std::cout << "  =>=>=> Stopping BFT Events Server at " << server.second << std::endl;

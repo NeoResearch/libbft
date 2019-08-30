@@ -277,6 +277,33 @@ public:
           ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              C.reset();
           })));
+
+      // viewChanging -> started
+      auto viewChToStarted = new Transition<RPCMachineContext<dBFT2Context>>(started);
+      viewChanging->addTransition(
+        viewChToStarted->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughViewChanges", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
+                          vector<Event*> events = d->getEvents();
+                          cout << "waiting for 2f+1 View Changes" << endl;
+                          // waiting for 2f+1 ChangeView(v+1,H)
+                          vector<string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
+                          int count = 0;
+                          for (int id = 0; id < d->params->R; id++) {
+                             for (unsigned e = 0; e < events.size(); e++)
+                                if (events[e]->getFrom().id == id)
+                                   if (events[e]->isActivated("ChangeView", evArgs))
+                                      count++;
+                          }
+                          cout << "count ChangeView = " << count << " / " << d->params->M() << endl;
+                          // count >= 2f+1 (or M)
+                          return count >= d->params->M();
+                       }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("v := v + 1", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             d->params->v = d->params->v + 1;
+             cout << " ***** MOVING TO NEXT VIEW: " << d->params->v << endl;
+          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             C.reset();
+          })));
    }
 
 public: // real public
