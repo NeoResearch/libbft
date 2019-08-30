@@ -132,13 +132,11 @@ public:
       // backup -> reqSentOrRecv
       auto toReqSentOrRecv1 = new Transition<RPCMachineContext<dBFT2Context>>(reqSentOrRecv);
       backup->addTransition(
-        toReqSentOrRecv1->add(Condition<RPCMachineContext<dBFT2Context>>("OnPrepareRequest(v)", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
+        toReqSentOrRecv1->add(Condition<RPCMachineContext<dBFT2Context>>("OnPrepareRequest(v,H)", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
            cout << "waiting for event OnPrepareRequest at " << me.id << " for view " << d->params->v << endl;
-           stringstream ss;
-           ss << d->params->v;
-           vector<string> params(1, ss.str());
-           //cout << "for " << ss.str() << endl;
-           return d->hasEvent("PrepareRequest", params);
+           // args: view and height
+           vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+           return d->hasEvent("PrepareRequest", evArgs);
         })));
 
       // primary -> reqSentOrRecv
@@ -148,12 +146,10 @@ public:
                                // C >= T?
                                return C.elapsedTime() >= d->params->T;
                             }))
-          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              cout << "sending PrepareRequest from " << me.id << " for view " << d->params->v << endl;
              // TODO: attach v=... H=... here?  block hash as well?
-             stringstream ss;
-             ss << d->params->v;
-             vector<string> evArgs(1, ss.str());
+             vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
              d->broadcast("PrepareRequest", evArgs);
           }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
