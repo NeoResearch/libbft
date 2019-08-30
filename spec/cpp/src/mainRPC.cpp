@@ -30,8 +30,21 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 }
 
 void
-RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS = 0)
+RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS, std::string scenario, std::string dbft_type, int RANDOM)
 {
+   std::stringstream ssbasefile;
+   ssbasefile << scenario << "-r" << RANDOM << "-id" << me << "_N" << N;
+
+   std::stringstream sslog;
+   sslog << "log-" << ssbasefile.str() << ".txt";
+   FILE* flog = fopen(sslog.str().c_str(), "w");
+
+   std::stringstream ssimage;
+   ssimage << "graph-" << ssbasefile.str() << ".dot";
+
+   std::stringstream ssgraphviz;
+   ssgraphviz << "dot -Tpng " << ssimage.str() << " -o " << ssimage.str() << ".png";
+
    cout << "will create RPC machine context!" << endl;
    // v = 0, H = 1501, T = 3 (secs), R = N (multi-node network)
    int v = 0;
@@ -73,20 +86,22 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    threadOnStart.join();
 
    // show
-   FILE* fgraph = fopen("fgraph.dot", "w");
+   FILE* fgraph = fopen(ssimage.str().c_str(), "w");
    fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
-   cout << "Generating image 'fgraph.png'" << endl;
-   system("dot -Tpng fgraph.dot -o fgraph.png");
+   cout << "Generating image '" << ssimage.str() << ".png'" << endl;
+   int r = system(ssgraphviz.str().c_str());
+   //system("dot -Tpng fgraph.dot -o fgraph.png");
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
+   fclose(flog);
 }
 
 int
 main(int argc, char* argv[])
 {
-   if (argc != 5) {
-      std::cout << "missing parameters! argc=" << argc << " and should be 5" << std::endl;
-      std::cout << "requires: my_index N f scenario" << std::endl;
+   if (argc < 5) {
+      std::cout << "missing parameters! argc=" << argc << " and should be 5 or 6" << std::endl;
+      std::cout << "requires: my_index N f scenario RANDOM" << std::endl;
       return 1;
    }
 
@@ -101,16 +116,24 @@ main(int argc, char* argv[])
    int N = stoi(std::string(argv[2]));        // 2. total number of nodes
    int f = stoi(std::string(argv[3]));        // 3. number of max faulty nodes
    std::string scenario(argv[4]);             // 4. test scenario
+   int RANDOM = 99;
+   if (argc == 6)
+      RANDOM = stoi(std::string(argv[5])); // 5. random (usually 2-bytes)
+
+   // show random seed (shared among all instances)
+   // this is good to reproduce nearly-deterministic behavior (some small race conditions may still affect execution)
+   std::cout << " ---------- SHARED RANDOM SEED IS: " << RANDOM << " ---------- " << std::endl;
 
    // default
-   int T = 3;              // block time (3 secs)
-   int W = 10;             // watchdog (10 secs)
-   int H = 100;            // initial height
-   int InitDelayMS = 1000; // initial delay for OnStart (in MS)
-   int RegularDelayMS = 0; // regular delay (in MS)
+   int T = 3;                    // block time (3 secs)
+   int W = 10;                   // watchdog (10 secs)
+   int H = 100;                  // initial height
+   int InitDelayMS = 1000;       // initial delay for OnStart (in MS)
+   int RegularDelayMS = 0;       // regular delay (in MS)
+   std::string type = "Commit1"; // dbft type
 
    std::cout << "Loading test scenario: " << scenario << std::endl;
-   if (scenario == "S3_1000_0") {
+   if (scenario == "S3_1000_0_Commit1") {
       // single cycle (single block relay)
       T = 3;              // block time (3 secs)
       W = 10;             // watchdog - 10 secs
@@ -118,7 +141,7 @@ main(int argc, char* argv[])
       InitDelayMS = 1000; // initial delay for OnStart (in MS)
       RegularDelayMS = 0; // regular delay (in MS)
 
-   }else if (scenario == "S3_2000_0") {
+   } else if (scenario == "S3_2000_0_Commit1") {
       // single cycle (single block relay)
       T = 3;              // block time (3 secs)
       W = 10;             // watchdog - 10 secs
@@ -129,7 +152,7 @@ main(int argc, char* argv[])
       std::cerr << "NO SCENARIO PASSED! USING DEFAULT!" << std::endl;
    }
 
-   RPC_dbft_test_real_dbft2(my_index, N, f, H, T, W, InitDelayMS, RegularDelayMS);
+   RPC_dbft_test_real_dbft2(my_index, N, f, H, T, W, InitDelayMS, RegularDelayMS, scenario, type, RANDOM);
 
    std::cout << "finished successfully!" << std::endl;
 
