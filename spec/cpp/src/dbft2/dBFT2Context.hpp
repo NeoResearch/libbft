@@ -21,6 +21,11 @@ struct dBFT2Context
    int R;
    // number of allowed faulty nodes
    int f;
+   // M limit: 2f+1
+   int M() const
+   {
+      return 2*f + 1;
+   }
 
    // add extra ConsensusContext information here
 

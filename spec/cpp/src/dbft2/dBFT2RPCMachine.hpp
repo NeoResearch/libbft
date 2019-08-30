@@ -141,6 +141,12 @@ public:
           ->add(Condition<RPCMachineContext<dBFT2Context>>("ValidBlock", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId me) -> bool {
              // always good block right now
              return true;
+          }))
+          ->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareResponse(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
+             cout << "sending PrepareResponse from " << me.id << " for view " << d->params->v << endl;
+             // TODO: attach  block hash as well?
+             vector<string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+             d->broadcast("PrepareResponse", evArgs);
           })));
 
       // primary -> reqSentOrRecv
@@ -229,9 +235,9 @@ public:
                                      if (events[e]->isActivated("PrepareResponse", evArgs))
                                         countPrepResp++;
                             }
-                            cout << "count PrepareResponse = " << countPrepResp << endl;
+                            cout << "count PrepareResponse = " << countPrepResp << " / " << d->params->M() << endl;
                             // count >= 2f+1 (or M)
-                            return countPrepResp >= (2 * d->params->f + 1);
+                            return countPrepResp >= d->params->M();
                          }))
           ->add(Action<RPCMachineContext<dBFT2Context>>("send: Commit(v, H)", [](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId me) -> void {
              cout << "sending Commit from " << me.id << " for view " << d->params->v << endl;
