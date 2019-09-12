@@ -58,7 +58,7 @@ func (c *CountdownTimerService) GetCountdown() float64 {
 
 func (c *CountdownTimerService) Init(countdown float64) {
 	c.countdown = countdown
-	if c.clock != nil {
+	if c.clock == nil {
 		c.clock = NewDefaultClock()
 	}
 	c.myTime = c.GetClock().GetTime()

@@ -9,6 +9,7 @@ type TimerDelayable interface {
 	RemainingTime() float64
 	Expired() bool
 	Init(countdown float64) Timer
+	InitDefault() Timer
 
 	GetTimer() Timer
 	String() string
@@ -54,4 +55,8 @@ func (t *TimerDelayableService) Init(countdown float64) Timer {
 
 func (t *TimerDelayableService) GetTimer() Timer {
 	return t.timer
+}
+
+func (t *TimerDelayableService) InitDefault() Timer {
+	return t.GetTimer().InitDefault()
 }

@@ -6,7 +6,9 @@ import (
 )
 
 type Clock interface {
+	// get / set
 	GetTime() time.Time
+	// methods
 	String() string
 }
 
