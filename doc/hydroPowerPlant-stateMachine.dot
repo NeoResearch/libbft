@@ -1,0 +1,12 @@
+digraph STSM {
+//graph [bgcolor=lightgoldenrodyellow]
+//rankdir=LR;
+size="11"
+Empty [ label="", width=0, height=0, style = invis ];
+node [shape = circle]; Normal;
+node [shape = circle]; Full;
+Empty -> Normal [label = ""];
+Normal  -> Full [ label = "level > max / open floodgates    "];
+Full  -> Normal [ label = " level = safe / close floodgates"];
+}
+
