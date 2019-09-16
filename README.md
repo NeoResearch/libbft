@@ -13,6 +13,11 @@ It may also help the development of other ecosystem tools, protocols, and even d
 
 Currently, C++ spec is the reference one. After that, focus will be on Go, Python and C# ports.
 
+`cmake` is your friend! Please install latest version (you can use Snappy to ensure that!): `sudo snap install cmake --classic`
+
+(If you don't have snap, you can install it on debian-based using: `sudo apt install snapd`)
+
+
 ### Builds for C++
 Existing frameworks use high-level languages that may not be suitable for very lightweight architectures,
 such as microcontrollers with very limited computing capabilities.

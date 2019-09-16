@@ -47,6 +47,7 @@ Things you may need (linux/ubuntu):
 ```
 apt-get install build-essential autoconf libtool pkg-config
 apt-get install libgflags-dev libgtest-dev
+apt-get install zlib1g-dev libc-ares-dev
 apt-get install clang libc++-dev
 ```
 
