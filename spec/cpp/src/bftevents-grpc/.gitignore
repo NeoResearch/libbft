@@ -1,3 +1,5 @@
 *.o
+*.pb.cc
+*.pb.h
 bftserver
 bftclient
