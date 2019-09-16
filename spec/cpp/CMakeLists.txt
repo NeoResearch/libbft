@@ -13,5 +13,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Ofast -Wextra -Wno-long-long -
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 add_subdirectory(src)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 include_directories(src)

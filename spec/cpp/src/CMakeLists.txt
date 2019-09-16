@@ -18,8 +18,22 @@ set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(app_test main.cpp)
 target_link_libraries(app_test ${lib_name})
 
+target_link_libraries(app_test protobuf)
+target_link_libraries(app_test grpc++)
+target_link_libraries(app_test grpc++_reflection)
+target_link_libraries(app_test dl)
+target_link_libraries(app_test pthread)
+
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Ofast -lpthread -L/usr/local/lib -lprotobuf -lgrpc++ -lgrpc++_reflection -ldl ${PROJECT_SOURCE_DIR}/bftevents-grpc/bftevent.pb.o ${PROJECT_SOURCE_DIR}/bftevents-grpc/bftevent.grpc.pb.o ")
 add_executable(app_RPCtest mainRPC.cpp)
+
+target_link_libraries(app_RPCtest protobuf)
+target_link_libraries(app_RPCtest grpc++)
+target_link_libraries(app_RPCtest grpc++_reflection)
+target_link_libraries(app_RPCtest dl)
+target_link_libraries(app_RPCtest pthread)
 
 #add_subdirectory(bftevents-grpc)
 
