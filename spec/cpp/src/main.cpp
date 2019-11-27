@@ -36,8 +36,9 @@ simpleExample()
    //initial->addTransition(alwaysTrue); // (unused)
 
    initial->addTransition(
-     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 1", [](const Timer& c, Data* d, MachineId) -> bool {
-        cout << "WAITING TRANSITION TO HAPPEN" << c.elapsedTime() << "s" << endl;
+     (new Transition<Data>(final, "after1sec"))->add(Condition<Data>("C >= 3", [](const Timer& c, Data* d, MachineId) -> bool {
+        //cout << "WAITING TRANSITION TO HAPPEN: " << c.elapsedTime() << "s" << endl;
+        cout << "time: " << c.elapsedTime() << "s" << endl;
         return c.elapsedTime() >= 3.0;
      })));
 
