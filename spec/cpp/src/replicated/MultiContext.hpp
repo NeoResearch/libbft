@@ -29,16 +29,27 @@ struct MultiContext
    // vector of machines
    vector<MachineContext<Param>> vm;
 
+   Param* getParams(int id_me)
+   {
+      return vm[id_me].params;
+   }
+
+   vector<Event*> getEvents(int id_me)
+   {
+      return vm[id_me].events;
+   }
+
    // from may be -1, if broadcasted from system
    void broadcast(string event, MachineId from, vector<string> eventParams)
    {
+      std::cout << " -> BROADCASTING EVENT '" << event << "' from " << from.id << std::endl;
       broadcast(new Event(event, from, eventParams), from);
    }
 
    // from may be -1, if broadcasted from system
    void broadcast(Event* event, MachineId from)
    {
-      for (int i = 0; ((int)vm.size()); i++)
+      for (int i = 0; i < ((int)vm.size()); i++)
          if (i != from.id)
             sendTo(event, i); // this may break with memory leaks (TODO: use shared_ptr, or copy-based final class)
    }
@@ -46,6 +57,7 @@ struct MultiContext
    // 'to' should be valid (0 <= to <= R)
    void sendTo(Event* event, MachineId to)
    {
+      std::cout << " => SEND TO " << to.id << std::endl;
       assert((to.id >= 0) && (to.id < (int)vm.size()));
       vm[to.id].events.push_back(event);
    }

@@ -271,6 +271,290 @@ dbft_test_primary()
    machine0->run(machine0->states[0], &ctx); // explicitly passing first state as default
 }
 
+SingleTimerStateMachine<MultiContext<dBFT2Context>>*
+commit_phase_dbft2(int id_me)
+{
+
+   auto machine = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C"));
+   machine->me = id_me;
+
+   // ---------------------
+   // declaring dBFT states
+   // ---------------------
+
+   auto preinitial = new State<MultiContext<dBFT2Context>>(false, "PreInitial");
+   machine->registerState(preinitial);
+   auto started = new State<MultiContext<dBFT2Context>>(false, "Started");
+   machine->registerState(started);
+   auto backup = new State<MultiContext<dBFT2Context>>(false, "Backup");
+   machine->registerState(backup);
+   auto primary = new State<MultiContext<dBFT2Context>>(false, "Primary");
+   machine->registerState(primary);
+   auto reqSentOrRecv = new State<MultiContext<dBFT2Context>>(false, "RequestSentOrReceived");
+   machine->registerState(reqSentOrRecv);
+   auto commitSent = new State<MultiContext<dBFT2Context>>(false, "CommitSent");
+   machine->registerState(commitSent);
+   auto viewChanging = new State<MultiContext<dBFT2Context>>(false, "ViewChanging");
+   machine->registerState(viewChanging);
+   auto blockSent = new State<MultiContext<dBFT2Context>>(true, "BlockSent");
+   machine->registerState(blockSent);
+
+   // -------------------------
+   // creating dBFT transitions
+   // -------------------------
+
+   //auto machine = this;
+   //int id = this->me.id;
+
+   // preinitial -> started
+   preinitial->addTransition(
+     (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        //cout << "Waiting for OnStart..." << endl;
+        return d->hasEvent("OnStart", me.id, vector<string>(0)); // no parameters on event
+     })));
+
+   // initial -> backup
+   started->addTransition(
+     (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        //cout << "lambda1" << endl;
+        return !((d->getParams(me.id)->H + d->getParams(me.id)->v) % d->getParams(me.id)->R == me.id);
+     })));
+
+   // initial -> primary
+   started->addTransition(
+     (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        //cout << "lambda2 H=" << d->getParams(me.id)->H << " v=" << d->getParams(me.id)->v << " me=" << me.id << endl;
+        return (d->getParams(me.id)->H + d->getParams(me.id)->v) % d->getParams(me.id)->R == me.id;
+     })));
+
+   // backup -> reqSentOrRecv
+   auto toReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
+   backup->addTransition(
+     toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v,H)", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                        cout << "waiting for event OnPrepareRequest at " << me.id << " for view " << d->getParams(me.id)->v << endl;
+                        // args: view and height
+                        vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+                        return d->hasEvent("PrepareRequest", me.id, evArgs);
+                     }))
+       ->add(Condition<MultiContext<dBFT2Context>>("ValidBlock", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+          // always good block right now
+          return true;
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: PrepareResponse(v, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending PrepareResponse from " << me.id << " for view " << d->getParams(me.id)->v << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("PrepareResponse", me, evArgs);
+       })));
+
+   // primary -> reqSentOrRecv
+   auto primToReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
+   primary->addTransition(
+     primToReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("C >= T?", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                            // C >= T?
+                            return C.elapsedTime() >= d->getParams(me.id)->T;
+                         }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: PrepareRequest(v, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending PrepareRequest from " << me.id << " for view " << d->getParams(me.id)->v << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("PrepareRequest", me, evArgs);
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+   // primary -> viewChanging
+   auto primToViewChanging = new Transition<MultiContext<dBFT2Context>>(viewChanging);
+   primary->addTransition(
+     primToViewChanging->add(Condition<MultiContext<dBFT2Context>>("(C >= T exp(v+1))?", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                          // C >= T?
+                          //cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
+                          return C.elapsedTime() >= (d->getParams(me.id)->T * std::pow(2, d->getParams(me.id)->v + 1));
+                       }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending ChangeView from " << me.id << " for view " << d->getParams(me.id)->v << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v + 1), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("ChangeView", me, evArgs);
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+   // backup -> viewChanging
+   auto backpToViewChanging = new Transition<MultiContext<dBFT2Context>>(viewChanging);
+   backup->addTransition(
+     backpToViewChanging->add(Condition<MultiContext<dBFT2Context>>("(C >= T exp(v+1))?", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                           // C >= T?
+                           //cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
+                           return C.elapsedTime() >= (d->getParams(me.id)->T * std::pow(2, d->getParams(me.id)->v + 1));
+                        }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending ChangeView from " << me.id << " for view " << d->getParams(me.id)->v << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v + 1), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("ChangeView", me, evArgs);
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+   // reqSentOrRecv -> viewChanging
+   auto reqsrToViewChanging = new Transition<MultiContext<dBFT2Context>>(viewChanging);
+   reqSentOrRecv->addTransition(
+     reqsrToViewChanging->add(Condition<MultiContext<dBFT2Context>>("(C >= T exp(v+1))?", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                           // C >= T?
+                           //cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
+                           return C.elapsedTime() >= (d->getParams(me.id)->T * std::pow(2, d->getParams(me.id)->v + 1));
+                        }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending ChangeView from " << me.id << " for view " << d->getParams(me.id)->v << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v + 1), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("ChangeView", me, evArgs);
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+   // reqSentOrRecv -> commitSent
+   auto reqsrToCommitSent = new Transition<MultiContext<dBFT2Context>>(commitSent);
+   reqSentOrRecv->addTransition(
+     reqsrToCommitSent->add(Condition<MultiContext<dBFT2Context>>("EnoughPreparations", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                         vector<Event*> events = d->getEvents(me.id);
+                         cout << "waiting for 2f+1 PrepareResponse" << endl;
+                         // waiting for 2f+1 PrepareResponse(v,H)
+                         vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+                         int countPrepResp = 0;
+                         for (int id = 0; id < d->getParams(me.id)->R; id++) {
+                            for (unsigned e = 0; e < events.size(); e++)
+                               if (events[e]->getFrom().id == id)
+                                  if (events[e]->isActivated("PrepareResponse", evArgs))
+                                     countPrepResp++;
+                         }
+                         cout << "count PrepareResponse = " << countPrepResp << " / " << (d->getParams(me.id)->M() - 1) << endl;
+                         // count >= 2f+1 (or M) -1 (because Prepare Request also counts)
+                         return countPrepResp >= (d->getParams(me.id)->M() - 1);
+                      }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: Commit(v, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending Commit from " << me.id << " for view " << d->getParams(me.id)->v << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("Commit", me, evArgs);
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+   // commitSent -> blockSent
+   auto commitSentToBlockSent = new Transition<MultiContext<dBFT2Context>>(blockSent);
+   commitSent->addTransition(
+     commitSentToBlockSent->add(Condition<MultiContext<dBFT2Context>>("EnoughCommits", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                             vector<Event*> events = d->getEvents(me.id);
+                             cout << "waiting for 2f+1 Commits" << endl;
+                             // waiting for 2f+1 Commit(v,H)
+                             vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+                             int count = 0;
+                             for (int id = 0; id < d->getParams(me.id)->R; id++) {
+                                for (unsigned e = 0; e < events.size(); e++)
+                                   if (events[e]->getFrom().id == id)
+                                      if (events[e]->isActivated("Commit", evArgs))
+                                         count++;
+                             }
+                             cout << "count Commit = " << count << " / " << (d->getParams(me.id)->M() - 1) << endl;
+                             // count >= 2f+1 (or M)
+                             return count >= (d->getParams(me.id)->M() - 1);
+                          }))
+       ->add(Action<MultiContext<dBFT2Context>>("send: BlockRelay(v, H)", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          cout << "sending BlockRelay for H=" << d->getParams(me.id)->H << endl;
+          // TODO: attach  block hash as well?
+          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
+          d->broadcast("BlockRelay", me, evArgs);
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+   // viewChanging -> started
+   auto viewChToStarted = new Transition<MultiContext<dBFT2Context>>(started);
+   viewChanging->addTransition(
+     viewChToStarted->add(Condition<MultiContext<dBFT2Context>>("EnoughViewChanges", [](const Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+                       vector<Event*> events = d->getEvents(me.id);
+                       cout << "waiting for 2f+1 View Changes" << endl;
+                       // waiting for 2f+1 ChangeView(v+1,H)
+                       vector<string> evArgs = { std::to_string(d->getParams(me.id)->v + 1), std::to_string(d->getParams(me.id)->H) };
+                       int count = 0;
+                       for (int id = 0; id < d->getParams(me.id)->R; id++) {
+                          for (unsigned e = 0; e < events.size(); e++)
+                             if (events[e]->getFrom().id == id)
+                                if (events[e]->isActivated("ChangeView", evArgs))
+                                   count++;
+                       }
+                       cout << "count ChangeView = " << count << " / " << d->getParams(me.id)->M() << endl;
+                       // count >= 2f+1 (or M)
+                       return count >= d->getParams(me.id)->M();
+                    }))
+       ->add(Action<MultiContext<dBFT2Context>>("v := v + 1", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          d->getParams(me.id)->v = d->getParams(me.id)->v + 1;
+          cout << " ***** MOVING TO NEXT VIEW: " << d->getParams(me.id)->v << endl;
+       }))
+       ->add(Action<MultiContext<dBFT2Context>>("C := 0", [](Timer& C, MultiContext<dBFT2Context>* d, MachineId me) -> void {
+          C.reset();
+       })));
+
+
+   //cout << "Machine => " << machine->toString() << endl;
+   string graphviz = machine->toString("graphviz");
+
+   FILE* fgraph = fopen("fgraph.dot", "w");
+   fprintf(fgraph, "%s\n", graphviz.c_str());
+   fclose(fgraph);
+   cout << "Generating image 'fgraph.png'" << endl;
+   system("dot -Tpng fgraph.dot -o fgraph.png");
+
+
+
+   return machine;
+}
+
+int main()
+{
+   // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0 // 1500 -> primary (R=1)
+   auto machine0 = commit_phase_dbft2(0);
+
+
+   dBFT2Context ctxData0(0, 1500, 3, 1, 0);
+   MultiContext<dBFT2Context> ctx0;
+   ctx0.vm.push_back(MachineContext<dBFT2Context>(&ctxData0, machine0));
+
+   // run for 5.0 seconds max
+   //machine0->setWatchdog(5.0);
+
+
+   ReplicatedSTSM<dBFT2Context> machine;
+   machine.registerMachine(machine0);
+
+
+   machine.scheduleEvent(
+     1.0,          // 1 second to expire: after initialize()
+     MachineId(0), // machine 0
+     "OnStart",
+     vector<string>(0)); // no parameters
+
+
+   MultiState<dBFT2Context> minitial(1, nullptr);
+   minitial[0] = machine0->getStateByName("PreInitial");
+
+   // run for 5.0 seconds max (watchdog limit)
+   machine.setWatchdog(5.0);
+   machine.run(&minitial, &ctx0);
+   //machine0->run(machine0->states[0], &ctx0); // explicitly passing first state as default 
+
+   return 0;
+}
+
+/*
 int
 main()
 {
@@ -295,3 +579,4 @@ main()
 
    return 0;
 }
+*/
