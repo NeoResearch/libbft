@@ -95,7 +95,9 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
    cout << "Generating image '" << ssimage.str() << ".png'" << endl;
-   int r = system(ssgraphviz.str().c_str());
+   if (!system(ssgraphviz.str().c_str())) {
+      cout << "Problem generating files" << endl;
+   }
    //system("dot -Tpng fgraph.dot -o fgraph.png");
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
    fclose(flog);

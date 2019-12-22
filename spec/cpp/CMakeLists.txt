@@ -53,7 +53,7 @@ else ()
     add_definitions(-finline-functions)
     add_definitions(-funroll-loops)
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frecursive")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -frecursive")
 endif ()
 
 #set(PROTOBUF_GENERATED_PATH src CACHE STRING proto_gen)
