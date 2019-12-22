@@ -8,6 +8,7 @@ spec/cpp/grpc/third_party/
 
 vendor/
 
+*.pb.*
 *.dot
 *.png
 *.o

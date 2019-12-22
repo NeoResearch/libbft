@@ -60,8 +60,6 @@ endif ()
 set(GRPC_PLUGIN_CPP /usr/local/bin/grpc_cpp_plugin CACHE STRING grpc_bin)
 
 message(STATUS "BUILD_TESTS = ${BUILD_TESTS}")
-message(STATUS "PROTOBUF_GENERATED_PATH = ${PROTOBUF_GENERATED_PATH}")
-message(STATUS "GRPC_PLUGIN_CPP = ${GRPC_PLUGIN_CPP}")
 
 add_subdirectory(src)
 #add_subdirectory(tests)

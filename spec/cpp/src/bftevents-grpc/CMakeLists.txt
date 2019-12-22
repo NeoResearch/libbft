@@ -13,11 +13,6 @@ file(GLOB DATAMODEL_PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/bftevent.proto)
 foreach(proto ${DATAMODEL_PROTOS})
     file(TO_NATIVE_PATH ${proto} proto_native)
     message(STATUS "Generating ${proto}")
-    message(STATUS "PROTOBUF_PROTOC_EXECUTABLE: ${PROTOBUF_PROTOC_EXECUTABLE}")
-    message(STATUS "PROTOMODEL_PATH: ${PROTOMODEL_PATH}")
-    message(STATUS "PROTOBINDING_PATH: ${PROTOBINDING_PATH}")
-    message(STATUS "proto_native: ${proto_native}")
-    message(STATUS "GRPC_PLUGIN_CPP: ${GRPC_PLUGIN_CPP}")
 
     execute_process(
         COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}

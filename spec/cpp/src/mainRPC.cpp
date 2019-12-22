@@ -30,7 +30,8 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 }
 
 void
-RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS, double dropRate, std::string scenario, std::string dbft_type, int RANDOM)
+RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS,
+		double dropRate, std::string scenario, std::string dbft_type, int RANDOM)
 {
    std::stringstream ssbasefile;
    ssbasefile << scenario << "-r" << RANDOM << "-id" << me << "_N" << N;
