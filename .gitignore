@@ -3,7 +3,8 @@
 
 build/
 cmake-build-debug/
-grpc/
+spec/cpp/grpc/
+spec/cpp/grpc/third_party/
 
 vendor/
 

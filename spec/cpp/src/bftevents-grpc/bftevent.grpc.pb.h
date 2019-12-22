@@ -20,17 +20,11 @@
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
 
-namespace grpc_impl {
+namespace grpc {
 class CompletionQueue;
+class Channel;
 class ServerCompletionQueue;
 class ServerContext;
-}  // namespace grpc_impl
-
-namespace grpc {
-namespace experimental {
-template <typename RequestT, typename ResponseT>
-class MessageAllocator;
-}  // namespace experimental
 }  // namespace grpc
 
 namespace bftevent {
@@ -57,9 +51,6 @@ class BFTEvent final {
       virtual ~experimental_async_interface() {}
       // Function invoked to send the request
       virtual void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-      virtual void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
@@ -80,9 +71,6 @@ class BFTEvent final {
       public StubInterface::experimental_async_interface {
      public:
       void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) override;
-      void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, std::function<void(::grpc::Status)>) override;
-      void informEvent(::grpc::ClientContext* context, const ::bftevent::EventInform* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
-      void informEvent(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::bftevent::EventReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -142,12 +130,6 @@ class BFTEvent final {
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    return this->informEvent(context, request, response, controller);
                  }));
-    }
-    void SetMessageAllocatorFor_informEvent(
-        ::grpc::experimental::MessageAllocator< ::bftevent::EventInform, ::bftevent::EventReply>* allocator) {
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::bftevent::EventInform, ::bftevent::EventReply>*>(
-          ::grpc::Service::experimental().GetHandler(0))
-              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_informEvent() override {
       BaseClassMustBeDerivedFromService(this);

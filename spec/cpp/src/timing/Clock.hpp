@@ -37,7 +37,7 @@ public:
       auto epoch = now_ms.time_since_epoch(); // which epoch? unix?
       auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
       long duration = value.count();
-      return duration / 1000.0;
+      return static_cast<double>(duration) / 1000.0;
    }
 
    string toString() const

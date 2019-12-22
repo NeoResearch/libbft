@@ -1,70 +1,40 @@
-cmake_minimum_required(VERSION 3.12)
+#================================================================#
+#  Protobuf code generation
+#================================================================#
+find_package(Protobuf REQUIRED)
 
-set(protobuf_MODULE_COMPATIBLE TRUE)
-find_package(Protobuf CONFIG REQUIRED)
-message(STATUS "Using protobuf ${protobuf_VERSION}")
+#include_directories(protos)
 
-set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
-set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
+file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR} PROTOMODEL_PATH)
+#file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_GENERATED_PATH} PROTOBINDING_PATH)
 
-# Find gRPC installation
-# Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
-find_package(gRPC CONFIG REQUIRED)
-message(STATUS "Using gRPC ${gRPC_VERSION}")
+file(GLOB DATAMODEL_PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/bftevent.proto)
 
-set(_GRPC_GRPCPP_UNSECURE gRPC::grpc++_unsecure)
-set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
+foreach(proto ${DATAMODEL_PROTOS})
+    file(TO_NATIVE_PATH ${proto} proto_native)
+    message(STATUS "Generating ${proto}")
+    message(STATUS "PROTOBUF_PROTOC_EXECUTABLE: ${PROTOBUF_PROTOC_EXECUTABLE}")
+    message(STATUS "PROTOMODEL_PATH: ${PROTOMODEL_PATH}")
+    message(STATUS "PROTOBINDING_PATH: ${PROTOBINDING_PATH}")
+    message(STATUS "proto_native: ${proto_native}")
+    message(STATUS "GRPC_PLUGIN_CPP: ${GRPC_PLUGIN_CPP}")
 
-file(GLOB PROTOBUF_DEFINITION_FILES "*.proto")
-set(PROTOBUF_INPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
-set(PROTOBUF_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
-
-foreach(file ${PROTOBUF_DEFINITION_FILES})
-#    execute_process(
-#        COMMAND "protoc" "--proto_path=${PROTOBUF_INPUT_DIRECTORY}" "--cpp_out=${PROTOBUF_OUTPUT_DIRECTORY}" ${file}
-#        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#        RESULT_VARIABLE PROTOBUF_RESULT
-#        OUTPUT_VARIABLE PROTOBUF_OUTPUT_VARIABLE
-#    )
-#
-#    if ("${PROTOBUF_RESULT}" STREQUAL "0")
-#        message(STATUS "Created Protobuf files for ${file}")
-#    else()
-#        message(SEND_ERROR "Problem Protobuf generating files for ${file} - ${PROTOBUF_OUTPUT_VARIABLE}")
-#    endif()
-#
-#    set(GRPC_CPP_PLUGIN_PATH "/usr/local/bin/grpc_cpp_plugin")
-#    execute_process(
-#        COMMAND "protoc"
-#            "--proto_path=${PROTOBUF_INPUT_DIRECTORY}"
-#            "--grpc_out=${PROTOBUF_OUTPUT_DIRECTORY}"
-#            "--plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_PATH}"
-#            ${file}
-#        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#        RESULT_VARIABLE PROTOBUF_RESULT
-#        OUTPUT_VARIABLE PROTOBUF_OUTPUT_VARIABLE
-#    )
-#    if ("${PROTOBUF_RESULT}" STREQUAL "0")
-#        message(STATUS "Created gRPC files for ${file}")
-#    else()
-#        message(SEND_ERROR "Problem gRPC generating files for ${file} - ${PROTOBUF_OUTPUT_VARIABLE}")
-#    endif()
-
-    message(STATUS "hi ${file}")
-    add_custom_command(
-        OUTPUT "bftevent.grpc.pb.h" "bftevent.grpc.pb.cc" "bftevent.pb.h" "bftevent.pb.cc"
-        COMMAND ${_PROTOBUF_PROTOC}
-        ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-        -I "${CMAKE_CURRENT_SOURCE_DIR}"
-        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-        "${file}"
-        DEPENDS "${file}"
+    execute_process(
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
+#        --proto_path=${PROTOMODEL_PATH}
+        --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+#        --cpp_out=${PROTOBINDING_PATH} ${proto_native}
+        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${proto_native}
+        RESULT_VARIABLE rv
     )
-endforeach()
 
-#file(GLOB PROTOBUF_MODELS_INCLUDES "*.pb.cc" "*.hpp")
-
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
-
-add_executable(bftclient bftclient.cc build/bftevent.grpc.pb.cc build/bftevent.pb.cc)
+    execute_process(
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
+#        --proto_path=${PROTOMODEL_PATH}
+        --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+#        --grpc_out=${PROTOBINDING_PATH}
+        --grpc_out=${CMAKE_CURRENT_SOURCE_DIR}
+        --plugin=protoc-gen-grpc=${GRPC_PLUGIN_CPP} ${proto_native}
+        RESULT_VARIABLE rv
+    )
+endforeach(proto)

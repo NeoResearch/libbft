@@ -48,8 +48,8 @@ public:
    }
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, MachineId me = 0, Clock* _clock = nullptr, string name = "STSM")
-     : TimedStateMachine<State<Param>, Param>(_clock, me, name)
+   SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = 0, Clock* _clock = nullptr, string _name = "STSM")
+     : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
      , timer(t)
    {
       // timer must exist
@@ -63,10 +63,10 @@ public:
       // unique_ptr the clock perhaps?
    }
 
-   State<Param>* getStateByName(string name)
+   State<Param>* getStateByName(string _name)
    {
       for (unsigned i = 0; i < states.size(); i++)
-         if (states[i]->name == name)
+         if (states[i]->name == _name)
             return states[i];
       return nullptr; // not found
    }

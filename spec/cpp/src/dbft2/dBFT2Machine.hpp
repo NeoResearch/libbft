@@ -28,7 +28,8 @@ public:
    int f; // max number of faulty nodes
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(), string _name = "replicated_dBFT")
+   dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
+   		string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
      , f(_f)
    {
@@ -41,7 +42,8 @@ public:
       // initialize independent machines (each one with its Timer, sharing same global Clock)
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
-         this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C", this->clock), i, this->clock, "dBFT");
+         this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C", this->clock), i,
+         		this->clock, "dBFT");
       }
 
       // fill states and transitions on each machine
@@ -51,14 +53,15 @@ public:
 
    // already pre-initialized machines (including states, I suppose...)
    // Each one has its clock and timer
-   dBFT2Machine(int _f, vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines, Clock* _clock = nullptr, int _me = 0, string _name = "replicated_dBFT")
+   dBFT2Machine(int _f, vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
+   		Clock* _clock = nullptr, int _me = 0, string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
      , f(_f)
    {
       this->machines = _machines;
       assert(f >= 0);
       assert(machines.size() >= 1);
-      assert(f <= (int)machines.size());
+      assert(f <= static_cast<int>(machines.size()));
    }
 
    virtual ~dBFT2Machine()
@@ -100,47 +103,53 @@ public:
 
       // preinitial -> started
       preinitial->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()",
+        		[](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
            cout << "Waiting for OnStart..." << endl;
-           return d->hasEvent("OnStart", me.id, vector<string>(0)); // no parameters on event
+           return d->hasEvent("OnStart", _me.id, vector<string>(0)); // no parameters on event
         })));
 
       // initial -> backup
       started->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>("not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>(
+        		"not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
            cout << "lambda1" << endl;
-           return !((d->vm[me.id].params->H + d->vm[me.id].params->v) % d->vm[me.id].params->R == me.id);
+           return !((d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R == _me.id);
         })));
 
       // initial -> primary
       started->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
-           cout << "lambda2 H=" << d->vm[me.id].params->H << " v=" << d->vm[me.id].params->v << " me=" << me.id << endl;
-           return (d->vm[me.id].params->H + d->vm[me.id].params->v) % d->vm[me.id].params->R == me.id;
+        (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>(
+        		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+           cout << "lambda2 H=" << d->vm[_me.id].params->H << " v=" << d->vm[_me.id].params->v << " _me=" << _me.id << endl;
+           return (d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R == _me.id;
         })));
 
       // backup -> reqSentOrRecv
       auto toReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
       backup->addTransition(
-        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
-           cout << "waiting for event OnPrepareRequest at " << me.id << " for view " << d->vm[me.id].params->v << endl;
+        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)",
+        		[](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+           cout << "waiting for event OnPrepareRequest at " << _me.id << " for view " << d->vm[_me.id].params->v << endl;
            stringstream ss;
-           ss << d->vm[me.id].params->v;
+           ss << d->vm[_me.id].params->v;
            vector<string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
-           return d->hasEvent("OnPrepareRequest", me.id, params);
+           return d->hasEvent("OnPrepareRequest", _me.id, params);
         })));
 
       // reqSentOrRecv -> commitSent
       reqSentOrRecv->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>(
+        		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
            cout << "nothing to do... assuming all preparations were received!" << endl;
            return true;
         })));
 
       // commitSent -> blockSent
       commitSent->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>("(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId me) -> bool {
+        (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>(
+        		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
            cout << "nothing to do... assuming all commits were received!" << endl;
            return true;
         })));
@@ -194,7 +203,8 @@ public:
          // add states
          ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << endl;
          for (unsigned i = 0; i < this->machines[0]->states.size(); i++)
-            ss << "node [shape = " << (this->machines[0]->states[i]->isFinal ? "doublecircle" : "circle") << "]; " << this->machines[0]->states[i]->name << ";" << endl;
+            ss << "node [shape = " << (this->machines[0]->states[i]->isFinal ? "doublecircle" : "circle") << "]; "
+            << this->machines[0]->states[i]->name << ";" << endl;
          // default initial state transition
          State<MultiContext<dBFT2Context>>* defState = this->machines[0]->getDefaultState();
          // will happen in an empty transition

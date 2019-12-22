@@ -126,8 +126,8 @@ public:
    {
       stringstream ss;
       ss << "Event [args=" << parameters.size() << "] " << name << "(";
-      for (int i = 0; i < ((int)this->parameters.size()); i++)
-         ss << this->parameters[i] << ((i != ((int)parameters.size()) - 1) ? "," : "");
+      for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
+         ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
       ss << ")";
       return ss.str();
    }
@@ -160,8 +160,8 @@ public:
    {
       stringstream ss;
       ss << "TimedEvent " << this->name << "(";
-      for (int i = 0; i < ((int)this->parameters.size()); i++)
-         ss << this->parameters[i] << ((i != ((int)parameters.size()) - 1) ? "," : "");
+      for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
+         ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
       ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime(); // default suffix '()' (empty parameters)
       return ss.str();
    }

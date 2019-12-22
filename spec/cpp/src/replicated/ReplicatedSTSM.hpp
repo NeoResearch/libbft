@@ -63,9 +63,9 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, MachineId machine, string name, vector<string> eventParams)
+   void scheduleEvent(double countdown, MachineId machine, string _name, vector<string> eventParams)
    {
-      scheduledEvents.push_back(ScheduledEvent(name, countdown, machine, eventParams));
+      scheduledEvents.push_back(ScheduledEvent(_name, countdown, machine, eventParams));
    }
 
 public:

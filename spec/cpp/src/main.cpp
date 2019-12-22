@@ -66,7 +66,9 @@ simpleExample()
    fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
    cout << "Generating image 'fgraph_STSM.png'" << endl;
-   system("dot -Tpng fgraph_STSM.dot -o fgraph_STSM.png");
+   if (!system("dot -Tpng fgraph_STSM.dot -o fgraph_STSM.png")) {
+      cout << "Problem generating graph" << endl;
+   }
 }
 
 SingleTimerStateMachine<MultiContext<dBFT2Context>>*
@@ -81,7 +83,7 @@ simpleMultiMachineExample(int id)
    auto primary = new State<MultiContext<dBFT2Context>>(false, "Primary");
    auto reqSentOrRecv = new State<MultiContext<dBFT2Context>>(false, "RequestSentOrReceived");
    auto commitSent = new State<MultiContext<dBFT2Context>>(false, "CommitSent");
-   auto viewChanging = new State<MultiContext<dBFT2Context>>(false, "ViewChanging");
+//   auto viewChanging = new State<MultiContext<dBFT2Context>>(false, "ViewChanging");
    auto blockSent = new State<MultiContext<dBFT2Context>>(true, "BlockSent");
 
    // -------------------------
@@ -181,7 +183,9 @@ dbft_test_real_dbft2_primary()
    fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
    cout << "Generating image 'fgraph.png'" << endl;
-   system("dot -Tpng fgraph.dot -o fgraph.png");
+   if (!system("dot -Tpng fgraph.dot -o fgraph.png")) {
+		 cout << "Problem generating graph" << endl;
+   }
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
@@ -511,7 +515,9 @@ commit_phase_dbft2(int id_me)
    fprintf(fgraph, "%s\n", graphviz.c_str());
    fclose(fgraph);
    cout << "Generating image 'fgraph.png'" << endl;
-   system("dot -Tpng fgraph.dot -o fgraph.png");
+   if (!system("dot -Tpng fgraph.dot -o fgraph.png")) {
+		 cout << "Problem generating graph" << endl;
+   }
 
 
 
