@@ -1,12 +1,12 @@
 language: cpp
 install:
-  - apt-get update
-  - apt-get install autoconf automake libtool curl make g++ unzip
+  - sudo apt-get update
+  - sudo apt-get install autoconf automake libtool curl make g++ unzip
   # lcov
   - cd ${TRAVIS_BUILD_DIR}
   - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.14.orig.tar.gz
   - tar xf lcov_1.14.orig.tar.gz
-  - make -C lcov-1.14/ install
+  - sudo make -C lcov-1.14/ install
   - gem install coveralls-lcov
   # protobuf
   - cd ${TRAVIS_BUILD_DIR}
@@ -17,8 +17,8 @@ install:
   - sh configure --prefix=/usr
   - make
   - make check
-  - make install
-  - ldconfig # refresh shared library cache.
+  - sudo make install
+  - sudo ldconfig # refresh shared library cache.
   # vcpkg
   - cd ${TRAVIS_BUILD_DIR}
   - git clone https://github.com/Microsoft/vcpkg.git
