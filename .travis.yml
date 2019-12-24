@@ -60,7 +60,7 @@ install:
   - cd cmake/build
   - cmake ../..
   - make
-  - cd ${TRAVIS_BUILD_DIR}/third_party/protobuf
+  - cd ${TRAVIS_BUILD_DIR}/grpc/third_party/protobuf
   - sudo make install
   - sudo ldconfig
 #  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
