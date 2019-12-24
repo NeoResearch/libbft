@@ -9,7 +9,7 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
 # https://developers.redhat.com/blog/2018/03/21/compiler-and-linker-flags-gcc/
 add_definitions(-std=c++17)
-add_definitions(-fconcepts)
+#add_definitions(-fconcepts)
 add_definitions(-fpermissive)
 add_definitions(-Wall)
 add_definitions(-fasynchronous-unwind-tables)
