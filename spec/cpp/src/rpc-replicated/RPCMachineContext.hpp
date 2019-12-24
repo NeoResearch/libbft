@@ -5,6 +5,7 @@
 // system includes
 #include <iostream> // TODO: remove
 #include <vector>
+#include <memory>
 
 #include <assert.h> // TODO: remove
 #include <unistd.h> // TODO: remove busy sleep
@@ -30,7 +31,7 @@ struct RPCMachineContext
    // my id
    int me;
    // the world I can connect to
-   vector<BFTEventsClient*> world;
+   vector<shared_ptr<BFTEventsClient>> world;
 
 private:
    // my events
@@ -45,7 +46,7 @@ private:
    //double randomRealBetweenZeroAndOne = dis(generator);
 
 public:
-   RPCMachineContext(Param* _params, int _me, vector<BFTEventsClient*> _world, int seed = 99)
+   RPCMachineContext(Param* _params, int _me, vector<shared_ptr<BFTEventsClient>> _world, int seed = 99)
      : params(_params)
      , me(_me)
      , world(_world)
