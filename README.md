@@ -1,5 +1,22 @@
 # libbft
 
+<p align="center">
+  <a href="https://travis-ci.org/NeoResearch/libbft">
+    <img src="https://travis-ci.org/NeoResearch/libbft.svg?branch=master" alt="Current TravisCI build status.">
+  </a>
+  <a href="https://github.com/NeoResearch/libbft/releases">
+    <img src="https://badge.fury.io/gh/NeoResearch%2Flibbft.svg" alt="Current neo version.">
+  </a>
+  <!--
+  <a href='https://coveralls.io/github/NeoResearch/libbft'>
+    <img src='https://coveralls.io/repos/github/NeoResearch/libbft/badge.svg' alt='Coverage Status' />
+  </a>
+  -->
+  <a href="https://github.com/NeoResearch/libbft/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License.">
+  </a>
+</p>
+
 ## A lightweight and multi-language library collection for byzantine fault tolerance
 
 Byzantine Fault Tolerance (BFT) is the core mechanism for building attack-resistant and self-adaptive systems. It is a widespread concept since the proposal of a Practical BFT (by Miguel Castro and Barbara Liskov), with multiple implementations nowadays (such as dBFT on Neo Blockchain).
