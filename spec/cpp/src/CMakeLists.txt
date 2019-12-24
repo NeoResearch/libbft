@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.13)
-project(libbft VERSION 0.1)
-
 file(GLOB_RECURSE project_sources *)
 list(FILTER project_sources EXCLUDE REGEX "main.*\\.cpp$")
 list(FILTER project_sources INCLUDE REGEX "pp$")

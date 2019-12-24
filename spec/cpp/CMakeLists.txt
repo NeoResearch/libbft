@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 
 set(PROJECT_NAME libbft)
 set(PROJECT_VERSION 0.1.0)
@@ -9,7 +9,7 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
 # https://developers.redhat.com/blog/2018/03/21/compiler-and-linker-flags-gcc/
 add_definitions(-std=c++17)
-add_definitions(-fconcepts)
+#add_definitions(-fconcepts)
 add_definitions(-fpermissive)
 add_definitions(-Wall)
 add_definitions(-fasynchronous-unwind-tables)
@@ -22,6 +22,7 @@ add_definitions(-W)
 add_definitions(-Wconversion)
 add_definitions(-Wcast-align)
 add_definitions(-Wunused)
+add_definitions(-Wunused-variable)
 add_definitions(-Wshadow)
 add_definitions(-Wold-style-cast)
 add_definitions(-Wpointer-arith)

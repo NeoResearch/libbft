@@ -1,0 +1,117 @@
+language: cpp
+#cache:
+#  directories:
+#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+#    - ${TRAVIS_BUILD_DIR}/protobuf/
+#    - ${TRAVIS_BUILD_DIR}/grpc/
+#before_install:
+#  - sudo apt-get update
+#  - sudo apt-get -y install autoconf build-essential automake cmake curl g++ make
+#  - sudo apt-get -y install libgflags-dev libgtest-dev libc++-dev libtool
+#  - sudo apt-get -y install pkg-config unzip
+#  - apt-cache search clang | grep clang-
+#  - sudo apt-get -y install clang-6.0
+addons:
+  apt:
+    update: true
+    packages:
+      - autoconf
+      - automake
+      - build-essential
+      - cmake
+      - curl
+      - g++
+      - make
+      - libc++-dev
+      - libcurl3-dev
+      - libgflags-dev
+      - libgtest-dev
+      - libtool
+      - pkg-config
+      - unzip
+      - clang-6.0
+install:
+  # lcov
+  - echo "Installing lcov"
+  - cd ${TRAVIS_BUILD_DIR}
+  - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.14.orig.tar.gz
+  - tar xf lcov_1.14.orig.tar.gz
+  - sudo make -C lcov-1.14/ install
+  - gem install coveralls-lcov
+  - rm lcov_1.14.orig.tar.gz
+  # vi
+  - cd ${TRAVIS_BUILD_DIR}
+  - git clone https://github.com/grpc/grpc
+  - cd grpc
+  - git submodule update --init --recursive
+  - echo "Installing protobuf"
+  - cd third_party/protobuf
+  - git submodule update --init --recursive
+  - sh autogen.sh
+  - sh configure --prefix=/usr
+  - make
+#  - make check
+  - sudo make install
+  - sudo ldconfig
+  - echo "Installing gRPC"
+  - cd ../..
+  - make
+  - sudo make install
+#  # protobuf
+#  - echo "Installing protobuf"
+#  - cd ${TRAVIS_BUILD_DIR}
+#  - git clone https://github.com/protocolbuffers/protobuf.git
+#  - cd protobuf
+#  - git submodule update --init --recursive
+#  - sh autogen.sh
+#  - sh configure --prefix=/usr
+#  - make
+#  - make check
+#  - sudo make install
+#  - sudo ldconfig # refresh shared library cache.
+#  # gRPC
+#  - echo "Installing gRPC"
+#  - cd ${TRAVIS_BUILD_DIR}
+#  - git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc
+#  - cd grpc
+#  - git submodule update --init
+#  - mkdir cmake/build
+#  - cd cmake/build
+#  - cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release ../..
+#  - make
+#  - sudo make install
+#  - sudo make DESTDIR=/usr/local/bin/ install
+#  - ls -lha ls -lha /usr/local/bin/g*
+#  - cd ${TRAVIS_BUILD_DIR}/grpc/third_party/protobuf
+#  - sudo make install
+#  - sudo make DESTDIR=/usr/local/bin/ install
+#  - sudo ldconfig
+#  - make DESTDIR=/usr install
+#  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
+#  - make
+#  - make install
+
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - lcov --directory . --zerocounters
+
+compiler:
+  - g++
+
+script:
+  - cd ${TRAVIS_BUILD_DIR}/spec/cpp
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make # && ./test-library.out
+
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}
+  - lcov --directory . --capture --output-file coverage.info # capture coverage info
+  - lcov --remove coverage.info 'tests/*' '/usr/*' 'test-library*' --output-file coverage.info # filter out system and test code
+  - lcov --list coverage.info # debug before upload
+  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info # uploads to coveralls.. for a private repo using a token
+  - coveralls-lcov coverage.info #for open source
+
+notifications:
+  email: false
