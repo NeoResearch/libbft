@@ -4,13 +4,32 @@ language: cpp
 #    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
 #    - ${TRAVIS_BUILD_DIR}/protobuf/
 #    - ${TRAVIS_BUILD_DIR}/grpc/
+#before_install:
+#  - sudo apt-get update
+#  - sudo apt-get -y install autoconf build-essential automake cmake curl g++ make
+#  - sudo apt-get -y install libgflags-dev libgtest-dev libc++-dev libtool
+#  - sudo apt-get -y install pkg-config unzip
+#  - apt-cache search clang | grep clang-
+#  - sudo apt-get -y install clang-6.0
+addons:
+  apt:
+    update: true
+    packages:
+      - autoconf
+      - automake
+      - build-essential
+      - cmake
+      - curl
+      - g++
+      - make
+      - libgflags-dev
+      - libgtest-dev
+      - libc++-dev
+      - libtool
+      - pkg-config
+      - unzip
+      - clang-6.0
 install:
-  - sudo apt-get update
-  - sudo apt-get install autoconf build-essential automake cmake curl g++ make
-  - sudo apt-get install libgflags-dev libgtest-dev libc++-dev libtool
-  - sudo apt-get install pkg-config unzip
-  - apt-cache search clang | grep clang-
-  - sudo apt-get install clang-6.0
   # lcov
   - echo "Installing lcov"
   - cd ${TRAVIS_BUILD_DIR}
@@ -41,6 +60,9 @@ install:
   - cd cmake/build
   - cmake ../..
   - make
+  - cd ${TRAVIS_BUILD_DIR}/third_party/protobuf
+  - sudo make install
+  - sudo ldconfig
 #  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
 #  - make
 #  - make install
