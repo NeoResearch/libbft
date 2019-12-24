@@ -1,8 +1,9 @@
-
 // system
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <memory>
+#include <stdlib.h>
 
 // lib
 
@@ -19,8 +20,7 @@ using namespace libbft;
 
 // helper method: will send OnStart after 1 second
 void
-sendOnStart(BFTEventsClient* myClient, int delayMS)
-{
+sendOnStart(shared_ptr<BFTEventsClient> myClient, int delayMS) {
    std::this_thread::sleep_for(std::chrono::milliseconds(delayMS)); // 1000 ms -> 1 sec
    std::cout << " -x-x-> Will deliver message 'OnStart'" << std::endl;
    std::vector<std::string> eventArgs;
@@ -30,15 +30,15 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 }
 
 void
-RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS,
-		double dropRate, std::string scenario, std::string dbft_type, int RANDOM)
-{
+RPC_dbft_test_real_dbft2(
+      int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS, double dropRate,
+      std::string scenario, std::string dbft_type, int RANDOM) {
    std::stringstream ssbasefile;
    ssbasefile << scenario << "-r" << RANDOM << "-id" << me << "_N" << N;
 
    std::stringstream sslog;
    sslog << "log-" << ssbasefile.str() << ".txt";
-   FILE* flog = fopen(sslog.str().c_str(), "w");
+   shared_ptr<std::FILE> flog = shared_ptr<std::FILE>(fopen(sslog.str().c_str(), "w"), std::fclose);
 
    std::stringstream ssimage;
    ssimage << "graph-" << ssbasefile.str() << ".dot";
@@ -53,9 +53,10 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    // dBFT2Context(int _v, int _H, int _T, int _R)
 
    // initialize my world: one RPC Client for every other node (including myself)
-   vector<BFTEventsClient*> worldCom(N, nullptr);
-   for (unsigned i = 0; i < worldCom.size(); i++)
-      worldCom[i] = new BFTEventsClient(i);
+   vector<shared_ptr<BFTEventsClient> > worldCom(N, nullptr);
+   for (unsigned i = 0; i < worldCom.size(); i++) {
+      worldCom[i] = std::move((static_cast<shared_ptr<BFTEventsClient>>(new BFTEventsClient(i))));
+   }
 
    // my own context: including my data, my name and my world
    // random 'seed' is added to '_me' identifier, to get independent (but deterministic) values on different nodes
@@ -91,25 +92,25 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    threadOnStart.join();
 
    // show
-   FILE* fgraph = fopen(ssimage.str().c_str(), "w");
-   fprintf(fgraph, "%s\n", graphviz.c_str());
-   fclose(fgraph);
+   {
+      shared_ptr<std::FILE> fgraph = shared_ptr<std::FILE>(fopen(ssimage.str().c_str(), "w"), std::fclose);
+      fprintf(fgraph.get(), "%s\n", graphviz.c_str());
+   }
+
    cout << "Generating image '" << ssimage.str() << ".png'" << endl;
    if (!system(ssgraphviz.str().c_str())) {
       cout << "Problem generating files" << endl;
    }
    //system("dot -Tpng fgraph.dot -o fgraph.png");
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
-   fclose(flog);
 }
 
 int
-main(int argc, char* argv[])
-{
+main(int argc, char *argv[]) {
    if (argc < 5) {
       std::cout << "missing parameters! argc=" << argc << " and should be 5 or 6" << std::endl;
       std::cout << "requires: my_index N f scenario RANDOM" << std::endl;
-      return 1;
+      return EXIT_FAILURE;
    }
 
    std::cout << std::endl
@@ -185,5 +186,5 @@ main(int argc, char* argv[])
 
    std::cout << "finished successfully!" << std::endl;
 
-   return 0;
+   return EXIT_SUCCESS;
 }
