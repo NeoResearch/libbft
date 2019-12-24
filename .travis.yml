@@ -48,7 +48,8 @@ install:
   - cd cmake/build
   - cmake ../..
   - make
-  - make DESTDIR=/usr/local/bin/ install
+  - sudo make install
+  - sudo make DESTDIR=/usr/local/bin/ install
 #  - make DESTDIR=/usr install
 #  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
 #  - make
