@@ -22,9 +22,10 @@ addons:
       - curl
       - g++
       - make
+      - libc++-dev
+      - libcurl3-dev
       - libgflags-dev
       - libgtest-dev
-      - libc++-dev
       - libtool
       - pkg-config
       - unzip
@@ -40,7 +41,7 @@ install:
   - rm lcov_1.14.orig.tar.gz
   # vi
   - cd ${TRAVIS_BUILD_DIR}
-  - git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc
+  - git clone https://github.com/grpc/grpc
   - cd grpc
   - git submodule update --init --recursive
   - echo "Installing protobuf"
