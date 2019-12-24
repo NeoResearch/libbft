@@ -38,24 +38,6 @@ install:
   - sudo make -C lcov-1.14/ install
   - gem install coveralls-lcov
   - rm lcov_1.14.orig.tar.gz
-  # gRPC
-  - echo "Installing gRPC"
-  - cd ${TRAVIS_BUILD_DIR}
-  - git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc
-  - cd grpc
-  - git submodule update --init
-  - make
-  - sudo make install
-  - sudo make DESTDIR=/usr/local/bin/ install
-  - ls -lha ls -lha /usr/local/bin/g*
-#  - cd ${TRAVIS_BUILD_DIR}/grpc/third_party/protobuf
-#  - sudo make install
-#  - sudo make DESTDIR=/usr/local/bin/ install
-  - sudo ldconfig
-#  - make DESTDIR=/usr install
-#  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
-#  - make
-#  - make install
   # protobuf
   - echo "Installing protobuf"
   - cd ${TRAVIS_BUILD_DIR}
@@ -68,6 +50,27 @@ install:
   - make check
   - sudo make install
   - sudo ldconfig # refresh shared library cache.
+  # gRPC
+  - echo "Installing gRPC"
+  - cd ${TRAVIS_BUILD_DIR}
+  - git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc
+  - cd grpc
+  - git submodule update --init
+  - mkdir cmake/build
+  - cd cmake/build
+  - cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release ../..
+  - make
+  - sudo make install
+  - sudo make DESTDIR=/usr/local/bin/ install
+  - ls -lha ls -lha /usr/local/bin/g*
+#  - cd ${TRAVIS_BUILD_DIR}/grpc/third_party/protobuf
+#  - sudo make install
+#  - sudo make DESTDIR=/usr/local/bin/ install
+  - sudo ldconfig
+#  - make DESTDIR=/usr install
+#  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
+#  - make
+#  - make install
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
