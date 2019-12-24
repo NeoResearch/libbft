@@ -41,9 +41,9 @@ install:
   - cd cmake/build
   - cmake ../..
   - make
-  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
-  - make
-  - make install
+#  - cmake ../.. -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package
+#  - make
+#  - make install
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
