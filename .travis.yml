@@ -9,7 +9,7 @@ install:
 
   # Protobuf
   - cd ${TRAVIS_BUILD_DIR}
-  - ./install_protobuf.sh
+  - sh install_protobuf.sh
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
