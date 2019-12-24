@@ -1,11 +1,30 @@
 language: cpp
 install:
   - sudo apt-get install autoconf automake libtool curl make g++ unzip
-
+  # lcov
   - cd ${TRAVIS_BUILD_DIR}
-  - sh install/lcov.sh
-  - sh install/protobuf.sh
-  - sh install/vcpkg.sh
+  - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.14.orig.tar.gz
+  - tar xf lcov_1.14.orig.tar.gz
+  - sudo make -C lcov-1.14/ install
+  - gem install coveralls-lcov
+  # protobuf
+  - cd ${TRAVIS_BUILD_DIR}
+  - git clone https://github.com/protocolbuffers/protobuf.git
+  - cd protobuf
+  - git submodule update --init --recursive
+  - sh autogen.sh
+  - sh configure --prefix=/usr
+  - make
+  - make check
+  - sudo make install
+  - sudo ldconfig # refresh shared library cache.
+  # vcpkg
+  - cd ${TRAVIS_BUILD_DIR}
+  - git clone https://github.com/Microsoft/vcpkg.git
+  - cd vcpkg
+  - ./bootstrap-vcpkg.sh
+  - ./vcpkg integrate install
+  # grpc
   - vcpkg install grpc
 
 before_script:
