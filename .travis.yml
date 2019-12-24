@@ -1,5 +1,6 @@
 language: cpp
 install:
+  - apt-get update
   - apt-get install autoconf automake libtool curl make g++ unzip
   # lcov
   - cd ${TRAVIS_BUILD_DIR}
