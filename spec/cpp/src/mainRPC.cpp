@@ -19,8 +19,7 @@ using namespace libbft;
 
 // helper method: will send OnStart after 1 second
 void
-sendOnStart(BFTEventsClient* myClient, int delayMS)
-{
+sendOnStart(BFTEventsClient *myClient, int delayMS) {
    std::this_thread::sleep_for(std::chrono::milliseconds(delayMS)); // 1000 ms -> 1 sec
    std::cout << " -x-x-> Will deliver message 'OnStart'" << std::endl;
    std::vector<std::string> eventArgs;
@@ -30,15 +29,15 @@ sendOnStart(BFTEventsClient* myClient, int delayMS)
 }
 
 void
-RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS,
-		double dropRate, std::string scenario, std::string dbft_type, int RANDOM)
-{
+RPC_dbft_test_real_dbft2(
+      int me, int N, int f, int H, int T, int W, int InitDelayMS, int RegularDelayMS, double dropRate,
+      std::string scenario, std::string dbft_type, int RANDOM) {
    std::stringstream ssbasefile;
    ssbasefile << scenario << "-r" << RANDOM << "-id" << me << "_N" << N;
 
    std::stringstream sslog;
    sslog << "log-" << ssbasefile.str() << ".txt";
-   FILE* flog = fopen(sslog.str().c_str(), "w");
+   FILE *flog = fopen(sslog.str().c_str(), "w");
 
    std::stringstream ssimage;
    ssimage << "graph-" << ssbasefile.str() << ".dot";
@@ -53,7 +52,7 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    // dBFT2Context(int _v, int _H, int _T, int _R)
 
    // initialize my world: one RPC Client for every other node (including myself)
-   vector<BFTEventsClient*> worldCom(N, nullptr);
+   vector<BFTEventsClient *> worldCom(N, nullptr);
    for (unsigned i = 0; i < worldCom.size(); i++)
       worldCom[i] = new BFTEventsClient(i);
 
@@ -91,9 +90,11 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
    threadOnStart.join();
 
    // show
-   FILE* fgraph = fopen(ssimage.str().c_str(), "w");
-   fprintf(fgraph, "%s\n", graphviz.c_str());
-   fclose(fgraph);
+   {
+      FILE *fgraph = fopen(ssimage.str().c_str(), "w");
+      fprintf(fgraph, "%s\n", graphviz.c_str());
+      fclose(fgraph);
+   }
    cout << "Generating image '" << ssimage.str() << ".png'" << endl;
    if (!system(ssgraphviz.str().c_str())) {
       cout << "Problem generating files" << endl;
@@ -104,8 +105,7 @@ RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W, int InitDela
 }
 
 int
-main(int argc, char* argv[])
-{
+main(int argc, char *argv[]) {
    if (argc < 5) {
       std::cout << "missing parameters! argc=" << argc << " and should be 5 or 6" << std::endl;
       std::cout << "requires: my_index N f scenario RANDOM" << std::endl;
