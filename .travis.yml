@@ -1,15 +1,16 @@
 language: cpp
-cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-    - ${TRAVIS_BUILD_DIR}/protobuf/
-    - ${TRAVIS_BUILD_DIR}/grpc/
+#cache:
+#  directories:
+#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+#    - ${TRAVIS_BUILD_DIR}/protobuf/
+#    - ${TRAVIS_BUILD_DIR}/grpc/
 install:
   - sudo apt-get update
   - sudo apt-get install autoconf build-essential automake cmake curl g++ make
   - sudo apt-get install libgflags-dev libgtest-dev libc++-dev libtool
   - sudo apt-get install pkg-config unzip
-  - sudo apt-get install clang-7.0
+  - apt-cache search clang | grep clang-
+  - sudo apt-get install clang-5.0
   # lcov
   - echo "Installing lcov"
   - cd ${TRAVIS_BUILD_DIR}
