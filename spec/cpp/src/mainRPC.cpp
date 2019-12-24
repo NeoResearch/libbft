@@ -1,8 +1,8 @@
-
 // system
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <stdlib.h>
 
 // lib
 
@@ -109,7 +109,7 @@ main(int argc, char* argv[])
    if (argc < 5) {
       std::cout << "missing parameters! argc=" << argc << " and should be 5 or 6" << std::endl;
       std::cout << "requires: my_index N f scenario RANDOM" << std::endl;
-      return 1;
+      return EXIT_FAILURE;
    }
 
    std::cout << std::endl
@@ -185,5 +185,5 @@ main(int argc, char* argv[])
 
    std::cout << "finished successfully!" << std::endl;
 
-   return 0;
+   return EXIT_SUCCESS;
 }

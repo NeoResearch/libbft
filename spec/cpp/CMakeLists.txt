@@ -37,6 +37,10 @@ add_definitions(-Wno-switch)
 add_definitions(-Wno-parentheses)
 add_definitions(-Wunused-function)
 
+#add_definitions(-Werror)
+add_definitions(-pedantic-errors)
+#add_definitions(-fno-rtti)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-prototypes")
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
@@ -44,9 +48,13 @@ if (build_type STREQUAL "debug")
     message(STATUS "--- Debug build ---")
     add_definitions(-g)
     add_definitions(-grecord-gcc-switches)
-    add_definitions(-D_GLIBCXX_DEBUG)
+#    add_definitions(-D_GLIBCXX_DEBUG) # Not sure why it's breaking the mainRPC.cpp build
+#    add_definitions(-D_GLIBCXX_DEBUG_PEDANTIC) # Not sure why it's breaking the mainRPC.cpp build
     add_definitions(-D_FORTIFY_SOURCE=2)
     add_definitions(-D_GLIBCXX_ASSERTIONS)
+    add_definitions(-ggdb)
+    add_definitions(-O0)
+    add_definitions(-fstack-protector-all)
 else ()
     message(STATUS "--- Release build ---")
     add_definitions(-O3)
