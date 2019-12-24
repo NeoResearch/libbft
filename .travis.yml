@@ -22,8 +22,8 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
   - git clone https://github.com/Microsoft/vcpkg.git
   - cd vcpkg
-  - ./bootstrap-vcpkg.sh
-  - ./vcpkg integrate install
+  - sh bootstrap-vcpkg.sh
+  - sh vcpkg integrate install
   # grpc
   - vcpkg install grpc
 
