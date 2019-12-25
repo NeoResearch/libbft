@@ -39,7 +39,7 @@ install:
   - sudo make -C lcov-1.14/ install
   - gem install coveralls-lcov
   - rm lcov_1.14.orig.tar.gz
-  # vi
+  # gRPC and Protobuf
   - cd ${TRAVIS_BUILD_DIR}
   - git clone https://github.com/grpc/grpc
   - cd grpc
