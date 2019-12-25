@@ -1,11 +1,11 @@
 dist: xenial
 language: cpp
-cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-    - ${TRAVIS_BUILD_DIR}/protobuf/
-    - ${TRAVIS_BUILD_DIR}/grpc/
-    - ${TRAVIS_BUILD_DIR}/libbft/
+#cache:
+#  directories:
+#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+#    - ${TRAVIS_BUILD_DIR}/protobuf/
+#    - ${TRAVIS_BUILD_DIR}/grpc/
+#    - ${TRAVIS_BUILD_DIR}/libbft/
 addons:
   apt:
     update: true
@@ -70,11 +70,12 @@ jobs:
         - cd build
         - cmake -Dtest=ON ..
         - make
-
-    - stage: test
-      skip_cleanup: true
-      script:
         - ctest --extra-verbose
+
+#    - stage: test
+#      script:
+#        - cd ${TRAVIS_BUILD_DIR}/spec/cpp/build
+#        - ctest --extra-verbose
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
