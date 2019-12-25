@@ -66,12 +66,19 @@ before_script:
 compiler:
   - g++
 
-script:
-  - cd ${TRAVIS_BUILD_DIR}/spec/cpp
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make # && ./test-library.out
+jobs:
+  include:
+    - stage: build
+      script:
+        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
+        - mkdir build
+        - cd build
+        - cmake -Dtest=ON ..
+        - make
+
+    - stage: test
+      script:
+        - make test
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
