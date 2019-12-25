@@ -1,5 +1,7 @@
 # libbft
 
+https://travis-ci.com/NeoResearch/libbft
+
 <p align="center">
   <a href="https://travis-ci.org/NeoResearch/libbft">
     <img src="https://travis-ci.org/NeoResearch/libbft.svg?branch=master" alt="Current TravisCI build status.">
