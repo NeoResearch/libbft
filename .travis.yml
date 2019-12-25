@@ -1,16 +1,11 @@
+dist: xenial
 language: cpp
-#cache:
-#  directories:
-#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-#    - ${TRAVIS_BUILD_DIR}/protobuf/
-#    - ${TRAVIS_BUILD_DIR}/grpc/
-#before_install:
-#  - sudo apt-get update
-#  - sudo apt-get -y install autoconf build-essential automake cmake curl g++ make
-#  - sudo apt-get -y install libgflags-dev libgtest-dev libc++-dev libtool
-#  - sudo apt-get -y install pkg-config unzip
-#  - apt-cache search clang | grep clang-
-#  - sudo apt-get -y install clang-6.0
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+    - ${TRAVIS_BUILD_DIR}/protobuf/
+    - ${TRAVIS_BUILD_DIR}/grpc/
+    - ${TRAVIS_BUILD_DIR}/libbft/
 addons:
   apt:
     update: true
@@ -77,6 +72,7 @@ jobs:
         - make
 
     - stage: test
+      skip_cleanup: true
       script:
         - ctest --extra-verbose
 
