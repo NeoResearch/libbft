@@ -72,8 +72,11 @@ message(STATUS "BUILD_TESTS = ${BUILD_TESTS}")
 
 option(BUILD_TESTS "Build test programs" ON)
 
+include_directories(src)
 add_subdirectory(src)
 if (test)
+    enable_testing()
+    find_package(GTest REQUIRED)
+    #include_directories(${GTEST_INCLUDE_DIRS})
     add_subdirectory(tests)
 endif()
-include_directories(src)
