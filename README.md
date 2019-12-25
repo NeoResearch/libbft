@@ -1,8 +1,8 @@
 # libbft
 
 <p align="center">
-  <a href="https://travis-ci.org/NeoResearch/libbft">
-    <img src="https://travis-ci.org/NeoResearch/libbft.svg?branch=master" alt="Current TravisCI build status.">
+  <a href="https://travis-ci.com/NeoResearch/libbft">
+    <img src="https://travis-ci.com/NeoResearch/libbft.svg?branch=master" alt="Current TravisCI build status.">
   </a>
   <a href="https://github.com/NeoResearch/libbft/releases">
     <img src="https://badge.fury.io/gh/NeoResearch%2Flibbft.svg" alt="Current neo version.">
