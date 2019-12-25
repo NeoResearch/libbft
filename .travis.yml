@@ -78,7 +78,7 @@ jobs:
 
     - stage: test
       script:
-        - make test
+        - ctest --extra-verbose
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
