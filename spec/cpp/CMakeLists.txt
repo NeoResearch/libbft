@@ -70,7 +70,13 @@ set(GRPC_PLUGIN_CPP /usr/local/bin/grpc_cpp_plugin CACHE STRING grpc_bin)
 
 message(STATUS "BUILD_TESTS = ${BUILD_TESTS}")
 
-add_subdirectory(src)
-#add_subdirectory(tests)
 option(BUILD_TESTS "Build test programs" ON)
+
 include_directories(src)
+add_subdirectory(src)
+if (test)
+    enable_testing()
+    #find_package(GTest REQUIRED)
+    #include_directories(${GTEST_INCLUDE_DIRS})
+    add_subdirectory(tests)
+endif()

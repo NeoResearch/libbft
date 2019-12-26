@@ -1,16 +1,11 @@
+dist: xenial
 language: cpp
 #cache:
 #  directories:
 #    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
 #    - ${TRAVIS_BUILD_DIR}/protobuf/
 #    - ${TRAVIS_BUILD_DIR}/grpc/
-#before_install:
-#  - sudo apt-get update
-#  - sudo apt-get -y install autoconf build-essential automake cmake curl g++ make
-#  - sudo apt-get -y install libgflags-dev libgtest-dev libc++-dev libtool
-#  - sudo apt-get -y install pkg-config unzip
-#  - apt-cache search clang | grep clang-
-#  - sudo apt-get -y install clang-6.0
+#    - ${TRAVIS_BUILD_DIR}/libbft/
 addons:
   apt:
     update: true
@@ -39,7 +34,7 @@ install:
   - sudo make -C lcov-1.14/ install
   - gem install coveralls-lcov
   - rm lcov_1.14.orig.tar.gz
-  # vi
+  # gRPC and Protobuf
   - cd ${TRAVIS_BUILD_DIR}
   - git clone https://github.com/grpc/grpc
   - cd grpc
@@ -66,12 +61,21 @@ before_script:
 compiler:
   - g++
 
-script:
-  - cd ${TRAVIS_BUILD_DIR}/spec/cpp
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make # && ./test-library.out
+jobs:
+  include:
+    - stage: build
+      script:
+        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
+        - mkdir build
+        - cd build
+        - cmake -Dtest=ON ..
+        - make
+        - ctest --extra-verbose
+
+#    - stage: test
+#      script:
+#        - cd ${TRAVIS_BUILD_DIR}/spec/cpp/build
+#        - ctest --extra-verbose
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
