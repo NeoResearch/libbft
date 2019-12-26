@@ -70,7 +70,7 @@ jobs:
         - cd build
         - cmake -Dtest=ON ..
         - make
-        - ctest --extra-verbose
+        - ctest --extra-verbose --gtest_color=yes
 
 #    - stage: test
 #      script:
