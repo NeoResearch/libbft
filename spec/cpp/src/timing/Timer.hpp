@@ -3,14 +3,13 @@
 #define LIBBFT_SRC_CPP_TIMER_HPP
 
 // system includes
+//#include <memory>
 #include <sstream>
 
 // libbft includes
 #include "Clock.hpp"
 
 // standard Timer for a TSM
-
-using namespace std; // TODO: remove
 
 namespace libbft {
 
