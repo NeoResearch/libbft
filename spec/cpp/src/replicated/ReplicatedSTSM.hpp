@@ -20,8 +20,6 @@
 #include "MultiContext.hpp"
 #include "../events/ScheduledEvent.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 template<class Param>
@@ -63,13 +61,13 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, MachineId machine, string _name, vector<string> eventParams)
+   void scheduleEvent(double countdown, MachineId machine, std::string _name, std::vector<std::string> eventParams)
    {
       scheduledEvents.push_back(ScheduledEvent(_name, countdown, machine, eventParams));
    }
 
 public:
-   ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = 0, string _name = "")
+   ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = 0, std::string _name = "")
      : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
    {
    }
@@ -88,7 +86,7 @@ public:
 
    void launchScheduledEvents(MultiContext<Param>* p)
    {
-      cout << "launching scheduled events!" << endl;
+      std::cout << "launching scheduled events!" << std::endl;
       // launch all scheduled events
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
          ScheduledEvent e = scheduledEvents[i];
@@ -109,18 +107,20 @@ public:
       if (!current)
          current = new MultiState<Param>(machines.size(), nullptr);
 
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
+      std::cout << std::endl;
+      std::cout << "===========" << std::endl;
+      std::cout << "begin run()" << std::endl;
+      std::cout << "===========" << std::endl;
 
-      cout << "initializing multimachine" << endl;
-      if (watchdog)
+      std::cout << "initializing multimachine" << std::endl;
+      if (watchdog) {
          watchdog->reset();
-      else
-         cout << "No watchdog configured!" << endl;
-      for (unsigned i = 0; i < machines.size(); i++)
+      } else {
+         std::cout << "No watchdog configured!" << std::endl;
+      }
+      for (unsigned i = 0; i < machines.size(); i++) {
          machines[i]->initialize(current->at(i), p);
+      }
 
       launchScheduledEvents(p);
 
@@ -130,10 +130,10 @@ public:
    // launch when machine is finished
    virtual void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
+      std::cout << std::endl;
+      std::cout << "=================" << std::endl;
+      std::cout << "finished machine!" << std::endl;
+      std::cout << "=================" << std::endl;
    }
 
    virtual bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
@@ -199,7 +199,7 @@ public:
          // evaluate situation on each machine
          bool r = machines[i]->updateState(states->at(i), p);
          if (r) {
-            cout << "machine " << i << " moved to state: " << states->at(i)->toString() << endl;
+            std::cout << "machine " << i << " moved to state: " << states->at(i)->toString() << std::endl;
             //states->at(i)->onEnter(p); // really useful?
             ret = true;
          }
@@ -210,9 +210,9 @@ public:
 
    virtual void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
-      cout << "updating multi state! STATES:" << endl;
+      std::cout << "updating multi state! STATES:" << std::endl;
       for (unsigned i = 0; i < current.size(); i++) {
-         cout << "Machine " << i << " => " << current[i]->toString() << endl;
+         std::cout << "Machine " << i << " => " << current[i]->toString() << std::endl;
       }
 
       if (watchdog)
@@ -223,7 +223,7 @@ public:
    {
       // check watchdog
       if (watchdog && watchdog->expired()) {
-         cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << endl;
+         std::cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << std::endl;
          return true;
       }
       /*
@@ -244,9 +244,9 @@ public:
       return false;
    }
 
-   virtual string toString(string format = "") override
+   virtual std::string toString(std::string format = "") override
    {
-      stringstream ss;
+      std::stringstream ss;
       if (format == "graphviz") {
 
       } else {

@@ -16,8 +16,6 @@
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 // Scheduled class: launches a 'thing' (type T) after clock has expired

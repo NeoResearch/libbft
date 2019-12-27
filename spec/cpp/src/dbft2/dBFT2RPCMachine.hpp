@@ -26,8 +26,6 @@
 
 #include "../events/ScheduledEvent.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 // This an RPC-based dBFT2 machine

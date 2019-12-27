@@ -15,8 +15,6 @@
 #include "../timing/Timer.hpp"
 //#include "State.h"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 /*
@@ -75,10 +73,11 @@ protected:
    // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
    MachineId from;
    // extra parameter to compare
-   vector<string> parameters;
+   std::vector<std::string> parameters;
 
 public:
-   Event(string _name, MachineId _from = MachineId(-1), vector<string> _parameters = vector<string>(0))
+   Event(std::string _name, MachineId _from = MachineId(-1),
+         std::vector<std::string> _parameters = std::vector<std::string>(0))
      : name(_name)
      , from(_from)
      , parameters(_parameters)
@@ -90,7 +89,7 @@ public:
    }
 
    // TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
-   virtual bool isActivated(string _name, vector<string> pattern) const
+   virtual bool isActivated(std::string _name, std::vector<std::string> pattern) const
    {
       //return (name == _name) && checkEventArgs(parameters, pattern, matching);
       return (name == _name) && (parameters == pattern);
@@ -122,9 +121,9 @@ public:
    }
    */
 
-   virtual string toString() const
+   virtual std::string toString() const
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "Event [args=" << parameters.size() << "] " << name << "(";
       for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
          ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
@@ -140,7 +139,8 @@ protected:
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _name, MachineId _from = MachineId(-1), vector<string> _parameters = vector<string>(0))
+   TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
+         std::vector<std::string> _parameters = std::vector<std::string>(0))
      : Event(_name, _from, _parameters)
    {
       timer = (new Timer())->init(countdown);
@@ -151,14 +151,14 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _name, vector<string> pattern) const override
+   virtual bool isActivated(std::string _name, std::vector<std::string> pattern) const override
    {
       return (this->name == _name) && (timer->expired()) && (this->parameters == pattern);
    }
 
-   virtual string toString() const override
+   virtual std::string toString() const override
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "TimedEvent " << this->name << "(";
       for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
          ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");

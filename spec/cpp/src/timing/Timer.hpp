@@ -3,7 +3,6 @@
 #define LIBBFT_SRC_CPP_TIMER_HPP
 
 // system includes
-//#include <memory>
 #include <sstream>
 
 // libbft includes
@@ -17,7 +16,7 @@ class Timer
 {
 private:
    // object name
-   string name;
+   std::string name;
    // beware if clock precision is terrible
    Clock* clock;
    // nice precision timer
@@ -26,7 +25,7 @@ private:
    double countdown{ -1.0 };
 
 public:
-   Timer(string _name = "", Clock* _clock = nullptr)
+   Timer(std::string _name = "", Clock* _clock = nullptr)
      : name(_name)
      , clock(_clock)
    {
@@ -38,8 +37,9 @@ public:
    {
       // update countdown
       countdown = _countdown;
-      if (!clock)
+      if (!clock) {
          clock = new Clock(); // beware if it's a terrible clock
+      }
       // this should be a precision time
       mytime = clock->getTime();
       return this; // allow chaining effect
@@ -69,7 +69,7 @@ public:
    double remainingTime() const
    {
       if (countdown >= 0.0)
-         return max(0.0, countdown - elapsedTime());
+         return std::max(0.0, countdown - elapsedTime());
       else
          return 1000000000.0; // INF
    }
@@ -80,9 +80,9 @@ public:
       return remainingTime() == 0.0;
    }
 
-   string toString() const
+   std::string toString() const
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "Timer {name='" << name << "'}";
       return ss.str();
    }

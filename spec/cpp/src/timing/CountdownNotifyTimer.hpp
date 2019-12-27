@@ -11,8 +11,6 @@
 
 // standard Timer for a TSM
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 // this CountdownTimer should "notify" its "condition_variable" when expired
@@ -21,7 +19,7 @@ namespace libbft {
 class CountdownNotifyTimer : public CountdownTimer
 {
 public:
-   CountdownNotifyTimer(double _countdown, string _name = "", Clock* _clock = nullptr)
+   CountdownNotifyTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
      : CountdownTimer(_countdown, _name, _clock)
    {
       init(_countdown);
@@ -51,9 +49,9 @@ public:
       return false;
    }
 
-   string toString() const override
+   std::string toString() const override
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "CountdownNotifyTimer {name='" << name << "'}";
       return ss.str();
    }

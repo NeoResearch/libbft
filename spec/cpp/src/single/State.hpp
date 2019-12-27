@@ -18,8 +18,6 @@
 
 // every state is a Timed state (states that allow timed transitions)
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 template<class Param = nullptr_t>
@@ -27,13 +25,13 @@ class State
 {
 public:
    // should only access for get string, etc (on graphviz)... TODO: design better protection here
-   vector<Transition<Param>*> transitions;
+   std::vector<Transition<Param>*> transitions;
 
 public:
-   string name;
+   std::string name;
    bool isFinal;
 
-   State(bool _isFinal = false, string _name = "")
+   State(bool _isFinal = false, std::string _name = "")
      : name(_name)
      , isFinal(_isFinal)
    {
@@ -49,7 +47,7 @@ public:
       // cout << "Trying to Get Transition" << endl;
       // should be non-deterministic and asynchronous...
       // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
-      vector<Transition<Param>*> _transitions = transitions;
+      std::vector<Transition<Param>*> _transitions = transitions;
 
       auto rng = std::default_random_engine{};
       std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
@@ -61,9 +59,9 @@ public:
       return nullptr;
    }
 
-   string toString(bool recursive = true) const
+   std::string toString(bool recursive = true) const
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "state:{";
       ss << "name='" << name << "';";
       if (isFinal)

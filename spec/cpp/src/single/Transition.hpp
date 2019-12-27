@@ -16,8 +16,6 @@
 // standard Transition
 // Every transition may or may not be a timed transition
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 // forward declaration
@@ -29,7 +27,8 @@ template<class Param = nullptr_t>
 struct Condition
 {
    std::string name = "true";
-   std::function<bool(const Timer&, Param*, MachineId)> timedFunction = [](const Timer& t, Param* p, MachineId) -> bool { return true; };
+   std::function<bool(const Timer&, Param*, MachineId)> timedFunction =
+         [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
 
    Condition(std::string _name, std::function<bool(const Timer&, Param*, MachineId)> _timedFunction)
      : name(_name)
@@ -37,7 +36,7 @@ struct Condition
    {
    }
 
-   string toString() const
+   std::string toString() const
    {
       return name;
    }
@@ -48,7 +47,7 @@ template<class Param = nullptr_t>
 struct Action
 {
    std::string name = "nop";
-   std::function<void(Timer&, Param*, MachineId)> timedAction = [](Timer& t, Param* p, MachineId) -> void {};
+   std::function<void(Timer&, Param*, MachineId)> timedAction = [](Timer&, Param*, const MachineId &) -> void {};
 
    Action(std::string _name, std::function<void(Timer&, Param*, MachineId)> _timedAction)
      : name(_name)
@@ -56,7 +55,7 @@ struct Action
    {
    }
 
-   string toString() const
+   std::string toString() const
    {
       return name;
    }
@@ -69,7 +68,7 @@ private:
    // state to go after executing this transition
    State<Param>* to;
    // transition name (not really useful)
-   string name;
+   std::string name;
    // boolean conditions (if all are valid, transition is valid)
    std::vector<Condition<Param>> conditions;
    // actions to be performed during Transition execution (reset timers, etc)
@@ -77,7 +76,7 @@ private:
 
 public:
    // a Transition goes to some state 'to'
-   Transition(State<Param>* _to, string _name = "")
+   Transition(State<Param>* _to, std::string _name = "")
      : to(_to)
      , name(_name)
    {
@@ -116,9 +115,9 @@ public:
    }
 
    // converts to string
-   string toString(string format = "") const
+   std::string toString(std::string format = "") const
    {
-      stringstream ss;
+      std::stringstream ss;
       if (format == "graphviz") {
          ss << " -> " << this->to->name;
          ss << " [ label = \"";

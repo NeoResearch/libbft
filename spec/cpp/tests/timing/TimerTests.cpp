@@ -5,6 +5,7 @@
 
 #include "timing/Timer.hpp"
 
+using namespace std;
 using namespace libbft;
 
 TEST(TimingTimer, ToString) {

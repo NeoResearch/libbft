@@ -6,8 +6,6 @@
 #include "../timing/Clock.hpp"
 #include "MachineId.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 // requires a StateType (perhaps TransitionType) and a machine-specific Param (context type)
@@ -20,10 +18,10 @@ public:
    // an identifier for itself
    MachineId me{ 0 };
    // string name
-   string name{ "" };
+   std::string name{ "" };
 
    // a Timed State Machine requires a global clock, and a unique personal identifier
-   TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, string _name = "")
+   TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, std::string _name = "")
      : clock(_clock)
      , me(_me)
      , name(_name)
@@ -101,9 +99,9 @@ public:
       return current;
    }
 
-   virtual string toString(string format = "")
+   virtual std::string toString(std::string format = "")
    {
-      stringstream ss;
+      std::stringstream ss;
       if (format == "graphviz") {
 
       } else {

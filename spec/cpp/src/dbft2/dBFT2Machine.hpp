@@ -18,8 +18,6 @@
 
 #include "dBFT2Context.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 class dBFT2Machine : public ReplicatedSTSM<dBFT2Context>
@@ -42,8 +40,8 @@ public:
       // initialize independent machines (each one with its Timer, sharing same global Clock)
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
-         this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C", this->clock), i,
-         		this->clock, "dBFT");
+         this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
+            new Timer("C", this->clock), i, this->clock, "dBFT");
       }
 
       // fill states and transitions on each machine

@@ -10,8 +10,6 @@
 
 // standard Timer for a TSM
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 class CountdownTimer
@@ -22,12 +20,12 @@ protected:
    // nice precision timer
    double mytime;
    // object name
-   string name;
+   std::string name;
    // countdown timer (if value is positive)
    double countdown;
 
 public:
-   CountdownTimer(double _countdown, string _name = "", Clock* _clock = nullptr)
+   CountdownTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
      : name(_name)
      , clock(_clock)
    {
@@ -68,14 +66,14 @@ public:
       double elapsed = newtime - mytime;
       double remaining = 1000000000.0; // INF
       if (countdown >= 0.0)
-         remaining = max(0.0, countdown - elapsed);
+         remaining = std::max(0.0, countdown - elapsed);
 
       return remaining == 0.0;
    }
 
-   virtual string toString() const
+   virtual std::string toString() const
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "CountdownTimer {name='" << name << "'}";
       return ss.str();
    }

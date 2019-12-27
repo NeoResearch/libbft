@@ -18,8 +18,6 @@
 // default state
 #include "State.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 template<class Param = nullptr_t>
@@ -29,9 +27,9 @@ public: // perhaps protect
    // state machine timer
    Timer* timer;
    // states for the state machine
-   vector<State<Param>*> states;
+   std::vector<State<Param>*> states;
    // global transitions: may come from any state
-   vector<Transition<Param>*> globalTransitions;
+   std::vector<Transition<Param>*> globalTransitions;
 
 protected:
    // watchdog timer
@@ -48,7 +46,7 @@ public:
    }
 
    // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = 0, Clock* _clock = nullptr, string _name = "STSM")
+   SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = 0, Clock* _clock = nullptr, std::string _name = "STSM")
      : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
      , timer(t)
    {
@@ -63,7 +61,7 @@ public:
       // unique_ptr the clock perhaps?
    }
 
-   State<Param>* getStateByName(string _name)
+   State<Param>* getStateByName(std::string _name)
    {
       for (unsigned i = 0; i < states.size(); i++)
          if (states[i]->name == _name)
@@ -105,7 +103,7 @@ public:
 
    virtual void onEnterState(State<Param>& current, Param* p) override
    {
-      cout << "entering state: " << current.toString() << endl;
+      std::cout << "entering state: " << current.toString() << std::endl;
 
       if (watchdog)
          watchdog->reset();
@@ -156,27 +154,29 @@ public:
       if (!current && states.size() == 0)
          return nullptr;
 
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
+      std::cout << std::endl;
+      std::cout << "===========" << std::endl;
+      std::cout << "begin run()" << std::endl;
+      std::cout << "===========" << std::endl;
 
-      cout << "OnInitialize() Single MACHINE!" << endl;
+      std::cout << "OnInitialize() Single MACHINE!" << std::endl;
       this->OnInitialize(p); // some inherited methods perhaps need this
 
-      if (watchdog)
+      if (watchdog) {
          watchdog->reset();
-      else
-         cout << "No watchdog configured!" << endl;
+      } else {
+         std::cout << "No watchdog configured!" << std::endl;
+      }
 
-      cout << "will initialize timer" << endl;
+      std::cout << "will initialize timer" << std::endl;
       timer->init();
 
-      cout << "will reset timer" << endl;
+      std::cout << "will reset timer" << std::endl;
       timer->reset();
 
-      if (!current)
+      if (!current) {
          current = getDefaultState();
+      }
 
       return current;
    }
@@ -184,16 +184,16 @@ public:
    // launch when machine is finished
    virtual void OnFinished(const State<Param>& final, Param* p) override
    {
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
+      std::cout << std::endl;
+      std::cout << "=================" << std::endl;
+      std::cout << "finished machine!" << std::endl;
+      std::cout << "=================" << std::endl;
    }
 
    virtual bool beforeUpdateState(State<Param>& current, Param* p) override
    {
       if (watchdog && watchdog->expired()) {
-         cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << endl;
+         std::cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << std::endl;
          return true;
       }
 
@@ -201,22 +201,23 @@ public:
       return false;
    }
 
-   virtual string toString(string format = "") override
+   virtual std::string toString(std::string format = "") override
    {
-      stringstream ss;
+      std::stringstream ss;
       if (format == "graphviz") {
-         ss << "digraph " << this->name << " {" << endl;
-         ss << "//graph [bgcolor=lightgoldenrodyellow]" << endl;
-         ss << "//rankdir=LR;" << endl;
-         ss << "size=\"11\"" << endl;
+         ss << "digraph " << this->name << " {" << std::endl;
+         ss << "//graph [bgcolor=lightgoldenrodyellow]" << std::endl;
+         ss << "//rankdir=LR;" << std::endl;
+         ss << "size=\"11\"" << std::endl;
          // add states
-         ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << endl;
+         ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << std::endl;
          for (unsigned i = 0; i < this->states.size(); i++)
-            ss << "node [shape = " << (this->states[i]->isFinal ? "doublecircle" : "circle") << "]; " << this->states[i]->name << ";" << endl;
+            ss << "node [shape = " << (this->states[i]->isFinal ? "doublecircle" : "circle") << "]; "
+            << this->states[i]->name << ";" << std::endl;
          // default initial state transition
          State<Param>* defState = this->getDefaultState();
          // will happen in an empty transition
-         ss << "Empty -> " << defState->name << " [label = \"\"];" << endl;
+         ss << "Empty -> " << defState->name << " [label = \"\"];" << std::endl;
          // begin regular transitions
          //Initial -> Primary [ label = "(H + v) mod R = i" ];
          //      getDefaultState
@@ -224,11 +225,11 @@ public:
             State<Param>* state = this->states[i];
             for (unsigned t = 0; t < state->transitions.size(); t++) {
                ss << state->name << " ";
-               ss << state->transitions[t]->toString("graphviz") << endl;
+               ss << state->transitions[t]->toString("graphviz") << std::endl;
             }
          }
 
-         ss << "}" << endl;
+         ss << "}" << std::endl;
       } else {
          // standard text
 

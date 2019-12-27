@@ -5,8 +5,6 @@
 // system includes
 // ...
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 struct dBFT2Context

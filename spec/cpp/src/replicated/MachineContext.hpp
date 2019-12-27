@@ -16,8 +16,6 @@
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 template<class Param>

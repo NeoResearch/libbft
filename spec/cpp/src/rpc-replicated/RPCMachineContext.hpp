@@ -19,8 +19,6 @@
 #include "../machine/TimedStateMachine.hpp"
 #include "../single/SingleTimerStateMachine.hpp"
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 template<class Param = nullptr_t>
@@ -31,11 +29,11 @@ struct RPCMachineContext
    // my id
    int me;
    // the world I can connect to
-   vector<shared_ptr<BFTEventsClient>> world;
+   std::vector<std::shared_ptr<BFTEventsClient>> world;
 
 private:
    // my events
-   vector<Event*> events;
+   std::vector<Event*> events;
    // regular delay (in MS): for testing purposes only (fork simulation)
    int testRegularDelayMS{ 0 };
    // regular drop rate: for testing purposes only (fork simulation)
@@ -46,10 +44,10 @@ private:
    //double randomRealBetweenZeroAndOne = dis(generator);
 
 public:
-   RPCMachineContext(Param* _params, int _me, vector<shared_ptr<BFTEventsClient>> _world, int seed = 99)
+   RPCMachineContext(Param* _params, int _me, std::vector<std::shared_ptr<BFTEventsClient>> _world, int seed = 99)
      : params(_params)
      , me(_me)
-     , world(_world)
+     , world(std::move(_world))
      , generator(seed)
    {
    }
@@ -67,7 +65,7 @@ public:
    }
 
    // Different from MultiContext... in this one, I can only access my own events
-   bool hasEvent(string name, vector<string> eventArgs)
+   bool hasEvent(std::string name, std::vector<std::string> eventArgs)
    {
       for (unsigned i = 0; i < events.size(); i++) {
          if (events[i]->isActivated(name, eventArgs))
@@ -76,7 +74,7 @@ public:
       return false;
    }
 
-   vector<Event*> getEvents()
+   std::vector<Event*> getEvents()
    {
       return events;
    }
@@ -88,7 +86,7 @@ public:
    }
 
    // this is used to add events that come from any other sources, and get pending. TODO(@igormcoelho): is this the best design?
-   void addEvents(vector<Event*> pendingEvents)
+   void addEvents(std::vector<Event*> pendingEvents)
    {
       // do manual insertion of events, because of print messages
       for (unsigned i = 0; i < pendingEvents.size(); i++)
@@ -133,7 +131,7 @@ public:
    }
 */
 
-   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters, int delay = 0)
+   void addEventFromRPC(std::string _name, MachineId _from, std::vector<std::string> _parameters, int delay = 0)
    {
       if (delay == 0)
          registerEvent(new Event(_name, _from, _parameters));
