@@ -27,7 +27,7 @@ public:
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
    dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
-   		string _name = "replicated_dBFT")
+                std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
      , f(_f)
    {
@@ -35,7 +35,7 @@ public:
       assert(N >= 1);
       assert(f <= N);
       // create N machines
-      this->machines = vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*>(N, nullptr);
+      this->machines = std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*>(N, nullptr);
 
       // initialize independent machines (each one with its Timer, sharing same global Clock)
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
@@ -51,8 +51,8 @@ public:
 
    // already pre-initialized machines (including states, I suppose...)
    // Each one has its clock and timer
-   dBFT2Machine(int _f, vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
-   		Clock* _clock = nullptr, int _me = 0, string _name = "replicated_dBFT")
+   dBFT2Machine(int _f, std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
+   		Clock* _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
      , f(_f)
    {
@@ -103,15 +103,15 @@ public:
       preinitial->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()",
         		[](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
-           cout << "Waiting for OnStart..." << endl;
-           return d->hasEvent("OnStart", _me.id, vector<string>(0)); // no parameters on event
+           std::cout << "Waiting for OnStart..." << std::endl;
+           return d->hasEvent("OnStart", _me.id, std::vector<std::string>(0)); // no parameters on event
         })));
 
       // initial -> backup
       started->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>(
         		"not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
-           cout << "lambda1" << endl;
+           std::cout << "lambda1" << std::endl;
            return !((d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R == _me.id);
         })));
 
@@ -119,7 +119,8 @@ public:
       started->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>(
         		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
-           cout << "lambda2 H=" << d->vm[_me.id].params->H << " v=" << d->vm[_me.id].params->v << " _me=" << _me.id << endl;
+           std::cout << "lambda2 H=" << d->vm[_me.id].params->H << " v=" << d->vm[_me.id].params->v << " _me="
+               << _me.id << std::endl;
            return (d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R == _me.id;
         })));
 
@@ -128,10 +129,11 @@ public:
       backup->addTransition(
         toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)",
         		[](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
-           cout << "waiting for event OnPrepareRequest at " << _me.id << " for view " << d->vm[_me.id].params->v << endl;
-           stringstream ss;
+           std::cout << "waiting for event OnPrepareRequest at " << _me.id << " for view " << d->vm[_me.id].params->v
+               << std::endl;
+               std::stringstream ss;
            ss << d->vm[_me.id].params->v;
-           vector<string> params(1, ss.str());
+               std::vector<std::string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
            return d->hasEvent("OnPrepareRequest", _me.id, params);
         })));
@@ -140,7 +142,7 @@ public:
       reqSentOrRecv->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>(
         		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
-           cout << "nothing to do... assuming all preparations were received!" << endl;
+           std::cout << "nothing to do... assuming all preparations were received!" << std::endl;
            return true;
         })));
 
@@ -148,7 +150,7 @@ public:
       commitSent->addTransition(
         (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>(
         		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
-           cout << "nothing to do... assuming all commits were received!" << endl;
+           std::cout << "nothing to do... assuming all commits were received!" << std::endl;
            return true;
         })));
    }
@@ -167,16 +169,16 @@ public:
       for (unsigned i = 0; i < machines.size(); i++)
          current->at(i) = machines[i]->getDefaultState(); // first state is initial (default)
 
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "begin run() dBFT2" << endl;
-      cout << "=================" << endl;
+      std::cout << std::endl;
+      std::cout << "=================" << std::endl;
+      std::cout << "begin run() dBFT2" << std::endl;
+      std::cout << "=================" << std::endl;
 
-      cout << "initializing multimachine" << endl;
+      std::cout << "initializing multimachine" << std::endl;
       if (watchdog)
          watchdog->reset();
       else
-         cout << "No watchdog configured!" << endl;
+         std::cout << "No watchdog configured!" << std::endl;
       for (unsigned i = 0; i < machines.size(); i++)
          machines[i]->initialize(current->at(i), p);
 
@@ -186,27 +188,27 @@ public:
       return current;
    }
 
-   string toString(string format = "") override
+   std::string toString(std::string format = "") override
    {
-      stringstream ss;
+      std::stringstream ss;
 
       if (format == "graphviz") {
          // will do this only for machine 0 (the others should be replicated)
          if (this->machines.size() == 0)
             return "";
-         ss << "digraph " << this->machines[0]->name << " {" << endl;
-         ss << "//graph [bgcolor=lightgoldenrodyellow]" << endl;
-         ss << "//rankdir=LR;" << endl;
-         ss << "size=\"11\"" << endl;
+         ss << "digraph " << this->machines[0]->name << " {" << std::endl;
+         ss << "//graph [bgcolor=lightgoldenrodyellow]" << std::endl;
+         ss << "//rankdir=LR;" << std::endl;
+         ss << "size=\"11\"" << std::endl;
          // add states
-         ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << endl;
+         ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << std::endl;
          for (unsigned i = 0; i < this->machines[0]->states.size(); i++)
             ss << "node [shape = " << (this->machines[0]->states[i]->isFinal ? "doublecircle" : "circle") << "]; "
-            << this->machines[0]->states[i]->name << ";" << endl;
+            << this->machines[0]->states[i]->name << ";" << std::endl;
          // default initial state transition
          State<MultiContext<dBFT2Context>>* defState = this->machines[0]->getDefaultState();
          // will happen in an empty transition
-         ss << "Empty -> " << defState->name << " [label = \"\"];" << endl;
+         ss << "Empty -> " << defState->name << " [label = \"\"];" << std::endl;
          // begin regular transitions
          //Initial -> Primary [ label = "(H + v) mod R = i" ];
          //      getDefaultState
@@ -214,11 +216,11 @@ public:
             State<MultiContext<dBFT2Context>>* state = this->machines[0]->states[i];
             for (unsigned t = 0; t < state->transitions.size(); t++) {
                ss << state->name << " ";
-               ss << state->transitions[t]->toString("graphviz") << endl;
+               ss << state->transitions[t]->toString("graphviz") << std::endl;
             }
          }
 
-         ss << "}" << endl;
+         ss << "}" << std::endl;
       } else {
          // standard text
          ss << "Welcome to dBFT2Machine : ";

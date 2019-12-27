@@ -23,17 +23,17 @@
 namespace libbft {
 
 template<class Param>
-using MultiState = vector<State<MultiContext<Param>>*>;
+using MultiState = std::vector<State<MultiContext<Param>>*>;
 
 template<class Param = nullptr_t>
 class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
    // includes several internal machines
-   vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
+   std::vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
    // includes several internal machines
-   vector<ScheduledEvent> scheduledEvents;
+   std::vector<ScheduledEvent> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
    // create again with other name...

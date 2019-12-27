@@ -93,7 +93,7 @@ public:
    virtual Transition<Param>* findGlobalTransition(Param* p)
    {
       // TODO: shuffle global?
-      vector<Transition<Param>*> _transitions = globalTransitions;
+      std::vector<Transition<Param>*> _transitions = globalTransitions;
       for (unsigned i = 0; i < _transitions.size(); i++) {
          if (_transitions[i]->isValid(*timer, p, this->me.id))
             return _transitions[i];
@@ -124,7 +124,7 @@ public:
       Transition<Param>* gt = findGlobalTransition(p);
       if (gt) {
          // found global transition
-         cout << "-> found valid global transition! " << gt->toString() << endl;
+         std::cout << "-> found valid global transition! " << gt->toString() << std::endl;
          current = gt->execute(*timer, p, this->me.id);
          r = true;
       }
@@ -133,7 +133,7 @@ public:
       if (current) {
          Transition<Param>* go = current->tryGetTransition(*timer, p, this->me.id);
          if (go) {
-            cout << "-> found valid transition! " << go->toString() << endl;
+            std::cout << "-> found valid transition! " << go->toString() << std::endl;
             current = go->execute(*timer, p, this->me.id);
             r = true;
          }
