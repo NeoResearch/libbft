@@ -1,0 +1,1 @@
+ADD_TEST_ALL_FILES()
