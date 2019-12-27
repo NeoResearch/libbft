@@ -6,6 +6,7 @@ cmake-build-debug/
 spec/cpp/grpc/
 spec/cpp/grpc/third_party/
 
+libgtest/
 vendor/
 
 *.pb.*
