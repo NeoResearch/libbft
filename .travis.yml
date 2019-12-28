@@ -1,6 +1,10 @@
 os: linux
 dist: xenial
 language: cpp
+env:
+  global:
+    # This flag may limit the parallel build of jobs
+    - MAKEFLAGS="-j 4"
 cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/lcov-1.14
