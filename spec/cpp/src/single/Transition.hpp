@@ -35,6 +35,7 @@ struct Condition
 {
    using TimedFunctionType = std::function<bool(const Timer&, Param*, MachineId)>;
    std::string name = "true";
+   /** TODO Should not we avoid exposing it like this? */
    TimedFunctionType timedFunction = [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
 
    Condition(std::string _name, TimedFunctionType _timedFunction)
@@ -58,6 +59,7 @@ struct Action
 {
    using TimedActionType = std::function<void(Timer&, Param*, MachineId)>;
    std::string name = "nop";
+   /** TODO Should not we avoid exposing it like this? */
    TimedActionType timedAction = [](Timer&, Param*, const MachineId &) -> void {};
 
    Action(std::string _name, TimedActionType _timedAction)
@@ -129,9 +131,11 @@ public:
     */
    virtual bool isValid(const Timer& timer, Param* p, MachineId me)
    {
-      for (unsigned i = 0; i < conditions.size(); i++)
-         if (!conditions[i].timedFunction(timer, p, me))
+      for (auto & condition : conditions) {
+         if (!condition.timedFunction(timer, p, me)) {
             return false;
+         }
+      }
       return true;
    }
 
@@ -144,8 +148,9 @@ public:
     */
    virtual State<Param>* execute(Timer& timer, Param* p, MachineId me)
    {
-      for (unsigned i = 0; i < actions.size(); i++)
-         actions[i].timedAction(timer, p, me);
+      for (auto & action : actions) {
+         action.timedAction(timer, p, me);
+      }
       return to;
    }
 

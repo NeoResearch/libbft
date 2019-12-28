@@ -136,8 +136,11 @@ public:
    {
       std::stringstream ss;
       ss << "Event [args=" << parameters.size() << "] " << name << "(";
-      for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
-         ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
+      auto comma = "";
+      for (auto & parameter: this->parameters) {
+         ss << comma << parameter;
+         comma = ",";
+      }
       ss << ")";
       return ss.str();
    }
@@ -171,8 +174,11 @@ public:
    {
       std::stringstream ss;
       ss << "TimedEvent " << this->name << "(";
-      for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
-         ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
+      auto comma = "";
+      for (auto & parameter: this->parameters) {
+         ss << comma << parameter;
+         comma = ",";
+      }
       ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime(); // default suffix '()' (empty parameters)
       return ss.str();
    }

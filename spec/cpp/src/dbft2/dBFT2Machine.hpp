@@ -51,8 +51,9 @@ public:
       }
 
       // fill states and transitions on each machine
-      for (int i = 0; i < N; i++)
+      for (int i = 0; i < N; i++) {
          fillStatesForMachine(i);
+      }
    }
 
    /**
