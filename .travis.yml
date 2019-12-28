@@ -11,7 +11,7 @@ cache:
     - ${TRAVIS_BUILD_DIR}/lcov-1.14
     - ${TRAVIS_BUILD_DIR}/grpc
 before_cache:
-  - sh ${TRAVIS_BUILD_DIR}/script/install_lcov.sh ${TRAVIS_BUILD_DIR}/
+  - sh ${TRAVIS_BUILD_DIR}/script/clean_cache.sh ${TRAVIS_BUILD_DIR}/
 addons:
   apt:
     update: true
