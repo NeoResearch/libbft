@@ -4,22 +4,37 @@
 #include <thread>
 
 #include "single/Transition.hpp"
+#include "timing/Clock.hpp"
+#include "timing/Timer.hpp"
 
 using namespace std;
 using namespace libbft;
 
 TEST(SingleCondition, ToString) {
-//   unique_ptr<Condition> condition(new Condition("T"));
-//   EXPECT_EQ("Clock {name='T'}", clock->toString());
+   Condition<int>::TimedFunctionType f = [](const Timer &t, int *p, const MachineId &) -> bool {
+      return *p % 2 == 0;
+   };
+   unique_ptr<Condition<int>> condition(new Condition<int>("T", f));
+
+   EXPECT_EQ("T", condition->toString());
 }
 
 TEST(SingleCondition, GetTime) {
-   unique_ptr<Clock> clock(new Clock("T"));
-//
-//   auto actualTime = clock->getTime();
-//   EXPECT_LT(0, actualTime);
-//
-//   this_thread::sleep_for(chrono::milliseconds(200));
-//   EXPECT_LT(0.19, clock->getTime() - actualTime);
-//   EXPECT_GT(0.8, clock->getTime() - actualTime);
+   Condition<int>::TimedFunctionType f = [](const Timer &t, int *p, const MachineId &) -> bool {
+      return *p % 2 == 0;
+   };
+   unique_ptr<Condition<int>> condition(new Condition<int>("T", f));
+   Clock clock;
+   Timer timer("T", &clock);
+   int p = 1;
+   const MachineId &id = MachineId(-1);
+   auto rfv = f(timer, &p, id);
+   auto rcv = condition->timedFunction(timer, &p, id);
+   EXPECT_EQ(rfv, rcv);
+
+   for (int i = 0; i < 10; ++i) {
+      rfv = f(timer, &i, id);
+      rcv = condition->timedFunction(timer, &i, id);
+      EXPECT_EQ(rfv, rcv);
+   }
 }
