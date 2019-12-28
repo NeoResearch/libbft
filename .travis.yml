@@ -77,7 +77,7 @@ after_success:
 #  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info # uploads to coveralls.. for a private repo using a token
 #  - coveralls-lcov coverage.info #for open source
 #  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
-  - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*"
+  - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*" -e grpc -e lcov-1.14 -e spec/cpp/test-grpc/
 
 notifications:
   email: false
