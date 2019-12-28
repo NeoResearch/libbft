@@ -30,14 +30,13 @@ addons:
       - unzip
 install:
   # lcov
-  - sh script/install_lcov.sh ${TRAVIS_BUILD_DIR}/
+  - sh ${TRAVIS_BUILD_DIR}/script/install_lcov.sh ${TRAVIS_BUILD_DIR}/
   # gRPC and Protobuf
-  - rm -rf ${TRAVIS_BUILD_DIR}/grpc
-  - sh script/clone_grpc.sh ${TRAVIS_BUILD_DIR}/
+  - sh ${TRAVIS_BUILD_DIR}/script/clone_grpc.sh ${TRAVIS_BUILD_DIR}/
   # Protobuf
-  - sh script/install_protobuf.sh ${TRAVIS_BUILD_DIR}/
+  - sh ${TRAVIS_BUILD_DIR}/script/install_protobuf.sh ${TRAVIS_BUILD_DIR}/
   # gRPC
-  - sh script/install_grpc.sh ${TRAVIS_BUILD_DIR}/
+  - sh ${TRAVIS_BUILD_DIR}/script/install_grpc.sh ${TRAVIS_BUILD_DIR}/
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
