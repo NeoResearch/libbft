@@ -19,7 +19,7 @@ TEST(SingleCondition, ToString) {
    EXPECT_EQ("T", condition->toString());
 }
 
-TEST(SingleCondition, GetTime) {
+TEST(SingleCondition, UseTimedFunction) {
    Condition<int>::TimedFunctionType f = [](const Timer &t, int *p, const MachineId &) -> bool {
       return *p % 2 == 0;
    };
