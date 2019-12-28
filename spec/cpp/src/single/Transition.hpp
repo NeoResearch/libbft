@@ -4,7 +4,7 @@
 
 // system includes
 #include <cstddef>
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <sstream>
 
@@ -78,7 +78,7 @@ private:
 
 public:
    // a Transition goes to some state 'to'
-   Transition(State<Param>* _to, std::string _name = "")
+   explicit Transition(State<Param>* _to, std::string _name = "")
      : to(_to)
      , name(std::move(_name))
    {

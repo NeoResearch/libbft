@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_DBFT2_DBFT2_RPC_MACHINE_HPP
 #define LIBBFT_SRC_CPP_DBFT2_DBFT2_RPC_MACHINE_HPP
@@ -7,7 +9,7 @@
 #include <vector>
 // simulate non-deterministic nature
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <random>
 
 // standard Transition
@@ -41,10 +43,10 @@ public:
    ///std::vector<ScheduledEvent> schedEvents;
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(),
+   explicit dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(),
    		RPCMachineContext<dBFT2Context>* myCtx = nullptr, std::string _name = "dBFT2_RPC_machine",
          std::string dbft_type = "Commit1", Clock* _clock = nullptr)
-     : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, _name)
+     : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, std::move(_name))
      , f(_f)
      , eventsServer(_me.id, myCtx)
    //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
@@ -70,12 +72,12 @@ public:
       fillStatesForMachine(dbft_type);
    }
 
-   virtual ~dBFT2RPCMachine()
-   {
-      // TODO: delete lot's of stuff
-      // unique_ptr the clock perhaps? shared_ptr?
-      // very dangerous to delete like this... clock may be shared.
-   }
+   /**
+    * TODO: delete lot's of stuff
+    * unique_ptr the clock perhaps? shared_ptr?
+    * very dangerous to delete like this... clock may be shared.
+    */
+   virtual ~dBFT2RPCMachine() = default;
 
    void fillSimpleCycle()
    {
@@ -120,7 +122,7 @@ public:
         (new Transition<RPCMachineContext<dBFT2Context>>(backup))->add(Condition<RPCMachineContext<dBFT2Context>>(
         		"not (H+v) mod R = i", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
            std::cout << "lambda1" << std::endl;
-           return !((d->params->H + d->params->v) % d->params->R == _me.id);
+           return (d->params->H + d->params->v) % d->params->R != _me.id;
         })));
 
       // initial -> primary
@@ -254,10 +256,11 @@ public:
                      std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
 							int countPrepResp = 0;
 							for (int id = 0; id < d->params->R; id++) {
-								 for (unsigned e = 0; e < events.size(); e++)
-										if (events[e]->getFrom().id == id)
-											 if (events[e]->isActivated("PrepareResponse", evArgs))
+								 for (auto & event : events) {
+										if (event->getFrom().id == id)
+											 if (event->isActivated("PrepareResponse", evArgs))
 													countPrepResp++;
+								 }
 							}
                      std::cout << "count PrepareResponse = " << countPrepResp << " / " << (d->params->M() - 1) << std::endl;
 							// count >= 2f+1 (or M) -1 (because Prepare Request also counts)
@@ -286,10 +289,11 @@ public:
                      std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
 							int count = 0;
 							for (int id = 0; id < d->params->R; id++) {
-								 for (unsigned e = 0; e < events.size(); e++)
-										if (events[e]->getFrom().id == id)
-											 if (events[e]->isActivated("Commit", evArgs))
+								 for (auto & event : events) {
+										if (event->getFrom().id == id)
+											 if (event->isActivated("Commit", evArgs))
 													count++;
+								 }
 							}
                      std::cout << "count Commit = " << count << " / " << d->params->M() << std::endl;
 							// count >= 2f+1 (or M)
@@ -318,10 +322,11 @@ public:
                      std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
 							int count = 0;
 							for (int id = 0; id < d->params->R; id++) {
-								 for (unsigned e = 0; e < events.size(); e++)
-										if (events[e]->getFrom().id == id)
-											 if (events[e]->isActivated("ChangeView", evArgs))
+								 for (auto & event : events) {
+										if (event->getFrom().id == id)
+											 if (event->isActivated("ChangeView", evArgs))
 													count++;
+								 }
 							}
                      std::cout << "count ChangeView = " << count << " / " << d->params->M() << std::endl;
 							// count >= 2f+1 (or M)
@@ -346,14 +351,14 @@ public: // real public
    Events pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)
 
    // override beforeUpdateState to include pendingEvents
-   virtual bool beforeUpdateState(State<RPCMachineContext<dBFT2Context>>& current, RPCMachineContext<dBFT2Context>* p) override
+   bool beforeUpdateState(State<RPCMachineContext<dBFT2Context>>& current, RPCMachineContext<dBFT2Context>* p) override
    {
       if (this->watchdog && this->watchdog->expired()) {
          std::cout << "dBFT2 RPC StateMachine FAILED: MAXTIME = " << this->watchdog->getCountdown() << std::endl;
          return true;
       }
 
-      if (pendingEvents.size() > 0) {
+      if (!pendingEvents.empty()) {
          std::cout << "Has some pending events to process! size = " << pendingEvents.size() << std::endl;
          // update states (TODO: update to do in concurrent) .. make some lock here?
          p->addEvents(pendingEvents);
@@ -475,9 +480,10 @@ public:
          ss << "size=\"11\"" << std::endl;
          // add states
          ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << std::endl;
-         for (unsigned i = 0; i < this->states.size(); i++)
-            ss << "node [shape = " << (this->states[i]->isFinal ? "doublecircle" : "circle") << "]; "
-            << this->states[i]->name << ";" << std::endl;
+         for (auto & state : this->states) {
+            ss << "node [shape = " << (state->isFinal ? "doublecircle" : "circle") << "]; "
+               << state->name << ";" << std::endl;
+         }
          // default initial state transition
          State<RPCMachineContext<dBFT2Context>>* defState = this->getDefaultState();
          // will happen in an empty transition
@@ -485,11 +491,10 @@ public:
          // begin regular transitions
          //Initial -> Primary [ label = "(H + v) mod R = i" ];
          //      getDefaultState
-         for (unsigned i = 0; i < this->states.size(); i++) {
-            State<RPCMachineContext<dBFT2Context>>* state = this->states[i];
-            for (unsigned t = 0; t < state->transitions.size(); t++) {
+         for (auto & state : this->states) {
+            for (auto & transition: state->transitions) {
                ss << state->name << " ";
-               ss << state->transitions[t]->toString("graphviz") << std::endl;
+               ss << transition->toString("graphviz") << std::endl;
             }
          }
 

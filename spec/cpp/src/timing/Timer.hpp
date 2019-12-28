@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_TIMER_HPP
 #define LIBBFT_SRC_CPP_TIMER_HPP
@@ -25,8 +27,8 @@ private:
    double countdown{ -1.0 };
 
 public:
-   Timer(std::string _name = "", Clock* _clock = nullptr)
-     : name(_name)
+   explicit Timer(std::string _name = "", Clock* _clock = nullptr)
+     : name(std::move(_name))
      , clock(_clock)
    {
       init();

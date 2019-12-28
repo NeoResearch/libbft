@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_SCHEDULED_EVENT_HPP
 #define LIBBFT_SRC_CPP_SCHEDULED_EVENT_HPP
@@ -27,10 +31,10 @@ struct ScheduledEvent
 
    ScheduledEvent(std::string _name, double _countdown, MachineId _machineTo,
          std::vector<std::string> _eventParams = std::vector<std::string>(0))
-     : name(_name)
-     , eventParams(_eventParams)
+     : name(std::move(_name))
+     , eventParams(std::move(_eventParams))
      , countdown(_countdown)
-     , machineTo(_machineTo)
+     , machineTo(std::move(_machineTo))
    {
    }
 };

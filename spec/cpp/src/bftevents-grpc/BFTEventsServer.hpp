@@ -58,7 +58,7 @@ public:
    // pair of server pointer and string address
    std::pair<std::unique_ptr<grpc::Server>, std::string> server;
 
-   BFTEventsServer(int me, RPCMachineContext<Params>* _myMachine = nullptr)
+   explicit BFTEventsServer(int me, RPCMachineContext<Params>* _myMachine = nullptr)
      : myMachine(_myMachine)
      , server(setupServer(me))
    {

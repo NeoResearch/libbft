@@ -1,3 +1,11 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_EVENT_HPP
 #define LIBBFT_SRC_CPP_EVENT_HPP
@@ -75,17 +83,15 @@ protected:
    std::vector<std::string> parameters;
 
 public:
-   Event(std::string _name, MachineId _from = MachineId(-1),
+   explicit Event(std::string _name, MachineId _from = MachineId(-1),
          std::vector<std::string> _parameters = std::vector<std::string>(0))
-     : name(_name)
-     , from(_from)
-     , parameters(_parameters)
+     : name(std::move(_name))
+     , from(std::move(_from))
+     , parameters(std::move(_parameters))
    {
    }
 
-   virtual ~Event()
-   {
-   }
+   virtual ~Event() = default;
 
    // TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
    virtual bool isActivated(std::string _name, std::vector<std::string> pattern) const
@@ -140,7 +146,7 @@ protected:
 public:
    TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
          std::vector<std::string> _parameters = std::vector<std::string>(0))
-     : Event(_name, _from, _parameters)
+     : Event(std::move(_name), std::move(_from), std::move(_parameters))
    {
       timer = (new Timer())->init(countdown);
    }
@@ -150,12 +156,12 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(std::string _name, std::vector<std::string> pattern) const override
+   bool isActivated(std::string _name, std::vector<std::string> pattern) const override
    {
       return (this->name == _name) && (timer->expired()) && (this->parameters == pattern);
    }
 
-   virtual std::string toString() const override
+   std::string toString() const override
    {
       std::stringstream ss;
       ss << "TimedEvent " << this->name << "(";

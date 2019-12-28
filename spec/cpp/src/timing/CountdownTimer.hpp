@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_COUNTDOWN_TIMER_HPP
 #define LIBBFT_SRC_CPP_COUNTDOWN_TIMER_HPP
@@ -25,16 +27,14 @@ protected:
    double countdown;
 
 public:
-   CountdownTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
-     : name(_name)
+   explicit CountdownTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
+     : name(std::move(_name))
      , clock(_clock)
    {
       init(_countdown);
    }
 
-   virtual ~CountdownTimer()
-   {
-   }
+   virtual ~CountdownTimer() = default;
 
 public:
    virtual void init(double _countdown)

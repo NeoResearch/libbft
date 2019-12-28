@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
@@ -24,21 +26,21 @@ public:
    std::string name{ "" };
 
    // a Timed State Machine requires a global clock, and a unique personal identifier
-   TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, std::string _name = "")
+   explicit TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, std::string _name = "")
      : clock(_clock)
-     , me(_me)
-     , name(_name)
+     , me(std::move(_me))
+     , name(std::move(_name))
    {
       // clock must exist
       if (!clock)
          clock = new Clock();
    }
 
-   virtual ~TimedStateMachine()
-   {
-      // TODO: delete lot's of stuff
-      // unique_ptr the clock perhaps?
-   }
+   /**
+    * TODO: delete lot's of stuff
+    * unique_ptr the clock perhaps?
+    */
+   virtual ~TimedStateMachine() = default;
 
    // triggers this, after state machine enters this state
    virtual void onEnterState(StateType& current, Param* p) = 0;

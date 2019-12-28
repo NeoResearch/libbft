@@ -86,8 +86,9 @@ public:
    void addEvents(std::vector<Event*> pendingEvents)
    {
       // do manual insertion of events, because of print messages
-      for (unsigned i = 0; i < pendingEvents.size(); i++)
-         registerEvent(pendingEvents[i]);
+      for (auto & pendingEvent : pendingEvents) {
+         registerEvent(pendingEvent);
+      }
       //events.insert(events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
    }
 

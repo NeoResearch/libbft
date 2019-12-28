@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_CLOCK_HPP
 #define LIBBFT_SRC_CPP_CLOCK_HPP
@@ -19,8 +21,8 @@ private:
    std::string name;
 
 public:
-   Clock(std::string _name = "")
-     : name(_name)
+   explicit Clock(std::string _name = "")
+     : name(std::move(_name))
    {
    }
 

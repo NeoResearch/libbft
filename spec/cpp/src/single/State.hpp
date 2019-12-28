@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_STATE_HPP
 #define LIBBFT_SRC_CPP_STATE_HPP
@@ -31,8 +33,8 @@ public:
    std::string name;
    bool isFinal;
 
-   State(bool _isFinal = false, std::string _name = "")
-     : name(_name)
+   explicit State(bool _isFinal = false, std::string _name = "")
+     : name(std::move(_name))
      , isFinal(_isFinal)
    {
    }
