@@ -1,9 +1,9 @@
 dist: xenial
 language: cpp
-cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/lcov-1.14
-    - ${TRAVIS_BUILD_DIR}/grpc
+#cache:
+#  directories:
+#    - ${TRAVIS_BUILD_DIR}/lcov-1.14
+#    - ${TRAVIS_BUILD_DIR}/grpc
 addons:
   apt:
     update: true
