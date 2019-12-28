@@ -8,5 +8,5 @@ if test -f "${1}grpc/"; then
     echo "Cloning Protobuf"
     git submodule update --init --recursive
 else
-    echo "gRPC is already installed"
+    echo "gRPC folder is already here"
 fi
