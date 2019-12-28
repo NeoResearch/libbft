@@ -1,9 +1,17 @@
+os: linux
 dist: xenial
 language: cpp
+env:
+  global:
+     This flag may limit the parallel build of jobs
+    - MAKEFLAGS="-j 4"
 cache:
+#  ccache: true
   directories:
-    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-    - ${TRAVIS_BUILD_DIR}/grpc/
+    - ${TRAVIS_BUILD_DIR}/lcov-1.14
+    - ${TRAVIS_BUILD_DIR}/grpc
+before_cache:
+  - sh ${TRAVIS_BUILD_DIR}/script/clean_cache.sh ${TRAVIS_BUILD_DIR}/
 addons:
   apt:
     update: true
@@ -25,13 +33,13 @@ addons:
       - unzip
 install:
   # lcov
-  - [[ -f "${TRAVIS_BUILD_DIR}/lcov-1.14/" ]] && sh script/install_lcov.sh ${TRAVIS_BUILD_DIR}
+  - sh ${TRAVIS_BUILD_DIR}/script/install_lcov.sh ${TRAVIS_BUILD_DIR}/
   # gRPC and Protobuf
-  - [[ -f "${TRAVIS_BUILD_DIR}/grpc/" ]] && sh script/clone_grpc.sh ${TRAVIS_BUILD_DIR}
+  - sh ${TRAVIS_BUILD_DIR}/script/clone_grpc.sh ${TRAVIS_BUILD_DIR}/
   # Protobuf
-  - [[ -f "${TRAVIS_BUILD_DIR}/grpc/" ]] && sh script/install_protobuf.sh ${TRAVIS_BUILD_DIR}
+  - sh ${TRAVIS_BUILD_DIR}/script/install_protobuf.sh ${TRAVIS_BUILD_DIR}/
   # gRPC
-  - [[ -f "${TRAVIS_BUILD_DIR}/grpc/" ]] && sh script/install_grpc.sh ${TRAVIS_BUILD_DIR}
+  - sh ${TRAVIS_BUILD_DIR}/script/install_grpc.sh ${TRAVIS_BUILD_DIR}/
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
@@ -49,15 +57,16 @@ jobs:
         - cd build
         - cmake -Dtest=ON ..
         - make
+        - GTEST_COLOR=1 ctest --extra-verbose
 
-    - stage: test
-      script:
-        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
-          - mkdir build
-          - cd build
-          - cmake -Dtest=ON ..
-          - make
-          - GTEST_COLOR=1 ctest --extra-verbose
+#    - stage: test
+#      script:
+#        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
+#          - mkdir build
+#          - cd build
+#          - cmake -Dtest=ON ..
+#          - make
+#          - GTEST_COLOR=1 ctest --extra-verbose
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
