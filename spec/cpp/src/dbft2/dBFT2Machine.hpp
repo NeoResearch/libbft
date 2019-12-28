@@ -1,3 +1,9 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_DBFT2_DBFT2MACHINE_HPP
 #define LIBBFT_SRC_CPP_DBFT2_DBFT2MACHINE_HPP
@@ -7,7 +13,7 @@
 #include <vector>
 // simulate non-deterministic nature
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <random>
 
 // standard Transition
@@ -22,12 +28,13 @@ namespace libbft {
 class dBFT2Machine : public ReplicatedSTSM<dBFT2Context>
 {
 public:
-   int f; // max number of faulty nodes
+   /** max number of faulty nodes */
+   int f;
 
-   // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
+   /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
+   explicit dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
                 std::string _name = "replicated_dBFT")
-     : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
+     : ReplicatedSTSM<dBFT2Context>(_clock, std::move(_me), std::move(_name))
      , f(_f)
    {
       assert(f >= 0);
@@ -40,7 +47,7 @@ public:
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
          this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
-            new Timer("C", this->clock), i, this->clock, "dBFT");
+            new Timer("C", this->clock), MachineId(i), this->clock, "dBFT");
       }
 
       // fill states and transitions on each machine
@@ -48,25 +55,32 @@ public:
          fillStatesForMachine(i);
    }
 
-   // already pre-initialized machines (including states, I suppose...)
-   // Each one has its clock and timer
+   /**
+    * already pre-initialized machines (including states, I suppose...)
+    * Each one has its clock and timer
+    * @param _f
+    * @param _machines
+    * @param _clock
+    * @param _me
+    * @param _name
+    */
    dBFT2Machine(int _f, std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
    		Clock* _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
-     : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
+     : ReplicatedSTSM<dBFT2Context>(_clock, MachineId(_me), _name)
      , f(_f)
    {
-      this->machines = _machines;
+      this->machines = std::move(_machines);
       assert(f >= 0);
-      assert(machines.size() >= 1);
-      assert(f <= static_cast<int>(machines.size()));
+      assert(!this->machines.empty());
+      assert(f <= static_cast<int>(this->machines.size()));
    }
 
-   virtual ~dBFT2Machine()
-   {
-      // TODO: delete lot's of stuff
-      // unique_ptr the clock perhaps? shared_ptr?
-      // very dangerous to delete like this... clock may be shared.
-   }
+   /**
+    * TODO: delete lot's of stuff
+    * unique_ptr the clock perhaps? shared_ptr?
+    * very dangerous to delete like this... clock may be shared.
+    */
+   virtual ~dBFT2Machine() = default;
 
    void fillSimpleCycle(int m)
    {
@@ -111,7 +125,7 @@ public:
         (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>(
         		"not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
            std::cout << "lambda1" << std::endl;
-           return !((d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R == _me.id);
+           return (d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R != _me.id;
         })));
 
       // initial -> primary
@@ -154,14 +168,14 @@ public:
         })));
    }
 
-   // official method
+   /** official method */
    virtual void fillStatesForMachine(int m)
    {
       // method for a simple dbft cycle (single height considered)
       fillSimpleCycle(m);
    }
 
-   virtual MultiState<dBFT2Context>* initialize(MultiState<dBFT2Context>* current, MultiContext<dBFT2Context>* p) override
+   MultiState<dBFT2Context>* initialize(MultiState<dBFT2Context>* current, MultiContext<dBFT2Context>* p) override
    {
       if (!current)
          current = new MultiState<dBFT2Context>(machines.size(), nullptr);
@@ -193,7 +207,7 @@ public:
 
       if (format == "graphviz") {
          // will do this only for machine 0 (the others should be replicated)
-         if (this->machines.size() == 0)
+         if (this->machines.empty())
             return "";
          ss << "digraph " << this->machines[0]->name << " {" << std::endl;
          ss << "//graph [bgcolor=lightgoldenrodyellow]" << std::endl;
@@ -201,9 +215,10 @@ public:
          ss << "size=\"11\"" << std::endl;
          // add states
          ss << "Empty [ label=\"\", width=0, height=0, style = invis ];" << std::endl;
-         for (unsigned i = 0; i < this->machines[0]->states.size(); i++)
-            ss << "node [shape = " << (this->machines[0]->states[i]->isFinal ? "doublecircle" : "circle") << "]; "
-            << this->machines[0]->states[i]->name << ";" << std::endl;
+         for (auto & state : this->machines[0]->states) {
+            ss << "node [shape = " << (state->isFinal ? "doublecircle" : "circle") << "]; "
+               << state->name << ";" << std::endl;
+         }
          // default initial state transition
          State<MultiContext<dBFT2Context>>* defState = this->machines[0]->getDefaultState();
          // will happen in an empty transition
@@ -211,11 +226,10 @@ public:
          // begin regular transitions
          //Initial -> Primary [ label = "(H + v) mod R = i" ];
          //      getDefaultState
-         for (unsigned i = 0; i < this->machines[0]->states.size(); i++) {
-            State<MultiContext<dBFT2Context>>* state = this->machines[0]->states[i];
-            for (unsigned t = 0; t < state->transitions.size(); t++) {
+         for (auto & state : this->machines[0]->states) {
+            for (auto & transition : state->transitions) {
                ss << state->name << " ";
-               ss << state->transitions[t]->toString("graphviz") << std::endl;
+               ss << transition->toString("graphviz") << std::endl;
             }
          }
 

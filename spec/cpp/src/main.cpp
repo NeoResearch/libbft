@@ -91,7 +91,7 @@ simpleMultiMachineExample(int id)
    // -------------------------
 
    auto machine = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C"));
-   machine->me = id;
+   machine->me = MachineId(id);
 
    // initial -> backup
    started->addTransition(
@@ -205,7 +205,7 @@ dbft_test_backup_multi()
    dBFT2Context data(0, 1501, 3, 2, 0); // 1501 -> backup (R=2)
 
    MultiContext<dBFT2Context> ctx;
-   ctx.vm.push_back(MachineContext<dBFT2Context>(&data, machine0));
+   ctx.vm.emplace_back(&data, machine0);
 
    ReplicatedSTSM<dBFT2Context> multiMachine;
    multiMachine.registerMachine(machine0);
@@ -280,7 +280,7 @@ commit_phase_dbft2(int id_me)
 {
 
    auto machine = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(new Timer("C"));
-   machine->me = id_me;
+   machine->me = MachineId(id_me);
 
    // ---------------------
    // declaring dBFT states

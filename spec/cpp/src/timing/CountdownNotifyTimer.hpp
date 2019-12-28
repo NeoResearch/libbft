@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_COUNTDOWN_NOTIFY_TIMER_HPP
 #define LIBBFT_SRC_CPP_COUNTDOWN_NOTIFY_TIMER_HPP
@@ -13,24 +15,23 @@
 
 namespace libbft {
 
-// this CountdownTimer should "notify" its "condition_variable" when expired
-// this can be used for more ellaborate interconnection between running processes, events and timers
-
+/**
+ * this CountdownTimer should "notify" its "condition_variable" when expired
+ * this can be used for more ellaborate interconnection between running processes, events and timers
+ */
 class CountdownNotifyTimer : public CountdownTimer
 {
 public:
-   CountdownNotifyTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
-     : CountdownTimer(_countdown, _name, _clock)
+   explicit CountdownNotifyTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
+     : CountdownTimer(_countdown, std::move(_name), _clock)
    {
       init(_countdown);
    }
 
-   virtual ~CountdownNotifyTimer()
-   {
-   }
+   virtual ~CountdownNotifyTimer() = default;
 
 public:
-   virtual void init(double _countdown) override
+   void init(double _countdown) override
    {
       this->countdown = _countdown;
       // TODO: should launch an actual system timer here (thread-based)

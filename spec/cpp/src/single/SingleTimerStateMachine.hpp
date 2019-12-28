@@ -21,20 +21,22 @@ template<class Param = std::nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public: // perhaps protect
-   // state machine timer
+   /** state machine timer */
    Timer* timer;
-   // states for the state machine
+   /** states for the state machine */
    std::vector<State<Param>*> states;
-   // global transitions: may come from any state
+   /** global transitions: may come from any state */
    std::vector<Transition<Param>*> globalTransitions;
 
 protected:
-   // watchdog timer
+   /** watchdog timer */
    Timer* watchdog{ nullptr };
 
 public:
-   // MaxTime -1.0 means infinite time
-   // positive time is real expiration time
+   /**
+    *
+    * @param MaxTime -1.0 means infinite time, positive time is real expiration time
+    */
    void setWatchdog(double MaxTime)
    {
       if (watchdog)
@@ -42,8 +44,15 @@ public:
       watchdog = (new Timer())->init(MaxTime);
    }
 
-   // specific timer
-   SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = 0, Clock* _clock = nullptr, std::string _name = "STSM")
+   /**
+    * specific timer
+    * @param t
+    * @param _me
+    * @param _clock
+    * @param _name
+    */
+   explicit SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = MachineId(0), Clock* _clock = nullptr,
+         std::string _name = "STSM")
      : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
      , timer(t)
    {
@@ -52,11 +61,11 @@ public:
          timer = new Timer("", this->clock);
    }
 
-   virtual ~SingleTimerStateMachine()
-   {
-      // TODO: delete lot's of stuff
-      // unique_ptr the clock perhaps?
-   }
+   /**
+    * TODO: delete lot's of stuff
+    * unique_ptr the clock perhaps?
+    */
+   virtual ~SingleTimerStateMachine() = default;
 
    State<Param>* getStateByName(std::string _name)
    {
@@ -66,7 +75,9 @@ public:
       return nullptr; // not found
    }
 
-   // default state is 0, or null
+   /**
+    * @return default state is 0, or null
+    */
    State<Param>* getDefaultState()
    {
       if (states.size() == 0)
@@ -86,19 +97,19 @@ public:
       globalTransitions.push_back(t);
    }
 
-   // unused method... TODO: put somewhere
+   /** unused method... TODO: put somewhere */
    virtual Transition<Param>* findGlobalTransition(Param* p)
    {
       // TODO: shuffle global?
       std::vector<Transition<Param>*> _transitions = globalTransitions;
       for (unsigned i = 0; i < _transitions.size(); i++) {
-         if (_transitions[i]->isValid(*timer, p, this->me.id))
+         if (_transitions[i]->isValid(*timer, p, MachineId(this->me.id)))
             return _transitions[i];
       }
       return nullptr;
    }
 
-   virtual void onEnterState(State<Param>& current, Param* p) override
+   void onEnterState(State<Param>& current, Param* p) override
    {
       std::cout << "entering state: " << current.toString() << std::endl;
 
@@ -106,14 +117,19 @@ public:
          watchdog->reset();
    }
 
-   virtual bool isFinal(const State<Param>& current, Param* p) override
+   bool isFinal(const State<Param>& current, Param* p) override
    {
       return current.isFinal;
    }
 
-   // get next state (current may be null, waiting for global transition)
-   // may return the same state, if nothing happened
-   virtual bool updateState(State<Param>*& outcurrent, Param* p) override
+   /**
+    * get next state (current may be null, waiting for global transition)
+    * may return the same state, if nothing happened
+    * @param outcurrent
+    * @param p
+    * @return
+    */
+   bool updateState(State<Param>*& outcurrent, Param* p) override
    {
       State<Param>* current = outcurrent;
       bool r = false;
@@ -122,16 +138,16 @@ public:
       if (gt) {
          // found global transition
          std::cout << "-> found valid global transition! " << gt->toString() << std::endl;
-         current = gt->execute(*timer, p, this->me.id);
+         current = gt->execute(*timer, p, MachineId(this->me.id));
          r = true;
       }
 
       //cout << "finding transition! ...";
       if (current) {
-         Transition<Param>* go = current->tryGetTransition(*timer, p, this->me.id);
+         auto go = current->tryGetTransition(*timer, p, MachineId(this->me.id));
          if (go) {
             std::cout << "-> found valid transition! " << go->toString() << std::endl;
-            current = go->execute(*timer, p, this->me.id);
+            current = go->execute(*timer, p, MachineId(this->me.id));
             r = true;
          }
       }
@@ -139,13 +155,21 @@ public:
       return r;
    }
 
-   // just for inherited classes
+   /**
+    * just for inherited classes
+    * @param p
+    */
    virtual void OnInitialize(Param* p)
    {
    }
 
-   // initialize timer, etc, and also, setup first state (if not given)
-   virtual State<Param>* initialize(State<Param>* current, Param* p) override
+   /**
+    * initialize timer, etc, and also, setup first state (if not given)
+    * @param current
+    * @param p
+    * @return
+    */
+   State<Param>* initialize(State<Param>* current, Param* p) override
    {
       // check if there's initial state available
       if (!current && states.size() == 0)
@@ -178,8 +202,12 @@ public:
       return current;
    }
 
-   // launch when machine is finished
-   virtual void OnFinished(const State<Param>& final, Param* p) override
+   /**
+    * launch when machine is finished
+    * @param final
+    * @param p
+    */
+   void OnFinished(const State<Param>& final, Param* p) override
    {
       std::cout << std::endl;
       std::cout << "=================" << std::endl;
@@ -187,7 +215,7 @@ public:
       std::cout << "=================" << std::endl;
    }
 
-   virtual bool beforeUpdateState(State<Param>& current, Param* p) override
+   bool beforeUpdateState(State<Param>& current, Param* p) override
    {
       if (watchdog && watchdog->expired()) {
          std::cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << std::endl;
@@ -198,7 +226,7 @@ public:
       return false;
    }
 
-   virtual std::string toString(std::string format = "") override
+   std::string toString(std::string format = "") override
    {
       std::stringstream ss;
       if (format == "graphviz") {

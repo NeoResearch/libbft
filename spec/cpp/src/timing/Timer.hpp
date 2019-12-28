@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_TIMER_HPP
 #define LIBBFT_SRC_CPP_TIMER_HPP
@@ -15,24 +17,28 @@ namespace libbft {
 class Timer
 {
 private:
-   // object name
+   /** object name */
    std::string name;
-   // beware if clock precision is terrible
+   /** beware if clock precision is terrible */
    Clock* clock;
-   // nice precision timer
+   /** nice precision timer */
    double mytime;
-   // countdown timer (if value is positive) - in seconds
+   /** countdown timer (if value is positive) - in seconds */
    double countdown{ -1.0 };
 
 public:
-   Timer(std::string _name = "", Clock* _clock = nullptr)
-     : name(_name)
+   explicit Timer(std::string _name = "", Clock* _clock = nullptr)
+     : name(std::move(_name))
      , clock(_clock)
    {
       init();
    }
 
-   // countdown in seconds
+   /**
+    * countdown in seconds
+    * @param _countdown
+    * @return
+    */
    Timer* init(double _countdown = -1.0)
    {
       // update countdown
@@ -57,7 +63,10 @@ public:
       mytime = clock->getTime();
    }
 
-   // time in seconds (for counting-up)
+   /**
+    * time in seconds (for counting-up)
+    * @return
+    */
    double elapsedTime() const
    {
       // this should be a precision time
@@ -65,7 +74,10 @@ public:
       return newtime - mytime;
    }
 
-   // time in seconds (for counting-down)
+   /**
+    * time in seconds (for counting-down)
+    * @return
+    */
    double remainingTime() const
    {
       if (countdown >= 0.0)
@@ -74,7 +86,10 @@ public:
          return 1000000000.0; // INF
    }
 
-   // when returning 0.0, time is over
+   /**
+    * when returning 0.0, time is over
+    * @return
+    */
    bool expired() const
    {
       return remainingTime() == 0.0;

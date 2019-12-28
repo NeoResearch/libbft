@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_CLOCK_HPP
 #define LIBBFT_SRC_CPP_CLOCK_HPP
@@ -10,22 +12,26 @@
 
 namespace libbft {
 
-// this clock is supposed to be a very precise one
-// it can also be used on tests as a drifted clock (using inheritance)
-
+/**
+ * this clock is supposed to be a very precise one
+ * it can also be used on tests as a drifted clock (using inheritance)
+ */
 class Clock
 {
 private:
    std::string name;
 
 public:
-   Clock(std::string _name = "")
-     : name(_name)
+   explicit Clock(std::string _name = "")
+     : name(std::move(_name))
    {
    }
 
 public:
-   // get time in seconds (milliseconds precision here.. could be more, perhaps)
+   /**
+    * get time in seconds (milliseconds precision here.. could be more, perhaps)
+    * @return
+    */
    virtual double getTime()
    {
       // using chrono

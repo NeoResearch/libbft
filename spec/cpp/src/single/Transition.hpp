@@ -4,7 +4,7 @@
 
 // system includes
 #include <cstddef>
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <sstream>
 
@@ -19,20 +19,26 @@
 
 namespace libbft {
 
-// forward declaration
+/**
+ * forward declaration
+ * @tparam Param
+ */
 template<class Param>
 class State;
 
-// Condition has a name and boolean function (should not affect any param or Timer)
+/**
+ * Condition has a name and boolean function (should not affect any param or Timer)
+ * @tparam Param
+ */
 template<class Param = std::nullptr_t>
 struct Condition
 {
+   using TimedFunctionType = std::function<bool(const Timer&, Param*, MachineId)>;
    std::string name = "true";
-   std::function<bool(const Timer&, Param*, MachineId)> timedFunction =
-         [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
+   TimedFunctionType timedFunction = [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
 
-   Condition(std::string _name, std::function<bool(const Timer&, Param*, MachineId)> _timedFunction)
-     : name(_name)
+   Condition(std::string _name, TimedFunctionType _timedFunction)
+     : name(std::move(_name))
      , timedFunction(_timedFunction)
    {
    }
@@ -43,15 +49,19 @@ struct Condition
    }
 };
 
-// Action is a Condition that always returns true (can affect params and Timer)
+/**
+ * Action is a Condition that always returns true (can affect params and Timer)
+ * @tparam Param
+ */
 template<class Param = std::nullptr_t>
 struct Action
 {
+   using TimedActionType = std::function<void(Timer&, Param*, MachineId)>;
    std::string name = "nop";
-   std::function<void(Timer&, Param*, MachineId)> timedAction = [](Timer&, Param*, const MachineId &) -> void {};
+   TimedActionType timedAction = [](Timer&, Param*, const MachineId &) -> void {};
 
-   Action(std::string _name, std::function<void(Timer&, Param*, MachineId)> _timedAction)
-     : name(_name)
+   Action(std::string _name, TimedActionType _timedAction)
+     : name(std::move(_name))
      , timedAction(_timedAction)
    {
    }
@@ -66,39 +76,57 @@ template<class Param = std::nullptr_t>
 class Transition
 {
 private:
-   // state to go after executing this transition
+   /** state to go after executing this transition */
    State<Param>* to;
-   // transition name (not really useful)
+   /** transition name (not really useful) */
    std::string name;
-   // boolean conditions (if all are valid, transition is valid)
+   /** boolean conditions (if all are valid, transition is valid) */
    std::vector<Condition<Param>> conditions;
-   // actions to be performed during Transition execution (reset timers, etc)
+   /** actions to be performed during Transition execution (reset timers, etc) */
    std::vector<Action<Param>> actions;
 
 public:
-   // a Transition goes to some state 'to'
-   Transition(State<Param>* _to, std::string _name = "")
+   /**
+    * a Transition goes to some state 'to'
+    * @param _to
+    * @param _name
+    */
+   explicit Transition(State<Param>* _to, std::string _name = "")
      : to(_to)
-     , name(_name)
+     , name(std::move(_name))
    {
       assert(to != nullptr);
    }
 
-   // add a new boolean Condition (returns pointer to itself, to allow cascading effect)
+   /**
+    * add a new boolean Condition (returns pointer to itself, to allow cascading effect)
+    * @param c
+    * @return
+    */
    Transition* add(Condition<Param> c)
    {
       conditions.push_back(c);
       return this; // allow chaining effect
    }
 
-   // add a new Action (returns pointer to itself, to allow cascading effect)
+   /**
+    * add a new Action (returns pointer to itself, to allow cascading effect)
+    * @param a
+    * @return
+    */
    Transition* add(Action<Param> a)
    {
       actions.push_back(a);
       return this; // allow chaining effect
    }
 
-   // returns 'true' if all conditions are valid (or no conditions are required)
+   /**
+    * returns 'true' if all conditions are valid (or no conditions are required)
+    * @param timer
+    * @param p
+    * @param me
+    * @return
+    */
    virtual bool isValid(const Timer& timer, Param* p, MachineId me)
    {
       for (unsigned i = 0; i < conditions.size(); i++)
@@ -107,7 +135,13 @@ public:
       return true;
    }
 
-   // execute transition and returns the next State
+   /**
+    * execute transition and returns the next State
+    * @param timer
+    * @param p
+    * @param me
+    * @return
+    */
    virtual State<Param>* execute(Timer& timer, Param* p, MachineId me)
    {
       for (unsigned i = 0; i < actions.size(); i++)
@@ -115,7 +149,11 @@ public:
       return to;
    }
 
-   // converts to string
+   /**
+    * converts to string
+    * @param format
+    * @return
+    */
    std::string toString(std::string format = "") const
    {
       std::stringstream ss;
