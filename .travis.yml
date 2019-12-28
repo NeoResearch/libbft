@@ -1,11 +1,9 @@
 dist: xenial
 language: cpp
-#cache:
-#  directories:
-#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-#    - ${TRAVIS_BUILD_DIR}/protobuf/
-#    - ${TRAVIS_BUILD_DIR}/grpc/
-#    - ${TRAVIS_BUILD_DIR}/libbft/
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+    - ${TRAVIS_BUILD_DIR}/grpc/
 addons:
   apt:
     update: true
@@ -14,6 +12,7 @@ addons:
       - automake
       - build-essential
       - cmake
+      - clang-6.0
       - curl
       - g++
       - make
@@ -24,35 +23,15 @@ addons:
       - libtool
       - pkg-config
       - unzip
-      - clang-6.0
 install:
   # lcov
-  - echo "Installing lcov"
-  - cd ${TRAVIS_BUILD_DIR}
-  - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.14.orig.tar.gz
-  - tar xf lcov_1.14.orig.tar.gz
-  - sudo make -C lcov-1.14/ install
-  - gem install coveralls-lcov
-  - rm lcov_1.14.orig.tar.gz
+  - [[ -f "${TRAVIS_BUILD_DIR}/lcov-1.14/" ]] && sh script/install_lcov.sh ${TRAVIS_BUILD_DIR}
   # gRPC and Protobuf
-  - cd ${TRAVIS_BUILD_DIR}
-  - git clone https://github.com/grpc/grpc
-  - cd grpc
-  - git submodule update --init --recursive
+  - [[ -f "${TRAVIS_BUILD_DIR}/grpc/" ]] && sh script/clone_grpc.sh ${TRAVIS_BUILD_DIR}
   # Protobuf
-  - echo "Installing protobuf"
-  - cd third_party/protobuf
-  - git submodule update --init --recursive
-  - sh autogen.sh
-  - sh configure --prefix=/usr
-  - make
-  - sudo make install
-  - sudo ldconfig
+  - [[ -f "${TRAVIS_BUILD_DIR}/grpc/" ]] && sh script/install_protobuf.sh ${TRAVIS_BUILD_DIR}
   # gRPC
-  - echo "Installing gRPC"
-  - cd ../..
-  - make
-  - sudo make install
+  - [[ -f "${TRAVIS_BUILD_DIR}/grpc/" ]] && sh script/install_grpc.sh ${TRAVIS_BUILD_DIR}
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
@@ -70,12 +49,15 @@ jobs:
         - cd build
         - cmake -Dtest=ON ..
         - make
-        - GTEST_COLOR=1 ctest --extra-verbose
 
-#    - stage: test
-#      script:
-#        - cd ${TRAVIS_BUILD_DIR}/spec/cpp/build
-#        - ctest --extra-verbose
+    - stage: test
+      script:
+        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
+          - mkdir build
+          - cd build
+          - cmake -Dtest=ON ..
+          - make
+          - GTEST_COLOR=1 ctest --extra-verbose
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
