@@ -12,6 +12,7 @@ addons:
       - automake
       - build-essential
       - cmake
+      - clang-6.0
       - curl
       - g++
       - make
@@ -22,7 +23,6 @@ addons:
       - libtool
       - pkg-config
       - unzip
-      - clang-6.0
 install:
   # lcov
   - [[ -f "${TRAVIS_BUILD_DIR}/lcov-1.14/" ]] && sh script/install_lcov.sh ${TRAVIS_BUILD_DIR}
