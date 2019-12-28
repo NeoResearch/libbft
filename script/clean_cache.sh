@@ -17,3 +17,7 @@ rm -rf ${1}/grpc/objs/opt/home/travis/build/NeoResearch/libbft/grpc/gens/src/pro
 rm -rf ${1}/grpc/objs/opt/home/travis/build/NeoResearch/libbft/grpc/gens/src/proto/grpc/core/*.o
 rm -rf ${1}/grpc/objs/opt/home/travis/build/NeoResearch/libbft/grpc/gens/src/proto/grpc/reflection/v1alpha/*.o
 #rm -rf ${1}/grpc/objs/opt/home/travis/build/NeoResearch/libbft/grpc/gens/
+rm -rf ${1}/grpc/libs/opt/*.a
+rm -rf ${1}/grpc/libs/opt/libgrpc++_error_details.so.1.27.0-dev
+rm -rf ${1}/grpc/libs/opt/libgrpcpp_channelz.so.1.27.0-dev
+rm -rf ${1}/grpc/libs/opt/libg
