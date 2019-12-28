@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-if [[ -f "${1}lcov-1.14/" ]]; then
+if test -f "${1}lcov-1.14/"; then
     echo "Installing lcov"
     cd ${1}
     wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.14.orig.tar.gz
