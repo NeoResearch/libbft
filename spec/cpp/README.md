@@ -1,5 +1,8 @@
 # This is libbft on C++
 
+Trying to stick to these rules:
+https://www.acodersjourney.com/top-25-cplusplus-api-design-mistakes-and-how-to-avoid-them/
+
 ## Basic build
 
 Just enter `build` and use cmake.

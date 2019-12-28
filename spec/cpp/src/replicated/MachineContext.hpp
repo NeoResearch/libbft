@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_MACHINE_CONTEXT_HPP
 
 // system includes
+#include <cstddef>
 #include <iostream> // TODO: remove
 #include <vector>
 
@@ -21,7 +22,7 @@ namespace libbft {
 template<class Param>
 struct MultiContext;
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 struct MachineContext
 {
    using Events = std::vector<Event*>;

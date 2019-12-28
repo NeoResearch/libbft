@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 
 // system includes
+#include <cstddef>
 #include <iostream> // TODO: remove
 #include <vector>
 
@@ -25,7 +26,7 @@ namespace libbft {
 template<class Param>
 using MultiState = std::vector<State<MultiContext<Param>>*>;
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:

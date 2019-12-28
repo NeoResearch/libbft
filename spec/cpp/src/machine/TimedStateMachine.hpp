@@ -2,14 +2,16 @@
 #ifndef LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 
+#include <cstddef>
+
 // default clock
-#include "../timing/Clock.hpp"
 #include "MachineId.hpp"
+#include "timing/Clock.hpp"
 
 namespace libbft {
 
 // requires a StateType (perhaps TransitionType) and a machine-specific Param (context type)
-template<class StateType, class Param = nullptr_t>
+template<class StateType, class Param = std::nullptr_t>
 class TimedStateMachine
 {
 public:

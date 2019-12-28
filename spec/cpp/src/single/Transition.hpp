@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_TRANSITION_HPP
 
 // system includes
+#include <cstddef>
 #include <assert.h>
 #include <functional>
 #include <sstream>
@@ -23,7 +24,7 @@ template<class Param>
 class State;
 
 // Condition has a name and boolean function (should not affect any param or Timer)
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 struct Condition
 {
    std::string name = "true";
@@ -43,7 +44,7 @@ struct Condition
 };
 
 // Action is a Condition that always returns true (can affect params and Timer)
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 struct Action
 {
    std::string name = "nop";
@@ -61,7 +62,7 @@ struct Action
    }
 };
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 class Transition
 {
 private:

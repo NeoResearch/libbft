@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_SINGLETIMERSTATEMACHINE_HPP
 
 // system includes
+#include <cstddef>
 #include <iostream> // TODO: remove
 #include <vector>
 
@@ -20,7 +21,7 @@
 
 namespace libbft {
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public: // perhaps protect

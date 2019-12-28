@@ -1,5 +1,8 @@
 dist: xenial
 language: cpp
+env:
+  global:
+    - MAKEFLAGS="-j 4"
 #cache:
 #  directories:
 #    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
