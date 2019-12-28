@@ -1,10 +1,10 @@
 dist: xenial
 language: cpp
-#cache:
-#  directories:
-#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-#    - ${TRAVIS_BUILD_DIR}/protobuf/
-#    - ${TRAVIS_BUILD_DIR}/grpc/
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+    - ${TRAVIS_BUILD_DIR}/protobuf/
+    - ${TRAVIS_BUILD_DIR}/grpc/
 #    - ${TRAVIS_BUILD_DIR}/libbft/
 addons:
   apt:
