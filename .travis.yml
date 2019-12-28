@@ -40,6 +40,7 @@ install:
   - sh ${TRAVIS_BUILD_DIR}/script/install_protobuf.sh ${TRAVIS_BUILD_DIR}/
   # gRPC
   - sh ${TRAVIS_BUILD_DIR}/script/install_grpc.sh ${TRAVIS_BUILD_DIR}/
+  - pip install --user cpp-coveralls
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
@@ -55,7 +56,7 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}/spec/cpp
         - mkdir build
         - cd build
-        - cmake -Dtest=ON ..
+        - cmake -Dtest=ON -DCOVERAGE=1 ..
         - make
         - GTEST_COLOR=1 ctest --extra-verbose
 
@@ -70,11 +71,13 @@ jobs:
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
-  - lcov --directory . --capture --output-file coverage.info # capture coverage info
-  - lcov --remove coverage.info 'tests/*' '/usr/*' 'test-library*' --output-file coverage.info # filter out system and test code
-  - lcov --list coverage.info # debug before upload
-  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info # uploads to coveralls.. for a private repo using a token
-  - coveralls-lcov coverage.info #for open source
+#  - lcov --directory . --capture --output-file coverage.info # capture coverage info
+#  - lcov --remove coverage.info 'tests/*' '/usr/*' 'test-library*' --output-file coverage.info # filter out system and test code
+#  - lcov --list coverage.info # debug before upload
+#  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info # uploads to coveralls.. for a private repo using a token
+#  - coveralls-lcov coverage.info #for open source
+#  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+  - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*"
 
 notifications:
   email: false
