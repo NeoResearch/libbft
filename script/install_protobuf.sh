@@ -2,20 +2,12 @@
 echo "Checking folder ${1}grpc/"
 if test -f "${1}grpc/"; then
     echo "Installing Protobuf"
-    cd ${1}
-    ls -lha
-    cd grpc
-    ls -lha
-    cd third_party/protobuf
+    cd ${1}grpc/third_party/protobuf
     sudo make install
     sudo ldconfig
 else
     echo "Building and installing Protobuf"
-    cd ${1}
-    ls -lha
-    cd grpc
-    ls -lha
-    cd third_party/protobuf
+    cd ${1}/grpc/third_party/protobuf
     git submodule update --init --recursive
     sh autogen.sh
     sh configure --prefix=/usr
