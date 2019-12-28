@@ -1,14 +1,17 @@
 os: linux
 dist: xenial
 language: cpp
-#env:
-#  global:
-#     This flag may limit the parallel build of jobs
-#    - MAKEFLAGS="-j 4"
+env:
+  global:
+     This flag may limit the parallel build of jobs
+    - MAKEFLAGS="-j 4"
 cache:
+  ccache: true
   directories:
     - ${TRAVIS_BUILD_DIR}/lcov-1.14
     - ${TRAVIS_BUILD_DIR}/grpc
+before_cache:
+  - sh ${TRAVIS_BUILD_DIR}/script/install_lcov.sh ${TRAVIS_BUILD_DIR}/
 addons:
   apt:
     update: true
@@ -54,15 +57,16 @@ jobs:
         - cd build
         - cmake -Dtest=ON ..
         - make
+        - GTEST_COLOR=1 ctest --extra-verbose
 
-    - stage: test
-      script:
-        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
-          - mkdir build
-          - cd build
-          - cmake -Dtest=ON ..
-          - make
-          - GTEST_COLOR=1 ctest --extra-verbose
+#    - stage: test
+#      script:
+#        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
+#          - mkdir build
+#          - cd build
+#          - cmake -Dtest=ON ..
+#          - make
+#          - GTEST_COLOR=1 ctest --extra-verbose
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
