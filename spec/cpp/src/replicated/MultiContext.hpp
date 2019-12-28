@@ -4,11 +4,7 @@
 
 // system includes
 #include <cstddef>
-#include <iostream> // TODO: remove
 #include <vector>
-
-#include <assert.h> // TODO: remove
-#include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
 

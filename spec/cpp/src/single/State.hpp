@@ -4,7 +4,6 @@
 
 // system includes
 #include <cstddef>
-#include <iostream> // TODO: remove
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature

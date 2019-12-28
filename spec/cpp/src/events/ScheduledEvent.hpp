@@ -3,11 +3,7 @@
 #define LIBBFT_SRC_CPP_SCHEDULED_EVENT_HPP
 
 // system includes
-#include <iostream> // TODO: remove
 #include <vector>
-
-#include <assert.h> // TODO: remove
-#include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
 

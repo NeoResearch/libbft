@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 
 #include <cstddef>
+#include <unistd.h>
 
 // default clock
 #include "MachineId.hpp"

@@ -3,7 +3,6 @@
 #define LIBBFT_SRC_CPP_DBFT2_DBFT2_RPC_MACHINE_HPP
 
 // system includes
-#include <iostream> // TODO: remove
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
