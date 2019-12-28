@@ -6,7 +6,7 @@ env:
      This flag may limit the parallel build of jobs
     - MAKEFLAGS="-j 4"
 cache:
-  ccache: true
+#  ccache: true
   directories:
     - ${TRAVIS_BUILD_DIR}/lcov-1.14
     - ${TRAVIS_BUILD_DIR}/grpc
