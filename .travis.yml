@@ -2,8 +2,8 @@ dist: xenial
 language: cpp
 cache:
   directories:
-    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-    - ${TRAVIS_BUILD_DIR}/grpc/
+    - ${TRAVIS_BUILD_DIR}/lcov-1.14
+    - ${TRAVIS_BUILD_DIR}/grpc
 addons:
   apt:
     update: true
@@ -27,6 +27,7 @@ install:
   # lcov
   - sh script/install_lcov.sh ${TRAVIS_BUILD_DIR}/
   # gRPC and Protobuf
+  - rm -rf ${TRAVIS_BUILD_DIR}/grpc
   - sh script/clone_grpc.sh ${TRAVIS_BUILD_DIR}/
   # Protobuf
   - sh script/install_protobuf.sh ${TRAVIS_BUILD_DIR}/
