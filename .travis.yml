@@ -3,11 +3,11 @@ language: cpp
 env:
   global:
     - MAKEFLAGS="-j 4"
-#cache:
-#  directories:
-#    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
-#    - ${TRAVIS_BUILD_DIR}/protobuf/
-#    - ${TRAVIS_BUILD_DIR}/grpc/
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/lcov-1.14/
+    - ${TRAVIS_BUILD_DIR}/protobuf/
+    - ${TRAVIS_BUILD_DIR}/grpc/
 #    - ${TRAVIS_BUILD_DIR}/libbft/
 addons:
   apt:
