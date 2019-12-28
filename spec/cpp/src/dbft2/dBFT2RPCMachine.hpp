@@ -29,20 +29,21 @@
 
 namespace libbft {
 
-// This an RPC-based dBFT2 machine
-
+/**
+ * This an RPC-based dBFT2 machine
+ */
 class dBFT2RPCMachine : public SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>
 {
 public:
-   // max number of faulty nodes
+   /** max number of faulty nodes */
    int f;
-   // events server to receive info from other nodes
+   /** events server to receive info from other nodes */
    BFTEventsServer<dBFT2Context> eventsServer;
 
    // trying to avoid scheduled events here... this is a real machine, not for testing.
    ///std::vector<ScheduledEvent> schedEvents;
 
-   // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
+   /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
    explicit dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(),
    		RPCMachineContext<dBFT2Context>* myCtx = nullptr, std::string _name = "dBFT2_RPC_machine",
          std::string dbft_type = "Commit1", Clock* _clock = nullptr)
@@ -347,10 +348,10 @@ public:
 public: // real public
    using Events = std::vector<Event*>;
 
-   // pending events (external queue may affect this one)
+   /** pending events (external queue may affect this one) */
    Events pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)
 
-   // override beforeUpdateState to include pendingEvents
+   /** override beforeUpdateState to include pendingEvents */
    bool beforeUpdateState(State<RPCMachineContext<dBFT2Context>>& current, RPCMachineContext<dBFT2Context>* p) override
    {
       if (this->watchdog && this->watchdog->expired()) {
@@ -378,7 +379,7 @@ private:
    }
 
 public:
-   // TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
+   /** TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional */
    virtual void runWithEventsServer(State<RPCMachineContext<dBFT2Context>>* initial, RPCMachineContext<dBFT2Context>* ctx)
    {
       std::cout << "Starting thread to handle RPC messages:" << std::endl;
@@ -404,7 +405,7 @@ private:
       rpcThread.join();
    }
 
-   // official method
+   /** official method */
    virtual void fillStatesForMachine(const std::string &dbft_type)
    {
       if (dbft_type == "Commit1") {

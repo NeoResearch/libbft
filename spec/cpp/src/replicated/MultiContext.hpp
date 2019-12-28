@@ -29,7 +29,7 @@ struct MachineContext;
 template<class Param = std::nullptr_t>
 struct MultiContext
 {
-   // vector of machines
+   /** vector of machines */
    std::vector<MachineContext<Param>> vm;
 
    Param* getParams(int id_me)
@@ -42,7 +42,7 @@ struct MultiContext
       return vm[id_me].events;
    }
 
-   // from may be -1, if broadcasted from system
+   /** from may be -1, if broadcasted from system */
    void broadcast(std::string event, MachineId from, std::vector<std::string> eventParams)
    {
       std::cout << " -> BROADCASTING EVENT '" << event << "' from " << from.id << std::endl;
@@ -64,7 +64,10 @@ struct MultiContext
       }
    }
 
-   // 'to' should be valid (0 <= to <= R)
+   /**
+    * @param event
+    * @param to should be valid (0 <= to <= R)
+    */
    void sendTo(Event* event, MachineId to)
    {
       std::cout << " => SEND TO " << to.id << std::endl;
@@ -72,8 +75,13 @@ struct MultiContext
       vm[to.id].events.push_back(event);
    }
 
-   // 'from' may be -1, if broadcasted from system
-   // 'to' should be valid (0 <= to <= R)
+   /**
+    *
+    * @param event
+    * @param from may be -1, if broadcasted from system
+    * @param to should be valid (0 <= to <= R)
+    * @param eventParams
+    */
    void sendTo(std::string event, MachineId from, MachineId to, std::vector<std::string> eventParams)
    {
       sendTo(new Event(std::move(event), std::move(from), std::move(eventParams)), to);

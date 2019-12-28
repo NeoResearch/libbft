@@ -15,9 +15,10 @@
 
 namespace libbft {
 
-// this CountdownTimer should "notify" its "condition_variable" when expired
-// this can be used for more ellaborate interconnection between running processes, events and timers
-
+/**
+ * this CountdownTimer should "notify" its "condition_variable" when expired
+ * this can be used for more ellaborate interconnection between running processes, events and timers
+ */
 class CountdownNotifyTimer : public CountdownTimer
 {
 public:

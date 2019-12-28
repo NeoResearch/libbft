@@ -69,17 +69,18 @@ public:
 };
 */
 
-// this Event class is mostly used for simulation
-// it indicates a type for event (for matching), a name for printing, a source 'from', and possibly a countdown Timer
-
+/**
+ * this Event class is mostly used for simulation
+ * it indicates a type for event (for matching), a name for printing, a source 'from', and possibly a countdown Timer
+ */
 class Event
 {
 protected:
-   // event name (used to matching)
+   /** event name (used to matching) */
    std::string name;
-   // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
+   /** event called from machine 'from'. If -1, it came from a broadcast (or machine itself) */
    MachineId from;
-   // extra parameter to compare
+   /** extra parameter to compare */
    std::vector<std::string> parameters;
 
 public:
@@ -93,7 +94,12 @@ public:
 
    virtual ~Event() = default;
 
-   // TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
+   /**
+    * TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
+    * @param _name
+    * @param pattern
+    * @return
+    */
    virtual bool isActivated(std::string _name, std::vector<std::string> pattern) const
    {
       //return (name == _name) && checkEventArgs(parameters, pattern, matching);
@@ -140,7 +146,7 @@ public:
 class TimedEvent : public Event
 {
 protected:
-   // Timer sent in countdown mode
+   /** Timer sent in countdown mode */
    Timer* timer;
 
 public:

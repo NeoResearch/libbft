@@ -30,10 +30,10 @@ template<class Param = std::nullptr_t>
 class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
-   // includes several internal machines
+   /** includes several internal machines */
    std::vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
-   // includes several internal machines
+   /** includes several internal machines */
    std::vector<ScheduledEvent> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
@@ -41,11 +41,14 @@ public:
    //vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
-   // watchdog timer
+   /** watchdog timer */
    Timer* watchdog{ nullptr };
 
-   // MaxTime -1.0 means infinite time
-   // positive time is real expiration time
+   /**
+    * MaxTime -1.0 means infinite time
+    * positive time is real expiration time
+    * @param MaxTime
+    */
    void setWatchdog(double MaxTime)
    {
       watchdog = (new Timer())->init(MaxTime);
@@ -133,7 +136,11 @@ public:
       return current;
    }
 
-   // launch when machine is finished
+   /**
+    * launch when machine is finished
+    * @param states
+    * @param p
+    */
    void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
       std::cout << std::endl;

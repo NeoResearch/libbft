@@ -26,7 +26,7 @@ template<class Param = std::nullptr_t>
 class State
 {
 public:
-   // should only access for get string, etc (on graphviz)... TODO: design better protection here
+   /** should only access for get string, etc (on graphviz)... TODO: design better protection here */
    std::vector<Transition<Param>*> transitions;
 
 public:

@@ -17,13 +17,13 @@ namespace libbft {
 class CountdownTimer
 {
 protected:
-   // beware if clock precision is terrible
+   /** beware if clock precision is terrible */
    Clock* clock;
-   // nice precision timer
+   /** nice precision timer */
    double mytime;
-   // object name
+   /** object name */
    std::string name;
-   // countdown timer (if value is positive)
+   /** countdown timer (if value is positive) */
    double countdown;
 
 public:
@@ -58,7 +58,10 @@ public:
       mytime = clock->getTime();
    }
 
-   // when returning 0.0, time is over
+   /**
+    * when returning 0.0, time is over
+    * @return
+    */
    virtual bool expired() const
    {
       // elapsed time

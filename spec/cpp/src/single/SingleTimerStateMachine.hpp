@@ -21,20 +21,22 @@ template<class Param = std::nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public: // perhaps protect
-   // state machine timer
+   /** state machine timer */
    Timer* timer;
-   // states for the state machine
+   /** states for the state machine */
    std::vector<State<Param>*> states;
-   // global transitions: may come from any state
+   /** global transitions: may come from any state */
    std::vector<Transition<Param>*> globalTransitions;
 
 protected:
-   // watchdog timer
+   /** watchdog timer */
    Timer* watchdog{ nullptr };
 
 public:
-   // MaxTime -1.0 means infinite time
-   // positive time is real expiration time
+   /**
+    *
+    * @param MaxTime -1.0 means infinite time, positive time is real expiration time
+    */
    void setWatchdog(double MaxTime)
    {
       if (watchdog)
@@ -42,7 +44,13 @@ public:
       watchdog = (new Timer())->init(MaxTime);
    }
 
-   // specific timer
+   /**
+    * specific timer
+    * @param t
+    * @param _me
+    * @param _clock
+    * @param _name
+    */
    explicit SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = MachineId(0), Clock* _clock = nullptr,
          std::string _name = "STSM")
      : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
@@ -67,7 +75,9 @@ public:
       return nullptr; // not found
    }
 
-   // default state is 0, or null
+   /**
+    * @return default state is 0, or null
+    */
    State<Param>* getDefaultState()
    {
       if (states.size() == 0)
@@ -87,7 +97,7 @@ public:
       globalTransitions.push_back(t);
    }
 
-   // unused method... TODO: put somewhere
+   /** unused method... TODO: put somewhere */
    virtual Transition<Param>* findGlobalTransition(Param* p)
    {
       // TODO: shuffle global?

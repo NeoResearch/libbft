@@ -28,9 +28,10 @@ namespace libbft {
 class dBFT2Machine : public ReplicatedSTSM<dBFT2Context>
 {
 public:
-   int f; // max number of faulty nodes
+   /** max number of faulty nodes */
+   int f;
 
-   // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
+   /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
    explicit dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
                 std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, std::move(_me), std::move(_name))
@@ -54,8 +55,15 @@ public:
          fillStatesForMachine(i);
    }
 
-   // already pre-initialized machines (including states, I suppose...)
-   // Each one has its clock and timer
+   /**
+    * already pre-initialized machines (including states, I suppose...)
+    * Each one has its clock and timer
+    * @param _f
+    * @param _machines
+    * @param _clock
+    * @param _me
+    * @param _name
+    */
    dBFT2Machine(int _f, std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
    		Clock* _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, MachineId(_me), _name)
@@ -160,7 +168,7 @@ public:
         })));
    }
 
-   // official method
+   /** official method */
    virtual void fillStatesForMachine(int m)
    {
       // method for a simple dbft cycle (single height considered)

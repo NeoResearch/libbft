@@ -12,9 +12,10 @@
 
 namespace libbft {
 
-// this clock is supposed to be a very precise one
-// it can also be used on tests as a drifted clock (using inheritance)
-
+/**
+ * this clock is supposed to be a very precise one
+ * it can also be used on tests as a drifted clock (using inheritance)
+ */
 class Clock
 {
 private:
@@ -27,7 +28,10 @@ public:
    }
 
 public:
-   // get time in seconds (milliseconds precision here.. could be more, perhaps)
+   /**
+    * get time in seconds (milliseconds precision here.. could be more, perhaps)
+    * @return
+    */
    virtual double getTime()
    {
       // using chrono
