@@ -33,7 +33,7 @@ public:
       //
    }
 
-   BFTEventsClient(int _me)
+   explicit BFTEventsClient(int _me)
      : stub_(
          BFTEvent::NewStub(
            std::shared_ptr<Channel>(
@@ -60,8 +60,9 @@ public:
       request.set_event(event);
       request.set_delay(delayMS);
 
-      for(unsigned i=0; i<eventArgs.size(); i++)
-         request.add_event_args(eventArgs[i]);
+      for (const auto & eventArg : eventArgs) {
+         request.add_event_args(eventArg);
+      }
 
       EventReply reply;
 

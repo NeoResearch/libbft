@@ -3,27 +3,22 @@
 #define LIBBFT_SRC_CPP_MACHINE_CONTEXT_HPP
 
 // system includes
-#include <iostream> // TODO: remove
+#include <cstddef>
 #include <vector>
-
-#include <assert.h> // TODO: remove
-#include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
 
 // Prototype?
-#include "../events/Event.hpp"
-#include "../machine/TimedStateMachine.hpp"
-#include "../single/SingleTimerStateMachine.hpp"
-
-using namespace std; // TODO: remove
+#include "events/Event.hpp"
+#include "machine/TimedStateMachine.hpp"
+#include "single/SingleTimerStateMachine.hpp"
 
 namespace libbft {
 
 template<class Param>
 struct MultiContext;
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 struct MachineContext
 {
    using Events = std::vector<Event*>;

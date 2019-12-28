@@ -3,14 +3,11 @@
 
 build/
 cmake-build-debug/
-spec/cpp/grpc/
-spec/cpp/grpc/third_party/
 
+libgtest/
 vendor/
 
 *.pb.*
 *.dot
 *.png
 *.o
-*.txt
-tests/

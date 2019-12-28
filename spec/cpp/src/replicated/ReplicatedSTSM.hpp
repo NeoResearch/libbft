@@ -1,52 +1,54 @@
+#include <utility>
+
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 #define LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 
 // system includes
-#include <iostream> // TODO: remove
+#include <cstddef>
 #include <vector>
-
-#include <assert.h> // TODO: remove
-#include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
 
 // Prototype?
-#include "../events/Event.hpp"
-#include "../machine/TimedStateMachine.hpp"
-#include "../single/SingleTimerStateMachine.hpp"
+#include "events/Event.hpp"
+#include "machine/TimedStateMachine.hpp"
+#include "single/SingleTimerStateMachine.hpp"
 
 #include "MachineContext.hpp"
 #include "MultiContext.hpp"
-#include "../events/ScheduledEvent.hpp"
-
-using namespace std; // TODO: remove
+#include "events/ScheduledEvent.hpp"
 
 namespace libbft {
 
 template<class Param>
-using MultiState = vector<State<MultiContext<Param>>*>;
+using MultiState = std::vector<State<MultiContext<Param>>*>;
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
-   // includes several internal machines
-   vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
+   /** includes several internal machines */
+   std::vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
 
-   // includes several internal machines
-   vector<ScheduledEvent> scheduledEvents;
+   /** includes several internal machines */
+   std::vector<ScheduledEvent> scheduledEvents;
 
    // requires global transitions here... from inheritance. "Inherit or not inherit, that's the question"
    // create again with other name...
    //vector<Scheduled<Transition<MultiContext<Param>>>> scheduledTransitions;
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
-   // watchdog timer
+   /** watchdog timer */
    Timer* watchdog{ nullptr };
 
-   // MaxTime -1.0 means infinite time
-   // positive time is real expiration time
+   /**
+    * MaxTime -1.0 means infinite time
+    * positive time is real expiration time
+    * @param MaxTime
+    */
    void setWatchdog(double MaxTime)
    {
       watchdog = (new Timer())->init(MaxTime);
@@ -63,22 +65,22 @@ public:
    //}
 
    //void scheduleEvent(Timer* when, int machine, Event<MultiContext<Param>>* e)
-   void scheduleEvent(double countdown, MachineId machine, string _name, vector<string> eventParams)
+   void scheduleEvent(double countdown, MachineId machine, std::string _name, std::vector<std::string> eventParams)
    {
-      scheduledEvents.push_back(ScheduledEvent(_name, countdown, machine, eventParams));
+      scheduledEvents.push_back(ScheduledEvent(std::move(_name), countdown, std::move(machine), std::move(eventParams)));
    }
 
 public:
-   ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = 0, string _name = "")
+   explicit ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
      : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
    {
    }
 
-   virtual ~ReplicatedSTSM()
-   {
-      // TODO: delete lot's of stuff
-      // unique_ptr the clock perhaps?
-   }
+   /**
+    * TODO: delete lot's of stuff
+    * unique_ptr the clock perhaps?
+    */
+   virtual ~ReplicatedSTSM() = default;
 
    void registerMachine(SingleTimerStateMachine<MultiContext<Param>>* m)
    {
@@ -88,55 +90,66 @@ public:
 
    void launchScheduledEvents(MultiContext<Param>* p)
    {
-      cout << "launching scheduled events!" << endl;
+      std::cout << "launching scheduled events!" << std::endl;
       // launch all scheduled events
       for (unsigned i = 0; i < scheduledEvents.size(); i++) {
          ScheduledEvent e = scheduledEvents[i];
          if (e.machineTo.id == -1) {
             // broadcast event
-            p->broadcast(new TimedEvent(e.countdown, e.name, -1, e.eventParams), -1);
+            p->broadcast(new TimedEvent(e.countdown, e.name, MachineId(-1), e.eventParams), MachineId(-1));
          } else {
             // target machine event
-            p->sendTo(new TimedEvent(e.countdown, e.name, -1, e.eventParams), e.machineTo);
+            p->sendTo(new TimedEvent(e.countdown, e.name, MachineId(-1), e.eventParams), e.machineTo);
          }
       }
    }
 
-   // initialize timer, etc, and also, setup first state (if not given)
-   virtual MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
+   /**
+    * initialize timer, etc, and also, setup first state (if not given)
+    * @param current
+    * @param p
+    * @return
+    */
+   MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
    {
       // check if there's initial state available
       if (!current)
          current = new MultiState<Param>(machines.size(), nullptr);
 
-      cout << endl;
-      cout << "===========" << endl;
-      cout << "begin run()" << endl;
-      cout << "===========" << endl;
+      std::cout << std::endl;
+      std::cout << "===========" << std::endl;
+      std::cout << "begin run()" << std::endl;
+      std::cout << "===========" << std::endl;
 
-      cout << "initializing multimachine" << endl;
-      if (watchdog)
+      std::cout << "initializing multimachine" << std::endl;
+      if (watchdog) {
          watchdog->reset();
-      else
-         cout << "No watchdog configured!" << endl;
-      for (unsigned i = 0; i < machines.size(); i++)
+      } else {
+         std::cout << "No watchdog configured!" << std::endl;
+      }
+      for (unsigned i = 0; i < machines.size(); i++) {
          machines[i]->initialize(current->at(i), p);
+      }
 
       launchScheduledEvents(p);
 
       return current;
    }
 
-   // launch when machine is finished
-   virtual void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
+   /**
+    * launch when machine is finished
+    * @param states
+    * @param p
+    */
+   void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
-      cout << endl;
-      cout << "=================" << endl;
-      cout << "finished machine!" << endl;
-      cout << "=================" << endl;
+      std::cout << std::endl;
+      std::cout << "=================" << std::endl;
+      std::cout << "finished machine!" << std::endl;
+      std::cout << "=================" << std::endl;
    }
 
-   virtual bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
+   bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
    {
       for (unsigned i = 0; i < states.size(); i++) {
          if (!states[i] || !states[i]->isFinal)
@@ -192,14 +205,14 @@ public:
    }
 */
 
-   virtual bool updateState(MultiState<Param>*& states, MultiContext<Param>* p) override
+   bool updateState(MultiState<Param>*& states, MultiContext<Param>* p) override
    {
       bool ret = false;
       for (unsigned i = 0; i < machines.size(); i++) {
          // evaluate situation on each machine
          bool r = machines[i]->updateState(states->at(i), p);
          if (r) {
-            cout << "machine " << i << " moved to state: " << states->at(i)->toString() << endl;
+            std::cout << "machine " << i << " moved to state: " << states->at(i)->toString() << std::endl;
             //states->at(i)->onEnter(p); // really useful?
             ret = true;
          }
@@ -208,22 +221,22 @@ public:
       return ret;
    }
 
-   virtual void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
+   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
    {
-      cout << "updating multi state! STATES:" << endl;
+      std::cout << "updating multi state! STATES:" << std::endl;
       for (unsigned i = 0; i < current.size(); i++) {
-         cout << "Machine " << i << " => " << current[i]->toString() << endl;
+         std::cout << "Machine " << i << " => " << current[i]->toString() << std::endl;
       }
 
       if (watchdog)
          watchdog->reset();
    }
 
-   virtual bool beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
+   bool beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
    {
       // check watchdog
       if (watchdog && watchdog->expired()) {
-         cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << endl;
+         std::cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << std::endl;
          return true;
       }
       /*
@@ -244,9 +257,9 @@ public:
       return false;
    }
 
-   virtual string toString(string format = "") override
+   std::string toString(std::string format = "") override
    {
-      stringstream ss;
+      std::stringstream ss;
       if (format == "graphviz") {
 
       } else {

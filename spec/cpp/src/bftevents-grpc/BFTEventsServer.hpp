@@ -2,31 +2,24 @@
 #ifndef BFTEVENTSSERVER_HPP
 #define BFTEVENTSSERVER_HPP
 
+#include <cstddef>
 #include <sstream>
 #include <string>
 
-#include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
 #include <grpcpp/grpcpp.h>
+#include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
 
 // machine using this server
-#include "../rpc-replicated/RPCMachineContext.hpp"
-
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::Status;
-
-using bftevent::BFTEvent;
-using bftevent::EventInform;
-using bftevent::EventReply;
+#include "rpc-replicated/RPCMachineContext.hpp"
 
 namespace libbft {
+namespace bft = bftevent;
 
-template<class Params = nullptr_t>
-class BFTEventsServer final : public BFTEvent::Service
+template<class Params = std::nullptr_t>
+class BFTEventsServer final : public bft::BFTEvent::Service
 {
 private:
-   Status informEvent(ServerContext* context, const EventInform* request, EventReply* reply) override
+   grpc::Status informEvent(grpc::ServerContext* context, const bft::EventInform* request, bft::EventReply* reply) override
    {
       std::cout << "  ->-> RPC received inform!" << std::endl;
       int from = request->from();
@@ -55,7 +48,7 @@ private:
 
       reply->set_gotit(gotit);
 
-      return Status::OK;
+      return grpc::Status::OK;
    }
 
 public:
@@ -63,9 +56,9 @@ public:
    RPCMachineContext<Params>* myMachine = nullptr;
 
    // pair of server pointer and string address
-   std::pair<std::unique_ptr<Server>, std::string> server;
+   std::pair<std::unique_ptr<grpc::Server>, std::string> server;
 
-   BFTEventsServer(int me, RPCMachineContext<Params>* _myMachine = nullptr)
+   explicit BFTEventsServer(int me, RPCMachineContext<Params>* _myMachine = nullptr)
      : myMachine(_myMachine)
      , server(setupServer(me))
    {
@@ -80,17 +73,17 @@ public:
       return _address;
    }
 
-   std::pair<std::unique_ptr<Server>, std::string> setupServer(int me)
+   std::pair<std::unique_ptr<grpc::Server>, std::string> setupServer(int me)
    {
       std::string _address = getAddress(me);
-      ServerBuilder builder;
+      grpc::ServerBuilder builder;
 
       std::cout << "will setupServer on address: " << _address << std::endl;
 
       builder.AddListeningPort(_address, grpc::InsecureServerCredentials());
       builder.RegisterService(this); // &service
 
-      return make_pair(std::unique_ptr<Server>(builder.BuildAndStart()), _address);
+      return make_pair(std::unique_ptr<grpc::Server>(builder.BuildAndStart()), _address);
    }
 
    void RunForever()

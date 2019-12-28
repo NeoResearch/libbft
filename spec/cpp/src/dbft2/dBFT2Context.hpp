@@ -5,23 +5,21 @@
 // system includes
 // ...
 
-using namespace std; // TODO: remove
-
 namespace libbft {
 
 struct dBFT2Context
 {
-   // view number
+   /** view number */
    int v;
-   // blockchain height
+   /** blockchain height */
    int H;
-   // block time (in seconds)
+   /** block time (in seconds) */
    int T;
-   // number of nodes/replicas
+   /** number of nodes/replicas */
    int R;
-   // number of allowed faulty nodes
+   /** number of allowed faulty nodes */
    int f;
-   // M limit: 2f+1
+   /** M limit: 2f+1 */
    int M() const
    {
       return 2*f + 1;

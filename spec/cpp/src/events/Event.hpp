@@ -1,9 +1,16 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_EVENT_HPP
 #define LIBBFT_SRC_CPP_EVENT_HPP
 
 // system includes
-#include <iostream> // TODO: remove
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -11,11 +18,9 @@
 #include <random>
 
 // standard Transition
-#include "../machine/MachineId.hpp"
-#include "../timing/Timer.hpp"
+#include "machine/MachineId.hpp"
+#include "timing/Timer.hpp"
 //#include "State.h"
-
-using namespace std; // TODO: remove
 
 namespace libbft {
 
@@ -64,33 +69,38 @@ public:
 };
 */
 
-// this Event class is mostly used for simulation
-// it indicates a type for event (for matching), a name for printing, a source 'from', and possibly a countdown Timer
-
+/**
+ * this Event class is mostly used for simulation
+ * it indicates a type for event (for matching), a name for printing, a source 'from', and possibly a countdown Timer
+ */
 class Event
 {
 protected:
-   // event name (used to matching)
+   /** event name (used to matching) */
    std::string name;
-   // event called from machine 'from'. If -1, it came from a broadcast (or machine itself)
+   /** event called from machine 'from'. If -1, it came from a broadcast (or machine itself) */
    MachineId from;
-   // extra parameter to compare
-   vector<string> parameters;
+   /** extra parameter to compare */
+   std::vector<std::string> parameters;
 
 public:
-   Event(string _name, MachineId _from = MachineId(-1), vector<string> _parameters = vector<string>(0))
-     : name(_name)
-     , from(_from)
-     , parameters(_parameters)
+   explicit Event(std::string _name, MachineId _from = MachineId(-1),
+         std::vector<std::string> _parameters = std::vector<std::string>(0))
+     : name(std::move(_name))
+     , from(std::move(_from))
+     , parameters(std::move(_parameters))
    {
    }
 
-   virtual ~Event()
-   {
-   }
+   virtual ~Event() = default;
 
-   // TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
-   virtual bool isActivated(string _name, vector<string> pattern) const
+   /**
+    * TODO: receive a lambda for special validation and filtering here? perhaps... (bool matching?)
+    * @param _name
+    * @param pattern
+    * @return
+    */
+   virtual bool isActivated(std::string _name, std::vector<std::string> pattern) const
    {
       //return (name == _name) && checkEventArgs(parameters, pattern, matching);
       return (name == _name) && (parameters == pattern);
@@ -122,12 +132,15 @@ public:
    }
    */
 
-   virtual string toString() const
+   virtual std::string toString() const
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "Event [args=" << parameters.size() << "] " << name << "(";
-      for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
-         ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
+      auto comma = "";
+      for (auto & parameter: this->parameters) {
+         ss << comma << parameter;
+         comma = ",";
+      }
       ss << ")";
       return ss.str();
    }
@@ -136,12 +149,13 @@ public:
 class TimedEvent : public Event
 {
 protected:
-   // Timer sent in countdown mode
+   /** Timer sent in countdown mode */
    Timer* timer;
 
 public:
-   TimedEvent(double countdown, string _name, MachineId _from = MachineId(-1), vector<string> _parameters = vector<string>(0))
-     : Event(_name, _from, _parameters)
+   TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
+         std::vector<std::string> _parameters = std::vector<std::string>(0))
+     : Event(std::move(_name), std::move(_from), std::move(_parameters))
    {
       timer = (new Timer())->init(countdown);
    }
@@ -151,17 +165,20 @@ public:
       delete timer;
    }
 
-   virtual bool isActivated(string _name, vector<string> pattern) const override
+   bool isActivated(std::string _name, std::vector<std::string> pattern) const override
    {
       return (this->name == _name) && (timer->expired()) && (this->parameters == pattern);
    }
 
-   virtual string toString() const override
+   std::string toString() const override
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "TimedEvent " << this->name << "(";
-      for (int i = 0; i < static_cast<int>(this->parameters.size()); i++)
-         ss << this->parameters[i] << ((i != static_cast<int>(parameters.size()) - 1) ? "," : "");
+      auto comma = "";
+      for (auto & parameter: this->parameters) {
+         ss << comma << parameter;
+         comma = ",";
+      }
       ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime(); // default suffix '()' (empty parameters)
       return ss.str();
    }

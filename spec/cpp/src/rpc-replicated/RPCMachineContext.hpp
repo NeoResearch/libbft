@@ -3,71 +3,77 @@
 #define LIBBFT_SRC_CPP_RPC_MACHINE_CONTEXT_HPP
 
 // system includes
-#include <iostream> // TODO: remove
+#include <cstddef>
 #include <vector>
 #include <memory>
-
-#include <assert.h> // TODO: remove
-#include <unistd.h> // TODO: remove busy sleep
 
 // libbft includes
 
 // Prototype?
-#include "../bftevents-grpc/BFTEventsClient.hpp"
-#include "../events/Event.hpp"
-#include "../events/ScheduledEvent.hpp"
-#include "../machine/TimedStateMachine.hpp"
-#include "../single/SingleTimerStateMachine.hpp"
-
-using namespace std; // TODO: remove
+#include "bftevents-grpc/BFTEventsClient.hpp"
+#include "events/Event.hpp"
+#include "events/ScheduledEvent.hpp"
+#include "machine/TimedStateMachine.hpp"
+#include "single/SingleTimerStateMachine.hpp"
 
 namespace libbft {
 
-template<class Param = nullptr_t>
+template<class Param = std::nullptr_t>
 struct RPCMachineContext
 {
-   // my params
+   /** my params */
    Param* params;
-   // my id
+   /** my id */
    int me;
-   // the world I can connect to
-   vector<shared_ptr<BFTEventsClient>> world;
+   /** the world I can connect to */
+   std::vector<std::shared_ptr<BFTEventsClient>> world;
 
 private:
-   // my events
-   vector<Event*> events;
-   // regular delay (in MS): for testing purposes only (fork simulation)
+   /** my events */
+   std::vector<Event*> events;
+   /** regular delay (in MS): for testing purposes only (fork simulation) */
    int testRegularDelayMS{ 0 };
-   // regular drop rate: for testing purposes only (fork simulation)
+   /** regular drop rate: for testing purposes only (fork simulation) */
    double testDropRate{ 0.0 };
-   // machine random
+   /** machine random */
    std::mt19937 generator;
    //std::uniform_real_distribution<double> dis(0.0, 1.0);
    //double randomRealBetweenZeroAndOne = dis(generator);
 
 public:
-   RPCMachineContext(Param* _params, int _me, vector<shared_ptr<BFTEventsClient>> _world, int seed = 99)
+   RPCMachineContext(Param* _params, int _me, std::vector<std::shared_ptr<BFTEventsClient>> _world, int seed = 99)
      : params(_params)
      , me(_me)
-     , world(_world)
+     , world(std::move(_world))
      , generator(seed)
    {
    }
 
-   // just to test purposes: force a delay on message passing
+   /**
+    * just to test purposes: force a delay on message passing
+    * @param _testRegularDelayMS
+    */
    void testSetRegularDelay(int _testRegularDelayMS)
    {
       this->testRegularDelayMS = _testRegularDelayMS;
    }
 
-   // just to test purposes: force a drop rate on message passing
+   /**
+    * just to test purposes: force a drop rate on message passing
+    * @param _dropRate
+    */
    void testSetDropRate(double _dropRate)
    {
       this->testDropRate = _dropRate;
    }
 
-   // Different from MultiContext... in this one, I can only access my own events
-   bool hasEvent(string name, vector<string> eventArgs)
+   /**
+    * Different from MultiContext... in this one, I can only access my own events
+    * @param name
+    * @param eventArgs
+    * @return
+    */
+   bool hasEvent(std::string name, std::vector<std::string> eventArgs)
    {
       for (unsigned i = 0; i < events.size(); i++) {
          if (events[i]->isActivated(name, eventArgs))
@@ -76,7 +82,7 @@ public:
       return false;
    }
 
-   vector<Event*> getEvents()
+   std::vector<Event*> getEvents()
    {
       return events;
    }
@@ -87,12 +93,16 @@ public:
       events.push_back(event);
    }
 
-   // this is used to add events that come from any other sources, and get pending. TODO(@igormcoelho): is this the best design?
-   void addEvents(vector<Event*> pendingEvents)
+   /**
+    * this is used to add events that come from any other sources, and get pending. TODO(@igormcoelho): is this the best design?
+    * @param pendingEvents
+    */
+   void addEvents(std::vector<Event*> pendingEvents)
    {
       // do manual insertion of events, because of print messages
-      for (unsigned i = 0; i < pendingEvents.size(); i++)
-         registerEvent(pendingEvents[i]);
+      for (auto & pendingEvent : pendingEvents) {
+         registerEvent(pendingEvent);
+      }
       //events.insert(events.begin() + 0, pendingEvents.begin(), pendingEvents.end());
    }
 
@@ -133,7 +143,7 @@ public:
    }
 */
 
-   void addEventFromRPC(string _name, MachineId _from, vector<string> _parameters, int delay = 0)
+   void addEventFromRPC(std::string _name, MachineId _from, std::vector<std::string> _parameters, int delay = 0)
    {
       if (delay == 0)
          registerEvent(new Event(_name, _from, _parameters));

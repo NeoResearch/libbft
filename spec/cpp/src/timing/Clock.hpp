@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 #ifndef LIBBFT_SRC_CPP_CLOCK_HPP
 #define LIBBFT_SRC_CPP_CLOCK_HPP
@@ -8,31 +10,32 @@
 
 // standard Timer for a TSM
 
-using namespace std;         // TODO: remove
-using namespace std::chrono; // TODO: remove
-
 namespace libbft {
 
-// this clock is supposed to be a very precise one
-// it can also be used on tests as a drifted clock (using inheritance)
-
+/**
+ * this clock is supposed to be a very precise one
+ * it can also be used on tests as a drifted clock (using inheritance)
+ */
 class Clock
 {
 private:
-   string name;
+   std::string name;
 
 public:
-   Clock(string _name = "")
-     : name(_name)
+   explicit Clock(std::string _name = "")
+     : name(std::move(_name))
    {
    }
 
 public:
-   // get time in seconds (milliseconds precision here.. could be more, perhaps)
+   /**
+    * get time in seconds (milliseconds precision here.. could be more, perhaps)
+    * @return
+    */
    virtual double getTime()
    {
       // using chrono
-      system_clock::time_point now = system_clock::now();
+      std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
       auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
       auto epoch = now_ms.time_since_epoch(); // which epoch? unix?
       auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
@@ -40,9 +43,9 @@ public:
       return static_cast<double>(duration) / 1000.0;
    }
 
-   string toString() const
+   std::string toString() const
    {
-      stringstream ss;
+      std::stringstream ss;
       ss << "Clock {name='" << name << "'}";
       return ss.str();
    }
