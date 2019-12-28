@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo "Checking folder ${1}lcov-1.14/"
 if test -f "${1}lcov-1.14/"; then
     echo "Installing lcov"
     cd ${1}

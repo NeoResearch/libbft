@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo "Checking folder ${1}grpc/"
 if test -f "${1}grpc/"; then
     echo "Installing Protobuf"
     cd ${1}grpc/third_party/protobuf
