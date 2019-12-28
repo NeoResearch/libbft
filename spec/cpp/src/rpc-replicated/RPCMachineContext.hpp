@@ -14,11 +14,11 @@
 // libbft includes
 
 // Prototype?
-#include "../bftevents-grpc/BFTEventsClient.hpp"
-#include "../events/Event.hpp"
-#include "../events/ScheduledEvent.hpp"
-#include "../machine/TimedStateMachine.hpp"
-#include "../single/SingleTimerStateMachine.hpp"
+#include "bftevents-grpc/BFTEventsClient.hpp"
+#include "events/Event.hpp"
+#include "events/ScheduledEvent.hpp"
+#include "machine/TimedStateMachine.hpp"
+#include "single/SingleTimerStateMachine.hpp"
 
 namespace libbft {
 

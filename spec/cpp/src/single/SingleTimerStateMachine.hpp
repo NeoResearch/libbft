@@ -13,9 +13,9 @@
 // libbft includes
 
 // Prototype?
-#include "../machine/TimedStateMachine.hpp"
+#include "machine/TimedStateMachine.hpp"
 // default timer
-#include "../timing/Timer.hpp"
+#include "timing/Timer.hpp"
 // default state
 #include "State.hpp"
 

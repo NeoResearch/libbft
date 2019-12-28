@@ -12,19 +12,19 @@
 #include <random>
 
 // standard Transition
-//#include "../replicated/ReplicatedSTSM.hpp"
-#include "../single/SingleTimerStateMachine.hpp"
-#include "../single/Transition.hpp"
-#include "../timing/Timer.hpp"
+//#include "replicated/ReplicatedSTSM.hpp"
+#include "single/SingleTimerStateMachine.hpp"
+#include "single/Transition.hpp"
+#include "timing/Timer.hpp"
 
 // dbft specific
 #include "dBFT2Context.hpp"
 
 // rpc part
-#include "../bftevents-grpc/BFTEventsServer.hpp"
-#include "../rpc-replicated/RPCMachineContext.hpp"
+#include "bftevents-grpc/BFTEventsServer.hpp"
+#include "rpc-replicated/RPCMachineContext.hpp"
 
-#include "../events/ScheduledEvent.hpp"
+#include "events/ScheduledEvent.hpp"
 
 namespace libbft {
 

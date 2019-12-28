@@ -12,9 +12,9 @@
 #include <random>
 
 // standard Transition
-#include "../replicated/ReplicatedSTSM.hpp"
-#include "../single/Transition.hpp"
-#include "../timing/Timer.hpp"
+#include "replicated/ReplicatedSTSM.hpp"
+#include "single/Transition.hpp"
+#include "timing/Timer.hpp"
 
 #include "dBFT2Context.hpp"
 

@@ -13,9 +13,9 @@
 // libbft includes
 
 // Prototype?
-#include "../events/Event.hpp"
-#include "../machine/TimedStateMachine.hpp"
-#include "../single/SingleTimerStateMachine.hpp"
+#include "events/Event.hpp"
+#include "machine/TimedStateMachine.hpp"
+#include "single/SingleTimerStateMachine.hpp"
 
 namespace libbft {
 

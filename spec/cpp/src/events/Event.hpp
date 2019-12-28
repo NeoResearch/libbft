@@ -11,8 +11,8 @@
 #include <random>
 
 // standard Transition
-#include "../machine/MachineId.hpp"
-#include "../timing/Timer.hpp"
+#include "machine/MachineId.hpp"
+#include "timing/Timer.hpp"
 //#include "State.h"
 
 namespace libbft {

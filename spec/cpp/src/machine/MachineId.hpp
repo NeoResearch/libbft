@@ -3,7 +3,7 @@
 #define LIBBFT_SRC_CPP_MACHINEID_HPP
 
 // default clock
-//#include "../timing/Clock.hpp"
+//#include "timing/Clock.hpp"
 
 #include <string>
 
