@@ -27,12 +27,12 @@ class State;
 template<class Param = std::nullptr_t>
 struct Condition
 {
+   using TimedFunctionType = std::function<bool(const Timer&, Param*, MachineId)>;
    std::string name = "true";
-   std::function<bool(const Timer&, Param*, MachineId)> timedFunction =
-         [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
+   TimedFunctionType timedFunction = [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
 
-   Condition(std::string _name, std::function<bool(const Timer&, Param*, MachineId)> _timedFunction)
-     : name(_name)
+   Condition(std::string _name, TimedFunctionType _timedFunction)
+     : name(std::move(_name))
      , timedFunction(_timedFunction)
    {
    }
@@ -47,11 +47,12 @@ struct Condition
 template<class Param = std::nullptr_t>
 struct Action
 {
+   using TimedActionType = std::function<void(Timer&, Param*, MachineId)>;
    std::string name = "nop";
-   std::function<void(Timer&, Param*, MachineId)> timedAction = [](Timer&, Param*, const MachineId &) -> void {};
+   TimedActionType timedAction = [](Timer&, Param*, const MachineId &) -> void {};
 
-   Action(std::string _name, std::function<void(Timer&, Param*, MachineId)> _timedAction)
-     : name(_name)
+   Action(std::string _name, TimedActionType _timedAction)
+     : name(std::move(_name))
      , timedAction(_timedAction)
    {
    }
@@ -79,7 +80,7 @@ public:
    // a Transition goes to some state 'to'
    Transition(State<Param>* _to, std::string _name = "")
      : to(_to)
-     , name(_name)
+     , name(std::move(_name))
    {
       assert(to != nullptr);
    }

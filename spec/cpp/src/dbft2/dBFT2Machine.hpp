@@ -7,7 +7,7 @@
 #include <vector>
 // simulate non-deterministic nature
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <random>
 
 // standard Transition
@@ -25,7 +25,7 @@ public:
    int f; // max number of faulty nodes
 
    // it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...)
-   dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
+   explicit dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
                 std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, _me, _name)
      , f(_f)
