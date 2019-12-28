@@ -19,7 +19,8 @@
 
 ## A lightweight and multi-language library collection for byzantine fault tolerance
 
-Byzantine Fault Tolerance (BFT) is the core mechanism for building attack-resistant and self-adaptive systems. It is a widespread concept since the proposal of a Practical BFT (by Miguel Castro and Barbara Liskov), with multiple implementations nowadays (such as dBFT on Neo Blockchain).
+Byzantine Fault Tolerance (BFT) is the core mechanism for building attack-resistant and self-adaptive systems.
+It is a widespread concept since the proposal of a Practical BFT (by Miguel Castro and Barbara Liskov), with multiple implementations nowadays (such as dBFT on Neo Blockchain).
 This project intends to allow easy implementation of BFT protocols on C++ and multiple languages (portability for cross-language is fundamental!). 
 
 It is intended to be also used as the official dBFT for [neopt](https://github.com/neoresearch/neopt), a C++ implementation of Neo Blockchain components, focused on portability.
@@ -30,7 +31,10 @@ It may also help the development of other ecosystem tools, protocols, and even d
 
 Currently, C++ spec is the reference one. After that, focus will be on Go, Python and C# ports.
 
-`cmake` is your friend! Please install latest version (you can use Snappy to ensure that!): `sudo snap install cmake --classic`
+`cmake` is your friend! Please install latest version (you can use Snappy to ensure that!):
+```sh
+sudo snap install cmake --classic
+```
 
 (If you don't have snap, you can install it on debian-based using: `sudo apt install snapd`)
 
@@ -42,7 +46,10 @@ such as microcontrollers with very limited computing capabilities.
 C/C++ is interoperable with nearly all existing languages, so the idea is to provide modules that can be
 reused on other projects (on other languages too).
 
-On debian-based systems (or ubuntu), just type `make cpp && ./spec/cpp/build/app_test`.
+On debian-based systems (or ubuntu), just type: 
+```sh
+make cpp && ./spec/cpp/build/app_test
+```
 
 Getting submodules: `git submodule update --init --recursive` and `git pull --recurse-submodules`.
 
