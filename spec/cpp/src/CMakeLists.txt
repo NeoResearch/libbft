@@ -5,6 +5,7 @@ list(FILTER project_sources INCLUDE REGEX "pp$")
 set(lib_name "${PROJECT_NAME}_${PROJECT_VERSION}")
 message(STATUS "${lib_name} - ${project_sources}")
 add_library(${lib_name} ${project_sources})
+#set_source_files_properties(${project_sources} PROPERTIES LANGUAGE CXX)
 set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(app_test main.cpp ${project_sources})

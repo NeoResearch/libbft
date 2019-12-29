@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_SINGLETIMERSTATEMACHINE_HPP
 
 // system includes
+#include <iostream>
 #include <cstddef>
 #include <vector>
 

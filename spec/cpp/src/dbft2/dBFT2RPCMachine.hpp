@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cassert>
 #include <random>
+#include <thread>
 
 // standard Transition
 //#include "replicated/ReplicatedSTSM.hpp"
