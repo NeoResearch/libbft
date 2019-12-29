@@ -6,7 +6,7 @@ language: cpp
 #     # This flag may limit the parallel build of jobs
 #    - MAKEFLAGS="-j 4"
 cache:
-#  ccache: true
+  #  ccache: true
   directories:
     - ${TRAVIS_BUILD_DIR}/lcov-1.14
     - ${TRAVIS_BUILD_DIR}/grpc
@@ -70,8 +70,19 @@ jobs:
 #          - GTEST_COLOR=1 ctest --extra-verbose
 
 after_success:
-  - cd ${TRAVIS_BUILD_DIR}
-  - coveralls --root . -E ".*gtest.*" -E ".*CMakeFiles.*" -e grpc -e lcov-1.14 -e spec/cpp/test-grpc/
+  - cd ${TRAVIS_BUILD_DIR}/spec/cpp/build
+  - rm -rf tests/libgtest/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.gcda
+  - rm -rf tests/libgtest/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.gcda
+  # capture coverage info
+  - lcov --directory . --capture --output-file coverage.info
+  # filter out system and test code
+  - lcov --remove coverage.info '*/cpp/tests/*' '/usr/*' --output-file coverage.info
+  # debug before upload
+  - lcov --list coverage.info
+  # uploads to coveralls.. for a private repo using a token
+  #  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info
+  # for open source
+  - coveralls-lcov coverage.info
 
 notifications:
   email: false
