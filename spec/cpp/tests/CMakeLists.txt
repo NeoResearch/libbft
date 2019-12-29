@@ -26,6 +26,9 @@ MACRO(ADD_TEST_ALL_FILES)
         gtest_main
         ${CMAKE_THREAD_LIBS_INIT}
     )
+    if (build_type STREQUAL "debug")
+        target_link_libraries("${test_name}_test" asan)
+    endif()
     target_link_libraries("${test_name}_test" ${lib_name})
     include_directories(${CMAKE_SOURCE_DIR}/src)
 

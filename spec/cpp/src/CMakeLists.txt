@@ -9,14 +9,16 @@ add_library(${lib_name} ${project_sources})
 set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(app_test main.cpp ${project_sources})
-target_link_libraries(app_test ${lib_name})
 
-target_link_libraries(app_test protobuf)
-target_link_libraries(app_test grpc++)
-target_link_libraries(app_test grpc++_reflection)
-target_link_libraries(app_test dl)
-target_link_libraries(app_test pthread)
-
+target_link_libraries(
+    app_test
+    ${lib_name}
+    protobuf
+    grpc++
+    grpc++_reflection
+    dl
+    pthread
+)
 
 add_subdirectory(bftevents-grpc)
 
@@ -37,3 +39,8 @@ target_link_libraries(
     grpc++_reflection
     dl
 )
+
+if (build_type STREQUAL "debug")
+    target_link_libraries(app_test asan)
+    target_link_libraries(app_RPCtest asan)
+endif()
