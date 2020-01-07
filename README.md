@@ -12,6 +12,9 @@
     <img src='https://coveralls.io/repos/github/NeoResearch/libbft/badge.svg' alt='Coverage Status' />
   </a>
   -->
+  <a href="https://github.com/NeoResearch/libbft">
+    <img src="https://tokei.rs/b1/github/NeoResearch/libbft?category=lines" alt="Current total lines.">
+  </a>
   <a href="https://github.com/NeoResearch/libbft/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License.">
   </a>
@@ -102,7 +105,23 @@ Still under development.
 
 Still under development.
 
+## Citation
 
+Cite this in your paper as:
+
+```bibtex
+@article{libbft2019,
+    author = {Rodolfo Pereira Araujo and Igor Coelho and Luiz Satoru Ochi and Vitor Nazario Coelho},
+    year = {2019},
+    month = {10},
+    title = "LibBFT: A High-Performace Timed Automata Library Collection for Byzantine Fault Tolerance",
+    doi = "10.1109/SBAC-PAD.2019.00045",
+    isbn = "978-1-7281-4194-7",
+    issn = "2643-3001",
+    publisher = "IEEE",
+    series = "2019 31st International Symposium on Computer Architecture and High Performance Computing (SBAC-PAD)"
+}
+```
 
 ### License
 
