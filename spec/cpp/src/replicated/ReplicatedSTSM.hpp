@@ -67,8 +67,8 @@ public:
    }
 
 public:
-   explicit ReplicatedSTSM(std::shared_ptr<Clock> _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
-     : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
+   explicit ReplicatedSTSM(std::unique_ptr<Clock> _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
+     : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(std::move(_clock), _me, _name)
    {
    }
 

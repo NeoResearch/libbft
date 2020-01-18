@@ -19,16 +19,16 @@ private:
    /** object name */
    std::string name;
    /** beware if clock precision is terrible */
-   std::shared_ptr<Clock> clock;
+   std::unique_ptr<Clock> clock;
    /** nice precision timer */
    double mytime;
    /** countdown timer (if value is positive) - in seconds */
    double countdown{ -1.0 };
 
 public:
-   explicit Timer(std::string _name = "", std::shared_ptr<Clock> _clock = nullptr)
+   explicit Timer(std::string _name = "", std::unique_ptr<Clock> _clock = nullptr)
      : name(std::move(_name))
-     , clock(_clock)
+     , clock(std::move(_clock))
    {
       init();
    }
@@ -44,7 +44,7 @@ public:
       countdown = _countdown;
       if (!clock) {
          // beware if it's a terrible clock
-         clock = std::shared_ptr<Clock>(new Clock());
+         clock = std::unique_ptr<Clock>(new Clock());
       }
       // this should be a precision time
       mytime = clock->getTime();

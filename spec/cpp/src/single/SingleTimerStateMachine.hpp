@@ -52,14 +52,15 @@ public:
     * @param _name
     */
    explicit SingleTimerStateMachine(
-         Timer *t = nullptr, MachineId _me = MachineId(0), std::shared_ptr<Clock> _clock = nullptr,
+         Timer *t = nullptr, MachineId _me = MachineId(0), std::unique_ptr<Clock> _clock = nullptr,
          std::string _name = "STSM")
-     : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
+     : TimedStateMachine<State<Param>, Param>(std::move(_clock), _me, _name)
      , timer(t)
    {
       // timer must exist
-      if (!timer)
-         timer = new Timer("", this->clock);
+      if (!timer) {
+         timer = new Timer("", std::unique_ptr<Clock>(new Clock(*this->clock)));
+      }
    }
 
    /**

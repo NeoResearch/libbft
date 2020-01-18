@@ -24,6 +24,10 @@ public:
      : name(std::move(_name))
    {
    }
+   explicit Clock(const Clock &other)
+         : name(other.name)
+   {
+   }
 
 public:
    /**

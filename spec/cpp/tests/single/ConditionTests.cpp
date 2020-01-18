@@ -23,7 +23,7 @@ TEST(SingleCondition, UseTimedFunction) {
       return *p % 2 == 0;
    };
    unique_ptr<Condition<int>> condition(new Condition<int>("T", f));
-   auto timer = std::make_shared<Timer>("T", std::shared_ptr<Clock>());
+   auto timer = std::shared_ptr<Timer>(new Timer("T", std::unique_ptr<Clock>(new Clock())));
    int p = 1;
    const MachineId &id = MachineId(-1);
    auto rfv = f(*timer, &p, id);

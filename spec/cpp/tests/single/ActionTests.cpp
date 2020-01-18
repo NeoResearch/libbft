@@ -22,7 +22,7 @@ TEST(SingleAction, UseTimedAction) {
       value = *p;
    };
    unique_ptr<Action<int>> action(new Action<int>("T", f));
-   Timer timer("T", std::shared_ptr<Clock>());
+   Timer timer("T", std::unique_ptr<Clock>(new Clock()));
 
    int p = 1;
    const MachineId &id = MachineId(-1);
@@ -54,7 +54,7 @@ TEST(SingleAction, UseTimedActionReference) {
       p->age = id.id;
    };
    unique_ptr<Action<ActionReference>> action(new Action<ActionReference>("T", f));
-   Timer timer("T", std::shared_ptr<Clock>());
+   Timer timer("T", std::unique_ptr<Clock>(new Clock()));
 
    ActionReference p{-1};
    const MachineId &id = MachineId(1);
