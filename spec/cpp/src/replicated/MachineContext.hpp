@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_MACHINE_CONTEXT_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <vector>
 
@@ -21,10 +22,11 @@ struct MultiContext;
 template<class Param = std::nullptr_t>
 struct MachineContext
 {
-   using Events = std::vector<Event*>;
+   using TParam = std::shared_ptr<Param>;
+   using TSingleTimerStateMachine = std::shared_ptr<SingleTimerStateMachine<MultiContext<Param>>>;
 
-   Param* params;
-   SingleTimerStateMachine<MultiContext<Param>>* machine;
+   TParam params;
+   TSingleTimerStateMachine machine;
    Events events;
 
    //void addEvent(Event<MultiContext<Param>>* e)
@@ -32,7 +34,7 @@ struct MachineContext
    //   events.push_back(e);
    //}
 
-   MachineContext(Param* _params, SingleTimerStateMachine<MultiContext<Param>>* _machine)
+   MachineContext(TParam _params, TSingleTimerStateMachine _machine)
      : params(_params)
      , machine(_machine)
    {

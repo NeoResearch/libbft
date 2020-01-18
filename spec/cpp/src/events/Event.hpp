@@ -138,6 +138,9 @@ public:
    }
 };
 
+using TEvent = std::shared_ptr<Event>;
+using Events = std::vector<TEvent>;
+
 class TimedEvent : public Event
 {
 protected:

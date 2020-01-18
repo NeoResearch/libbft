@@ -53,6 +53,8 @@ public:
    }
 };
 
+using TClock = std::unique_ptr<Clock>;
+
 } // libbft
 
 #endif // LIBBFT_SRC_CPP_CLOCK_HPP

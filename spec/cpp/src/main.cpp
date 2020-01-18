@@ -171,10 +171,11 @@ dbft_test_real_dbft2_primary()
    cout << "Machine => " << machine->toString() << endl;
 
    // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0
-   dBFT2Context data(0, 1501, 3, 2, 0); // 1500 -> primary (R=1)
+   // 1500 -> primary (R=1)
+   auto data = std::shared_ptr<dBFT2Context>(new dBFT2Context(0, 1501, 3, 2, 0));
 
    McDBFT ctx;
-   ctx.vm.emplace_back(&data, machine->machines[0]);
+   ctx.vm.emplace_back(data, machine->machines[0]);
 
    // run for 5.0 seconds max
    machine->setWatchdog(5.0);
@@ -201,7 +202,7 @@ dbft_test_real_dbft2_primary()
 void
 dbft_test_backup_multi()
 {
-   auto machine0 = simpleMultiMachineExample(0);
+   auto machine0 = std::shared_ptr<SingleTimerStateMachine<McDBFT>>(simpleMultiMachineExample(0));
 
    // insert pre-initial state
    auto preinitial = new State<McDBFT>(false, "PreInitial");
@@ -211,10 +212,10 @@ dbft_test_backup_multi()
    cout << "Machine => " << machine0->toString() << endl;
 
    // v = 0, H = 1501, T = 3 (secs), R = 1 (one node network), f=0
-   dBFT2Context data(0, 1501, 3, 2, 0); // 1501 -> backup (R=2)
+   auto data = std::shared_ptr<dBFT2Context>(new dBFT2Context(0, 1501, 3, 2, 0)); // 1501 -> backup (R=2)
 
    McDBFT ctx;
-   ctx.vm.emplace_back(&data, machine0);
+   ctx.vm.emplace_back(data, machine0);
 
    ReplicatedSTSM<dBFT2Context> multiMachine;
    multiMachine.registerMachine(machine0);
@@ -270,15 +271,15 @@ dbft_test_backup_multi()
 void
 dbft_test_primary()
 {
-   auto machine0 = simpleMultiMachineExample(0);
+   auto machine0 = std::shared_ptr<SingleTimerStateMachine<McDBFT>>(simpleMultiMachineExample(0));
 
    cout << "Machine => " << machine0->toString() << endl;
 
    // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0
-   dBFT2Context data(0, 1500, 3, 1, 0); // 1500 -> primary (R=1)
+   auto data = std::shared_ptr<dBFT2Context>(new dBFT2Context(0, 1500, 3, 1, 0)); // 1500 -> primary (R=1)
 
    McDBFT ctx;
-   ctx.vm.emplace_back(&data, machine0);
+   ctx.vm.emplace_back(data, machine0);
 
    // run for 5.0 seconds max
    machine0->setWatchdog(5.0);
@@ -432,7 +433,7 @@ commit_phase_dbft2(int id_me)
    auto reqsrToCommitSent = new Transition<McDBFT>(commitSent);
    reqSentOrRecv->addTransition(reqsrToCommitSent->add(Condition<McDBFT>("EnoughPreparations",
       [](const Timer& C, McDBFT* d, MachineId me) -> bool {
-         vector<Event*> events = d->getEvents(me.id);
+         vector<std::shared_ptr<Event>> events = d->getEvents(me.id);
          cout << "waiting for 2f+1 PrepareResponse" << endl;
          // waiting for 2f+1 PrepareResponse(v,H)
          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
@@ -461,7 +462,7 @@ commit_phase_dbft2(int id_me)
    auto commitSentToBlockSent = new Transition<McDBFT>(blockSent);
    commitSent->addTransition(commitSentToBlockSent->add(Condition<McDBFT>("EnoughCommits",
       [](const Timer& C, McDBFT* d, MachineId me) -> bool {
-         vector<Event*> events = d->getEvents(me.id);
+         vector<std::shared_ptr<Event>> events = d->getEvents(me.id);
          cout << "waiting for 2f+1 Commits" << endl;
          // waiting for 2f+1 Commit(v,H)
          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v), std::to_string(d->getParams(me.id)->H) };
@@ -489,7 +490,7 @@ commit_phase_dbft2(int id_me)
    auto viewChToStarted = new Transition<McDBFT>(started);
    viewChanging->addTransition(viewChToStarted->add(Condition<McDBFT>("EnoughViewChanges",
       [](const Timer& C, McDBFT* d, MachineId me) -> bool {
-         vector<Event*> events = d->getEvents(me.id);
+         vector<std::shared_ptr<Event>> events = d->getEvents(me.id);
          cout << "waiting for 2f+1 View Changes" << endl;
          // waiting for 2f+1 ChangeView(v+1,H)
          vector<string> evArgs = { std::to_string(d->getParams(me.id)->v + 1), std::to_string(d->getParams(me.id)->H) };
@@ -529,18 +530,17 @@ commit_phase_dbft2(int id_me)
 int main()
 {
    // v = 0, H = 1500, T = 3 (secs), R = 1 (one node network), f=0 // 1500 -> primary (R=1)
-   auto machine0 = commit_phase_dbft2(0);
+   auto machine0 = std::shared_ptr<SingleTimerStateMachine<McDBFT>>(commit_phase_dbft2(0));
 
-   dBFT2Context ctxData0(0, 1500, 3, 1, 0);
+   auto ctxData0 = std::shared_ptr<dBFT2Context>(new dBFT2Context(0, 1500, 3, 1, 0));
    McDBFT ctx0;
-   ctx0.vm.emplace_back(&ctxData0, machine0);
+   ctx0.vm.emplace_back(ctxData0, machine0);
 
    // run for 5.0 seconds max
    //machine0->setWatchdog(5.0);
 
    ReplicatedSTSM<dBFT2Context> machine;
    machine.registerMachine(machine0);
-
 
    machine.scheduleEvent(
      1.0,          // 1 second to expire: after initialize()

@@ -3,9 +3,9 @@
 #define LIBBFT_SRC_CPP_RPC_MACHINE_CONTEXT_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <vector>
-#include <memory>
 
 // libbft includes
 
@@ -21,16 +21,18 @@ namespace libbft {
 template<class Param = std::nullptr_t>
 struct RPCMachineContext
 {
+   using TParam = std::unique_ptr<Param>;
+
    /** my params */
-   Param* params;
+   TParam params;
    /** my id */
    int me;
    /** the world I can connect to */
-   std::vector<std::shared_ptr<BFTEventsClient>> world;
+   std::vector<TBFTEventsClient> world;
 
 private:
    /** my events */
-   std::vector<Event*> events;
+   Events events;
    /** regular delay (in MS): for testing purposes only (fork simulation) */
    int testRegularDelayMS{ 0 };
    /** regular drop rate: for testing purposes only (fork simulation) */
@@ -41,8 +43,8 @@ private:
    //double randomRealBetweenZeroAndOne = dis(generator);
 
 public:
-   RPCMachineContext(Param* _params, int _me, std::vector<std::shared_ptr<BFTEventsClient>> _world, int seed = 99)
-     : params(_params)
+   RPCMachineContext(TParam _params, int _me, std::vector<TBFTEventsClient> _world, int seed = 99)
+     : params(std::move(_params))
      , me(_me)
      , world(std::move(_world))
      , generator(seed)
@@ -82,12 +84,12 @@ public:
       return false;
    }
 
-   std::vector<Event*> getEvents()
+   std::vector<TEvent> getEvents()
    {
       return events;
    }
 
-   void registerEvent(Event* event)
+   void registerEvent(TEvent event)
    {
       std::cout << "RPCMachineContext registering event '" << event->toString() << "'" << std::endl;
       events.push_back(event);
@@ -97,7 +99,7 @@ public:
     * this is used to add events that come from any other sources, and get pending. TODO(@igormcoelho): is this the best design?
     * @param pendingEvents
     */
-   void addEvents(std::vector<Event*> pendingEvents)
+   void addEvents(Events pendingEvents)
    {
       // do manual insertion of events, because of print messages
       for (auto & pendingEvent : pendingEvents) {
@@ -145,10 +147,11 @@ public:
 
    void addEventFromRPC(std::string _name, MachineId _from, std::vector<std::string> _parameters, int delay = 0)
    {
-      if (delay == 0)
-         registerEvent(new Event(_name, _from, _parameters));
-      else
-         registerEvent(new TimedEvent(delay / 1000.0, _name, _from, _parameters));
+      if (delay == 0) {
+         registerEvent(std::shared_ptr<Event>(new Event(_name, _from, _parameters)));
+      } else {
+         registerEvent(std::shared_ptr<Event>(new TimedEvent(delay / 1000.0, _name, _from, _parameters)));
+      }
    }
 };
 

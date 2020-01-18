@@ -103,6 +103,8 @@ public:
    }
 };
 
+using TTimer = std::unique_ptr<Timer>;
+
 } // libbft
 
 #endif // LIBBFT_SRC_CPP_TIMER_HPP

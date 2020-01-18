@@ -23,11 +23,13 @@ namespace libbft {
 class dBFT2Machine : public ReplicatedSTSM<dBFT2Context>
 {
 public:
+   using TSingleTimerStateMachine = std::shared_ptr<SingleTimerStateMachine<MultiContext<dBFT2Context>>>;
+
    /** max number of faulty nodes */
    int f;
 
    /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
-   explicit dBFT2Machine(int _f = 0, int N = 1, std::unique_ptr<Clock> _clock = nullptr, MachineId _me = MachineId(),
+   explicit dBFT2Machine(int _f = 0, int N = 1, TClock _clock = nullptr, MachineId _me = MachineId(),
                 std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(std::move(_clock), std::move(_me), std::move(_name))
      , f(_f)
@@ -36,14 +38,15 @@ public:
       assert(N >= 1);
       assert(f <= N);
       // create N machines
-      this->machines = std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*>(N, nullptr);
+      this->machines = std::vector<TSingleTimerStateMachine>(N, nullptr);
 
       // initialize independent machines (each one with its Timer, sharing same global Clock)
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
-         this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
+         this->machines[i] = std::shared_ptr<SingleTimerStateMachine<MultiContext<dBFT2Context>>>(
+               new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
                std::unique_ptr<Timer>(new Timer("C", std::unique_ptr<Clock>(new Clock(*this->clock)))), MachineId(i),
-               std::unique_ptr<Clock>(new Clock(*this->clock)), "dBFT");
+               std::unique_ptr<Clock>(new Clock(*this->clock)), "dBFT"));
       }
 
       // fill states and transitions on each machine
@@ -61,8 +64,8 @@ public:
     * @param _me
     * @param _name
     */
-   dBFT2Machine(int _f, std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
-                std::unique_ptr<Clock> _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
+   dBFT2Machine(int _f, std::vector<TSingleTimerStateMachine> _machines,
+                TClock _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(std::move(_clock), MachineId(_me), _name)
      , f(_f)
    {

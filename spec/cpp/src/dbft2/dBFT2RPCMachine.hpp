@@ -252,21 +252,21 @@ public:
       auto reqsrToCommitSent = new Transition<RPCMachineContext<dBFT2Context>>(commitSent);
       reqSentOrRecv->addTransition(reqsrToCommitSent->add(Condition<RPCMachineContext<dBFT2Context>>(
       		"EnoughPreparations", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-                     std::vector<Event*> events = d->getEvents();
-                     std::cout << "waiting for 2f+1 PrepareResponse" << std::endl;
-							// waiting for 2f+1 PrepareResponse(v,H)
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							int countPrepResp = 0;
-							for (int id = 0; id < d->params->R; id++) {
-								 for (auto & event : events) {
-										if (event->getFrom().id == id)
-											 if (event->isActivated("PrepareResponse", evArgs))
-													countPrepResp++;
-								 }
-							}
-                     std::cout << "count PrepareResponse = " << countPrepResp << " / " << (d->params->M() - 1) << std::endl;
-							// count >= 2f+1 (or M) -1 (because Prepare Request also counts)
-							return countPrepResp >= (d->params->M() - 1);
+                  std::vector<TEvent> events = d->getEvents();
+                  std::cout << "waiting for 2f+1 PrepareResponse" << std::endl;
+                  // waiting for 2f+1 PrepareResponse(v,H)
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                  int countPrepResp = 0;
+                  for (int id = 0; id < d->params->R; id++) {
+                      for (auto & event : events) {
+                           if (event->getFrom().id == id)
+                               if (event->isActivated("PrepareResponse", evArgs))
+                                    countPrepResp++;
+                      }
+                  }
+                  std::cout << "count PrepareResponse = " << countPrepResp << " / " << (d->params->M() - 1) << std::endl;
+                  // count >= 2f+1 (or M) -1 (because Prepare Request also counts)
+                  return countPrepResp >= (d->params->M() - 1);
 					}
 			))->add(Action<RPCMachineContext<dBFT2Context>>("send: Commit(v, H)", [](Timer& C,
 					RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
@@ -285,21 +285,21 @@ public:
       auto commitSentToBlockSent = new Transition<RPCMachineContext<dBFT2Context>>(blockSent);
       commitSent->addTransition(commitSentToBlockSent->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughCommits",
       		[](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-							std::vector<Event*> events = d->getEvents();
-                     std::cout << "waiting for 2f+1 Commits" << std::endl;
-							// waiting for 2f+1 Commit(v,H)
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							int count = 0;
-							for (int id = 0; id < d->params->R; id++) {
-								 for (auto & event : events) {
-										if (event->getFrom().id == id)
-											 if (event->isActivated("Commit", evArgs))
-													count++;
-								 }
-							}
-                     std::cout << "count Commit = " << count << " / " << d->params->M() << std::endl;
-							// count >= 2f+1 (or M)
-							return count >= d->params->M();
+                  std::vector<TEvent> events = d->getEvents();
+                  std::cout << "waiting for 2f+1 Commits" << std::endl;
+                  // waiting for 2f+1 Commit(v,H)
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                  int count = 0;
+                  for (int id = 0; id < d->params->R; id++) {
+                      for (auto & event : events) {
+                           if (event->getFrom().id == id)
+                               if (event->isActivated("Commit", evArgs))
+                                    count++;
+                      }
+                  }
+                  std::cout << "count Commit = " << count << " / " << d->params->M() << std::endl;
+                  // count >= 2f+1 (or M)
+                  return count >= d->params->M();
 					}
 			))->add(Action<RPCMachineContext<dBFT2Context>>("send: BlockRelay(v, H)",
 					[](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
@@ -318,21 +318,21 @@ public:
       auto viewChToStarted = new Transition<RPCMachineContext<dBFT2Context>>(started);
       viewChanging->addTransition(viewChToStarted->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughViewChanges",
       		[](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-							std::vector<Event*> events = d->getEvents();
-                     std::cout << "waiting for 2f+1 View Changes" << std::endl;
-							// waiting for 2f+1 ChangeView(v+1,H)
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
-							int count = 0;
-							for (int id = 0; id < d->params->R; id++) {
-								 for (auto & event : events) {
-										if (event->getFrom().id == id)
-											 if (event->isActivated("ChangeView", evArgs))
-													count++;
-								 }
-							}
-                     std::cout << "count ChangeView = " << count << " / " << d->params->M() << std::endl;
-							// count >= 2f+1 (or M)
-							return count >= d->params->M();
+                  std::vector<TEvent> events = d->getEvents();
+                  std::cout << "waiting for 2f+1 View Changes" << std::endl;
+                  // waiting for 2f+1 ChangeView(v+1,H)
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
+                  int count = 0;
+                  for (int id = 0; id < d->params->R; id++) {
+                      for (auto & event : events) {
+                           if (event->getFrom().id == id)
+                               if (event->isActivated("ChangeView", evArgs))
+                                    count++;
+                      }
+                  }
+                  std::cout << "count ChangeView = " << count << " / " << d->params->M() << std::endl;
+                  // count >= 2f+1 (or M)
+                  return count >= d->params->M();
 					 }
 			 ))->add(Action<RPCMachineContext<dBFT2Context>>("v := v + 1", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
 			 		MachineId _me) -> void {
@@ -347,7 +347,7 @@ public:
    }
 
 public: // real public
-   using Events = std::vector<Event*>;
+   using Events = std::vector<TEvent>;
 
    /** pending events (external queue may affect this one) */
    Events pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)

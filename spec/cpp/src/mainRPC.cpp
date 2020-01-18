@@ -20,7 +20,7 @@ using namespace libbft;
 
 // helper method: will send OnStart after 1 second
 void
-sendOnStart(shared_ptr<BFTEventsClient> myClient, int delayMS) {
+sendOnStart(TBFTEventsClient myClient, int delayMS) {
    std::this_thread::sleep_for(std::chrono::milliseconds(delayMS)); // 1000 ms -> 1 sec
    std::cout << " -x-x-> Will deliver message 'OnStart'" << std::endl;
    std::vector<std::string> eventArgs;
@@ -49,18 +49,19 @@ RPC_dbft_test_real_dbft2(
    cout << "will create RPC machine context!" << endl;
    // v = 0, H = 1501, T = 3 (secs), R = N (multi-node network)
    int v = 0;
-   dBFT2Context data(v, H, T, N, f); // 1500 -> primary (R=1)
+   // 1500 -> primary (R=1)
+   std::unique_ptr<dBFT2Context> data = std::unique_ptr<dBFT2Context>(new dBFT2Context(v, H, T, N, f));
    // dBFT2Context(int _v, int _H, int _T, int _R)
 
    // initialize my world: one RPC Client for every other node (including myself)
-   vector<shared_ptr<BFTEventsClient> > worldCom(N, nullptr);
+   vector<TBFTEventsClient> worldCom(N, nullptr);
    for (unsigned i = 0; i < worldCom.size(); i++) {
-      worldCom[i] = std::move((static_cast<shared_ptr<BFTEventsClient>>(new BFTEventsClient(i))));
+      worldCom[i] = std::move((static_cast<TBFTEventsClient>(new BFTEventsClient(i))));
    }
 
    // my own context: including my data, my name and my world
    // random 'seed' is added to '_me' identifier, to get independent (but deterministic) values on different nodes
-   RPCMachineContext<dBFT2Context> ctx(&data, me, worldCom, RANDOM + me);
+   RPCMachineContext<dBFT2Context> ctx(std::move(data), me, worldCom, RANDOM + me);
    std::cout << " delayMS = " << RegularDelayMS << std::endl;
    ctx.testSetRegularDelay(RegularDelayMS);
    std::cout << " dropRate = " << dropRate << std::endl;
