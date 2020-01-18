@@ -142,14 +142,14 @@ class TimedEvent : public Event
 {
 protected:
    /** Timer sent in countdown mode */
-   Timer *timer;
+   std::unique_ptr<Timer> timer;
 
 public:
    TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
          std::vector<std::string> _parameters = std::vector<std::string>(0))
      : Event(std::move(_name), std::move(_from), std::move(_parameters))
    {
-      timer = (new Timer())->init(countdown);
+      timer = std::unique_ptr<Timer>((new Timer())->init(countdown));
    }
 
    virtual ~TimedEvent()

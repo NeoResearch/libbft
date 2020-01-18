@@ -42,7 +42,7 @@ public:
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
          this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
-               new Timer("C", std::unique_ptr<Clock>(new Clock(*this->clock))), MachineId(i),
+               std::unique_ptr<Timer>(new Timer("C", std::unique_ptr<Clock>(new Clock(*this->clock)))), MachineId(i),
                std::unique_ptr<Clock>(new Clock(*this->clock)), "dBFT");
       }
 

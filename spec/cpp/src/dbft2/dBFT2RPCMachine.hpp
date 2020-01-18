@@ -47,7 +47,7 @@ public:
    		RPCMachineContext<dBFT2Context>* myCtx = nullptr, std::string _name = "dBFT2_RPC_machine",
          std::string dbft_type = "Commit1", std::unique_ptr<Clock> _clock = nullptr)
      : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(
-          new Timer("C", std::move(_clock)), _me, std::move(_clock), std::move(_name)
+         std::unique_ptr<Timer>(new Timer("C", std::move(_clock))), _me, std::move(_clock), std::move(_name)
        )
      , f(_f)
      , eventsServer(_me.id, myCtx)

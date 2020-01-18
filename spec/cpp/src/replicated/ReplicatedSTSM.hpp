@@ -38,7 +38,7 @@ public:
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
    /** watchdog timer */
-   Timer *watchdog{ nullptr };
+   std::unique_ptr<Timer> watchdog{ nullptr };
 
    /**
     * MaxTime -1.0 means infinite time
@@ -47,7 +47,7 @@ public:
     */
    void setWatchdog(double MaxTime)
    {
-      watchdog = (new Timer())->init(MaxTime);
+      watchdog = std::unique_ptr<Timer>((new Timer())->init(MaxTime));
    }
 
    //void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)

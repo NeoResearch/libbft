@@ -24,7 +24,7 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public: // perhaps protect
    /** state machine timer */
-   Timer *timer;
+   std::unique_ptr<Timer> timer;
    /** states for the state machine */
    std::vector<State<Param>*> states;
    /** global transitions: may come from any state */
@@ -32,7 +32,7 @@ public: // perhaps protect
 
 protected:
    /** watchdog timer */
-   Timer *watchdog{ nullptr };
+   std::unique_ptr<Timer> watchdog{ nullptr };
 
 public:
    /**
@@ -41,7 +41,7 @@ public:
     */
    void setWatchdog(double MaxTime)
    {
-      watchdog = (new Timer())->init(MaxTime);
+      watchdog = std::unique_ptr<Timer>((new Timer())->init(MaxTime));
    }
 
    /**
@@ -52,14 +52,14 @@ public:
     * @param _name
     */
    explicit SingleTimerStateMachine(
-         Timer *t = nullptr, MachineId _me = MachineId(0), std::unique_ptr<Clock> _clock = nullptr,
+         std::unique_ptr<Timer> t = nullptr, MachineId _me = MachineId(0), std::unique_ptr<Clock> _clock = nullptr,
          std::string _name = "STSM")
      : TimedStateMachine<State<Param>, Param>(std::move(_clock), _me, _name)
-     , timer(t)
+     , timer(std::move(t))
    {
       // timer must exist
       if (!timer) {
-         timer = new Timer("", std::unique_ptr<Clock>(new Clock(*this->clock)));
+         timer = std::unique_ptr<Timer>(new Timer("", std::unique_ptr<Clock>(new Clock(*this->clock))));
       }
    }
 

@@ -47,7 +47,7 @@ simpleExample()
    //cout << "final state: " << final->toString() << endl;
 
    // Timer never expires
-   SingleTimerStateMachine<Data> machine(new Timer("C"));
+   SingleTimerStateMachine<Data> machine(std::unique_ptr<Timer>(new Timer("C")));
 
    machine.registerState(initial);
    machine.registerState(final);
@@ -93,7 +93,7 @@ simpleMultiMachineExample(int id)
    // creating dBFT transitions
    // -------------------------
 
-   auto machine = new SingleTimerStateMachine<McDBFT>(new Timer("C"));
+   auto machine = new SingleTimerStateMachine<McDBFT>(std::unique_ptr<Timer>(new Timer("C")));
    machine->me = MachineId(id);
 
    // initial -> backup
@@ -288,8 +288,7 @@ dbft_test_primary()
 SingleTimerStateMachine<McDBFT>*
 commit_phase_dbft2(int id_me)
 {
-
-   auto machine = new SingleTimerStateMachine<McDBFT>(new Timer("C"));
+   auto machine = new SingleTimerStateMachine<McDBFT>(std::unique_ptr<Timer>(new Timer("C")));
    machine->me = MachineId(id_me);
 
    // ---------------------
