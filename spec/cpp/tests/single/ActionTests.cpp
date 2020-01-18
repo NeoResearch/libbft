@@ -1,3 +1,4 @@
+#include <memory>
 #include <gtest/gtest.h>
 
 #include "single/Transition.hpp"
@@ -21,8 +22,7 @@ TEST(SingleAction, UseTimedAction) {
       value = *p;
    };
    unique_ptr<Action<int>> action(new Action<int>("T", f));
-   Clock clock;
-   Timer timer("T", &clock);
+   Timer timer("T", std::shared_ptr<Clock>());
 
    int p = 1;
    const MachineId &id = MachineId(-1);
@@ -54,8 +54,7 @@ TEST(SingleAction, UseTimedActionReference) {
       p->age = id.id;
    };
    unique_ptr<Action<ActionReference>> action(new Action<ActionReference>("T", f));
-   Clock clock;
-   Timer timer("T", &clock);
+   Timer timer("T", std::shared_ptr<Clock>());
 
    ActionReference p{-1};
    const MachineId &id = MachineId(1);

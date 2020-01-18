@@ -26,7 +26,7 @@ public:
    int f;
 
    /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
-   explicit dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
+   explicit dBFT2Machine(int _f = 0, int N = 1, std::shared_ptr<Clock> _clock = nullptr, MachineId _me = MachineId(),
                 std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, std::move(_me), std::move(_name))
      , f(_f)
@@ -41,7 +41,7 @@ public:
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
          this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
-            new Timer("C", this->clock), MachineId(i), this->clock, "dBFT");
+               new Timer("C", this->clock), MachineId(i), this->clock, "dBFT");
       }
 
       // fill states and transitions on each machine
@@ -60,7 +60,7 @@ public:
     * @param _name
     */
    dBFT2Machine(int _f, std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
-   		Clock* _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
+                std::shared_ptr<Clock> _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
      : ReplicatedSTSM<dBFT2Context>(_clock, MachineId(_me), _name)
      , f(_f)
    {

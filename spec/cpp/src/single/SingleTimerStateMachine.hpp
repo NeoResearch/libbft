@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_SINGLETIMERSTATEMACHINE_HPP
 
 // system includes
+#include <memory>
 #include <iostream>
 #include <cstddef>
 #include <vector>
@@ -23,7 +24,7 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public: // perhaps protect
    /** state machine timer */
-   Timer* timer;
+   Timer *timer;
    /** states for the state machine */
    std::vector<State<Param>*> states;
    /** global transitions: may come from any state */
@@ -31,7 +32,7 @@ public: // perhaps protect
 
 protected:
    /** watchdog timer */
-   Timer* watchdog{ nullptr };
+   Timer *watchdog{ nullptr };
 
 public:
    /**
@@ -40,8 +41,6 @@ public:
     */
    void setWatchdog(double MaxTime)
    {
-      if (watchdog)
-         delete watchdog;
       watchdog = (new Timer())->init(MaxTime);
    }
 
@@ -52,7 +51,8 @@ public:
     * @param _clock
     * @param _name
     */
-   explicit SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = MachineId(0), Clock* _clock = nullptr,
+   explicit SingleTimerStateMachine(
+         Timer *t = nullptr, MachineId _me = MachineId(0), std::shared_ptr<Clock> _clock = nullptr,
          std::string _name = "STSM")
      : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
      , timer(t)

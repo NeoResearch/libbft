@@ -142,7 +142,7 @@ class TimedEvent : public Event
 {
 protected:
    /** Timer sent in countdown mode */
-   Timer* timer;
+   Timer *timer;
 
 public:
    TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
@@ -154,7 +154,6 @@ public:
 
    virtual ~TimedEvent()
    {
-      delete timer;
    }
 
    bool isActivated(std::string _name, std::vector<std::string> pattern) const override

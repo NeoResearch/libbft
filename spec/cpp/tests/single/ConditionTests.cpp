@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <gtest/gtest.h>
 
 #include "single/Transition.hpp"
@@ -21,17 +23,16 @@ TEST(SingleCondition, UseTimedFunction) {
       return *p % 2 == 0;
    };
    unique_ptr<Condition<int>> condition(new Condition<int>("T", f));
-   Clock clock;
-   Timer timer("T", &clock);
+   auto timer = std::make_shared<Timer>("T", std::shared_ptr<Clock>());
    int p = 1;
    const MachineId &id = MachineId(-1);
-   auto rfv = f(timer, &p, id);
-   auto rcv = condition->timedFunction(timer, &p, id);
+   auto rfv = f(*timer, &p, id);
+   auto rcv = condition->timedFunction(*timer, &p, id);
    EXPECT_EQ(rfv, rcv);
 
    for (int i = 0; i < 10; ++i) {
-      rfv = f(timer, &i, id);
-      rcv = condition->timedFunction(timer, &i, id);
+      rfv = f(*timer, &i, id);
+      rcv = condition->timedFunction(*timer, &i, id);
       EXPECT_EQ(rfv, rcv);
    }
 }

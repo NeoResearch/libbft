@@ -2,6 +2,7 @@
 #ifndef LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 
+#include <memory>
 #include <cstddef>
 #include <unistd.h>
 
@@ -21,21 +22,21 @@ class TimedStateMachine
 {
 public:
    /** state machine clock */
-   Clock* clock;
+   std::shared_ptr<Clock> clock;
    /** an identifier for itself */
    MachineId me{ 0 };
    /** string name */
    std::string name{ "" };
 
    /** a Timed State Machine requires a global clock, and a unique personal identifier */
-   explicit TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, std::string _name = "")
+   explicit TimedStateMachine(std::shared_ptr<Clock> _clock = nullptr, MachineId _me = 0, std::string _name = "")
      : clock(_clock)
      , me(std::move(_me))
      , name(std::move(_name))
    {
       // clock must exist
       if (!clock)
-         clock = new Clock();
+         clock = std::shared_ptr<Clock>(new Clock());
    }
 
    /**

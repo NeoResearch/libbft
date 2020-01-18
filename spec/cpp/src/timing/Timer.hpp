@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_TIMER_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 
 // libbft includes
@@ -18,14 +19,14 @@ private:
    /** object name */
    std::string name;
    /** beware if clock precision is terrible */
-   Clock* clock;
+   std::shared_ptr<Clock> clock;
    /** nice precision timer */
    double mytime;
    /** countdown timer (if value is positive) - in seconds */
    double countdown{ -1.0 };
 
 public:
-   explicit Timer(std::string _name = "", Clock* _clock = nullptr)
+   explicit Timer(std::string _name = "", std::shared_ptr<Clock> _clock = nullptr)
      : name(std::move(_name))
      , clock(_clock)
    {
@@ -42,7 +43,8 @@ public:
       // update countdown
       countdown = _countdown;
       if (!clock) {
-         clock = new Clock(); // beware if it's a terrible clock
+         // beware if it's a terrible clock
+         clock = std::shared_ptr<Clock>(new Clock());
       }
       // this should be a precision time
       mytime = clock->getTime();
@@ -85,7 +87,7 @@ public:
    }
 
    /**
-    * when returning 0.0, time is over
+    * When returning 0.0, time is over
     * @return
     */
    bool expired() const

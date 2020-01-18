@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_COUNTDOWN_NOTIFY_TIMER_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 
 // libbft includes
@@ -20,7 +21,7 @@ namespace libbft {
 class CountdownNotifyTimer : public CountdownTimer
 {
 public:
-   explicit CountdownNotifyTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
+   explicit CountdownNotifyTimer(double _countdown, std::string _name = "", std::shared_ptr<Clock> _clock = nullptr)
      : CountdownTimer(_countdown, std::move(_name), _clock)
    {
       init(_countdown);

@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_COUNTDOWN_TIMER_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 
 // libbft includes
@@ -16,7 +17,7 @@ class CountdownTimer
 {
 protected:
    /** beware if clock precision is terrible */
-   Clock* clock;
+   std::shared_ptr<Clock> clock;
    /** nice precision timer */
    double mytime;
    /** object name */
@@ -25,7 +26,7 @@ protected:
    double countdown;
 
 public:
-   explicit CountdownTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
+   explicit CountdownTimer(double _countdown, std::string _name = "", std::shared_ptr<Clock> _clock = nullptr)
      : name(std::move(_name))
      , clock(_clock)
    {
@@ -39,8 +40,10 @@ public:
    {
       // update countdown
       countdown = _countdown;
-      if (!clock)
-         clock = new Clock(); // beware if it's a terrible clock
+      if (!clock) {
+         // beware if it's a terrible clock
+         clock = std::shared_ptr<Clock>(new Clock());
+      }
       // this should be a precision time
       mytime = clock->getTime();
    }

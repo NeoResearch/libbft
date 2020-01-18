@@ -38,7 +38,7 @@ public:
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
    /** watchdog timer */
-   Timer* watchdog{ nullptr };
+   Timer *watchdog{ nullptr };
 
    /**
     * MaxTime -1.0 means infinite time
@@ -67,7 +67,7 @@ public:
    }
 
 public:
-   explicit ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
+   explicit ReplicatedSTSM(std::shared_ptr<Clock> _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
      : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
    {
    }
