@@ -7,7 +7,6 @@ cmake-build-debug/
 libgtest/
 vendor/
 
-*.pb.*
 *.dot
 *.png
 *.o
