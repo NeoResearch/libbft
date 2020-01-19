@@ -17,7 +17,7 @@ class CountdownTimer
 {
 protected:
    /** beware if clock precision is terrible */
-   std::unique_ptr<Clock> clock;
+   TClock clock;
    /** nice precision timer */
    double mytime;
    /** object name */
@@ -27,8 +27,7 @@ protected:
 
 public:
    explicit CountdownTimer(double _countdown, std::string _name = "", TClock _clock = nullptr)
-     : name(std::move(_name))
-     , clock(std::move(_clock))
+     : clock(std::move(_clock)), name(std::move(_name))
    {
       init(_countdown);
    }
@@ -69,8 +68,9 @@ public:
       double newtime = clock->getTime();
       double elapsed = newtime - mytime;
       double remaining = 1000000000.0; // INF
-      if (countdown >= 0.0)
+      if (countdown >= 0.0) {
          remaining = std::max(0.0, countdown - elapsed);
+      }
 
       return remaining == 0.0;
    }
