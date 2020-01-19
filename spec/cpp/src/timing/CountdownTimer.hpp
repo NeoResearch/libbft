@@ -26,7 +26,7 @@ protected:
    double countdown;
 
 public:
-   explicit CountdownTimer(double _countdown, std::string _name = "", std::unique_ptr<Clock> _clock = nullptr)
+   explicit CountdownTimer(double _countdown, std::string _name = "", TClock _clock = nullptr)
      : name(std::move(_name))
      , clock(std::move(_clock))
    {

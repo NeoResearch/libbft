@@ -61,15 +61,16 @@ RPC_dbft_test_real_dbft2(
 
    // my own context: including my data, my name and my world
    // random 'seed' is added to '_me' identifier, to get independent (but deterministic) values on different nodes
-   RPCMachineContext<dBFT2Context> ctx(std::move(data), me, worldCom, RANDOM + me);
+   auto ctx = std::shared_ptr<RPCMachineContext<dBFT2Context>>(new RPCMachineContext<dBFT2Context>(
+      std::move(data), me, worldCom, RANDOM + me));
    std::cout << " delayMS = " << RegularDelayMS << std::endl;
-   ctx.testSetRegularDelay(RegularDelayMS);
+   ctx->testSetRegularDelay(RegularDelayMS);
    std::cout << " dropRate = " << dropRate << std::endl;
-   ctx.testSetDropRate(dropRate);
+   ctx->testSetDropRate(dropRate);
 
    cout << "will create RPC machine!" << endl;
    // ctx is passed here just to initialize my server... ctx is not stored.
-   auto machine = new dBFT2RPCMachine(f, N, MachineId(me), &ctx);
+   auto machine = std::shared_ptr<dBFT2RPCMachine>(new dBFT2RPCMachine(f, N, MachineId(me), ctx));
    // limit execution time to W secs
    std::cout << "Setting watchdog to " << W << " seconds" << std::endl;
    machine->setWatchdog(W);
@@ -85,7 +86,7 @@ RPC_dbft_test_real_dbft2(
 
    // run dBFT on main thread and start RPC on background
    // TODO: 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
-   machine->runWithEventsServer(nullptr, &ctx);
+   machine->runWithEventsServer(nullptr, ctx);
 
    cout << "FINISHED WORK ON MAIN THREAD... JUST JOIN OnStart THREAD" << endl;
 
@@ -106,8 +107,7 @@ RPC_dbft_test_real_dbft2(
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
-int
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
    if (argc < 5) {
       std::cout << "missing parameters! argc=" << argc << " and should be 5 or 6" << std::endl;
       std::cout << "requires: my_index N f scenario RANDOM" << std::endl;

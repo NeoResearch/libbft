@@ -19,14 +19,14 @@ private:
    /** object name */
    std::string name;
    /** beware if clock precision is terrible */
-   std::unique_ptr<Clock> clock;
+   TClock clock;
    /** nice precision timer */
    double mytime;
    /** countdown timer (if value is positive) - in seconds */
    double countdown{ -1.0 };
 
 public:
-   explicit Timer(std::string _name = "", std::unique_ptr<Clock> _clock = nullptr)
+   explicit Timer(std::string _name = "", TClock _clock = nullptr)
      : name(std::move(_name))
      , clock(std::move(_clock))
    {

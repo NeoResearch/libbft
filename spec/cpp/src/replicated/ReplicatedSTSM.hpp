@@ -19,14 +19,15 @@
 
 namespace libbft {
 
-template<class Param>
-using MultiState = std::vector<State<MultiContext<Param>>*>;
+template<class Param> using MultiState = std::vector<std::shared_ptr<State<MultiContext<Param>>>>;
 
 template<class Param = std::nullptr_t>
 class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
    using TSingleTimerStateMachine = std::shared_ptr<SingleTimerStateMachine<MultiContext<Param>>>;
+   using TMultiState = std::shared_ptr<MultiState<Param>>;
+   using TMultiContext = std::shared_ptr<MultiContext<Param>>;
 
    /** includes several internal machines */
    std::vector<TSingleTimerStateMachine> machines;
@@ -86,7 +87,7 @@ public:
       machines.push_back(m);
    }
 
-   void launchScheduledEvents(MultiContext<Param>* p)
+   void launchScheduledEvents(TMultiContext p)
    {
       std::cout << "launching scheduled events!" << std::endl;
       // launch all scheduled events
@@ -94,12 +95,14 @@ public:
          ScheduledEvent e = scheduledEvents[i];
          if (e.machineTo.id == -1) {
             // broadcast event
-            p->broadcast(std::shared_ptr<Event>(new TimedEvent(e.countdown, e.name, MachineId(-1), e.eventParams)),
-                  MachineId(-1));
+            p->broadcast(std::shared_ptr<Event>(new TimedEvent(
+               e.countdown, e.name, MachineId(-1), e.eventParams)), MachineId(-1)
+            );
          } else {
             // target machine event
-            p->sendTo(std::shared_ptr<Event>(new TimedEvent(e.countdown, e.name, MachineId(-1), e.eventParams)),
-                  e.machineTo);
+            p->sendTo(std::shared_ptr<Event>(new TimedEvent(
+               e.countdown, e.name, MachineId(-1), e.eventParams)), e.machineTo
+            );
          }
       }
    }
@@ -110,11 +113,12 @@ public:
     * @param p
     * @return
     */
-   MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
+   TMultiState initialize(TMultiState current, TMultiContext p) override
    {
       // check if there's initial state available
-      if (!current)
-         current = new MultiState<Param>(machines.size(), nullptr);
+      if (!current) {
+         current = std::shared_ptr<MultiState<Param>>(new MultiState<Param>(machines.size(), nullptr));
+      }
 
       std::cout << std::endl;
       std::cout << "===========" << std::endl;
@@ -141,7 +145,7 @@ public:
     * @param states
     * @param p
     */
-   void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
+   void OnFinished(const MultiState<Param> &states, TMultiContext p) override
    {
       std::cout << std::endl;
       std::cout << "=================" << std::endl;
@@ -149,7 +153,7 @@ public:
       std::cout << "=================" << std::endl;
    }
 
-   bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
+   bool isFinal(const MultiState<Param> &states, TMultiContext p) override
    {
       for (unsigned i = 0; i < states.size(); i++) {
          if (!states[i] || !states[i]->isFinal)
@@ -205,7 +209,7 @@ public:
    }
 */
 
-   bool updateState(MultiState<Param>*& states, MultiContext<Param>* p) override
+   bool updateState(TMultiState &states, TMultiContext p) override
    {
       bool ret = false;
       for (unsigned i = 0; i < machines.size(); i++) {
@@ -221,7 +225,7 @@ public:
       return ret;
    }
 
-   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
+   void onEnterState(MultiState<Param> &current, TMultiContext p) override
    {
       std::cout << "updating multi state! STATES:" << std::endl;
       for (unsigned i = 0; i < current.size(); i++) {
@@ -232,7 +236,7 @@ public:
          watchdog->reset();
    }
 
-   bool beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
+   bool beforeUpdateState(MultiState<Param> &states, TMultiContext p) override
    {
       // check watchdog
       if (watchdog && watchdog->expired()) {

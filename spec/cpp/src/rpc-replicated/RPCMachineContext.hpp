@@ -29,7 +29,6 @@ struct RPCMachineContext
    int me;
    /** the world I can connect to */
    std::vector<TBFTEventsClient> world;
-
 private:
    /** my events */
    Events events;

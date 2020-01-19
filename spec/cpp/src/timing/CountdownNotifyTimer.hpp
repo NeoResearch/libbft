@@ -21,7 +21,7 @@ namespace libbft {
 class CountdownNotifyTimer : public CountdownTimer
 {
 public:
-   explicit CountdownNotifyTimer(double _countdown, std::string _name = "", std::unique_ptr<Clock> _clock = nullptr)
+   explicit CountdownNotifyTimer(double _countdown, std::string _name = "", TClock _clock = nullptr)
      : CountdownTimer(_countdown, std::move(_name), std::move(_clock))
    {
       init(_countdown);
