@@ -1,12 +1,9 @@
-#include <utility>
-
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 #define LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <vector>
 
@@ -23,15 +20,18 @@
 
 namespace libbft {
 
-template<class Param>
-using MultiState = std::vector<State<MultiContext<Param>>*>;
+template<class Param> using MultiState = std::vector<std::shared_ptr<State<MultiContext<Param>>>>;
 
 template<class Param = std::nullptr_t>
 class ReplicatedSTSM : public TimedStateMachine<MultiState<Param>, MultiContext<Param>>
 {
 public:
+   using TSingleTimerStateMachine = std::shared_ptr<SingleTimerStateMachine<MultiContext<Param>>>;
+   using TMultiState = std::shared_ptr<MultiState<Param>>;
+   using TMultiContext = std::shared_ptr<MultiContext<Param>>;
+
    /** includes several internal machines */
-   std::vector<SingleTimerStateMachine<MultiContext<Param>>*> machines;
+   std::vector<TSingleTimerStateMachine> machines;
 
    /** includes several internal machines */
    std::vector<ScheduledEvent> scheduledEvents;
@@ -42,7 +42,7 @@ public:
    // scheduled transitions may perhaps launch events on Action... must see if both are necessary
 
    /** watchdog timer */
-   Timer* watchdog{ nullptr };
+   TTimer watchdog{ nullptr };
 
    /**
     * MaxTime -1.0 means infinite time
@@ -51,7 +51,7 @@ public:
     */
    void setWatchdog(double MaxTime)
    {
-      watchdog = (new Timer())->init(MaxTime);
+      watchdog = std::unique_ptr<Timer>((new Timer())->init(MaxTime));
    }
 
    //void scheduleGlobalTransition(Scheduled<Transition<MultiContext<Param>>> sch)
@@ -71,8 +71,8 @@ public:
    }
 
 public:
-   explicit ReplicatedSTSM(Clock* _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
-     : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(_clock, _me, _name)
+   explicit ReplicatedSTSM(TClock _clock = nullptr, MachineId _me = MachineId(0), std::string _name = "")
+     : TimedStateMachine<MultiState<Param>, MultiContext<Param>>(std::move(_clock), _me, _name)
    {
    }
 
@@ -82,13 +82,13 @@ public:
     */
    virtual ~ReplicatedSTSM() = default;
 
-   void registerMachine(SingleTimerStateMachine<MultiContext<Param>>* m)
+   void registerMachine(TSingleTimerStateMachine m)
    {
       // something else?
       machines.push_back(m);
    }
 
-   void launchScheduledEvents(MultiContext<Param>* p)
+   void launchScheduledEvents(TMultiContext p)
    {
       std::cout << "launching scheduled events!" << std::endl;
       // launch all scheduled events
@@ -96,10 +96,14 @@ public:
          ScheduledEvent e = scheduledEvents[i];
          if (e.machineTo.id == -1) {
             // broadcast event
-            p->broadcast(new TimedEvent(e.countdown, e.name, MachineId(-1), e.eventParams), MachineId(-1));
+            p->broadcast(std::shared_ptr<Event>(new TimedEvent(
+               e.countdown, e.name, MachineId(-1), e.eventParams)), MachineId(-1)
+            );
          } else {
             // target machine event
-            p->sendTo(new TimedEvent(e.countdown, e.name, MachineId(-1), e.eventParams), e.machineTo);
+            p->sendTo(std::shared_ptr<Event>(new TimedEvent(
+               e.countdown, e.name, MachineId(-1), e.eventParams)), e.machineTo
+            );
          }
       }
    }
@@ -110,11 +114,12 @@ public:
     * @param p
     * @return
     */
-   MultiState<Param>* initialize(MultiState<Param>* current, MultiContext<Param>* p) override
+   TMultiState initialize(TMultiState current, TMultiContext p) override
    {
       // check if there's initial state available
-      if (!current)
-         current = new MultiState<Param>(machines.size(), nullptr);
+      if (!current) {
+         current = std::shared_ptr<MultiState<Param>>(new MultiState<Param>(machines.size(), nullptr));
+      }
 
       std::cout << std::endl;
       std::cout << "===========" << std::endl;
@@ -141,7 +146,7 @@ public:
     * @param states
     * @param p
     */
-   void OnFinished(const MultiState<Param>& states, MultiContext<Param>* p) override
+   void OnFinished(const MultiState<Param> &states, TMultiContext p) override
    {
       std::cout << std::endl;
       std::cout << "=================" << std::endl;
@@ -149,7 +154,7 @@ public:
       std::cout << "=================" << std::endl;
    }
 
-   bool isFinal(const MultiState<Param>& states, MultiContext<Param>* p) override
+   bool isFinal(const MultiState<Param> &states, TMultiContext p) override
    {
       for (unsigned i = 0; i < states.size(); i++) {
          if (!states[i] || !states[i]->isFinal)
@@ -205,7 +210,7 @@ public:
    }
 */
 
-   bool updateState(MultiState<Param>*& states, MultiContext<Param>* p) override
+   bool updateState(TMultiState &states, TMultiContext p) override
    {
       bool ret = false;
       for (unsigned i = 0; i < machines.size(); i++) {
@@ -221,7 +226,7 @@ public:
       return ret;
    }
 
-   void onEnterState(MultiState<Param>& current, MultiContext<Param>* p) override
+   void onEnterState(MultiState<Param> &current, TMultiContext p) override
    {
       std::cout << "updating multi state! STATES:" << std::endl;
       for (unsigned i = 0; i < current.size(); i++) {
@@ -232,7 +237,7 @@ public:
          watchdog->reset();
    }
 
-   bool beforeUpdateState(MultiState<Param>& states, MultiContext<Param>* p) override
+   bool beforeUpdateState(MultiState<Param> &states, TMultiContext p) override
    {
       // check watchdog
       if (watchdog && watchdog->expired()) {

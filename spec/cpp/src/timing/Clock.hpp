@@ -1,10 +1,9 @@
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_CLOCK_HPP
 #define LIBBFT_SRC_CPP_CLOCK_HPP
 
 // system includes
+#include <memory>
 #include <chrono>
 #include <sstream>
 
@@ -24,6 +23,10 @@ private:
 public:
    explicit Clock(std::string _name = "")
      : name(std::move(_name))
+   {
+   }
+   explicit Clock(const Clock &other)
+         : name(other.name)
    {
    }
 
@@ -50,6 +53,8 @@ public:
       return ss.str();
    }
 };
+
+using TClock = std::unique_ptr<Clock>;
 
 } // libbft
 

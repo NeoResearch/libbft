@@ -1,10 +1,9 @@
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_TIMER_HPP
 #define LIBBFT_SRC_CPP_TIMER_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 
 // libbft includes
@@ -20,16 +19,16 @@ private:
    /** object name */
    std::string name;
    /** beware if clock precision is terrible */
-   Clock* clock;
+   TClock clock;
    /** nice precision timer */
    double mytime;
    /** countdown timer (if value is positive) - in seconds */
    double countdown{ -1.0 };
 
 public:
-   explicit Timer(std::string _name = "", Clock* _clock = nullptr)
+   explicit Timer(std::string _name = "", TClock _clock = nullptr)
      : name(std::move(_name))
-     , clock(_clock)
+     , clock(std::move(_clock))
    {
       init();
    }
@@ -44,7 +43,8 @@ public:
       // update countdown
       countdown = _countdown;
       if (!clock) {
-         clock = new Clock(); // beware if it's a terrible clock
+         // beware if it's a terrible clock
+         clock = std::unique_ptr<Clock>(new Clock());
       }
       // this should be a precision time
       mytime = clock->getTime();
@@ -87,7 +87,7 @@ public:
    }
 
    /**
-    * when returning 0.0, time is over
+    * When returning 0.0, time is over
     * @return
     */
    bool expired() const
@@ -102,6 +102,8 @@ public:
       return ss.str();
    }
 };
+
+using TTimer = std::unique_ptr<Timer>;
 
 } // libbft
 

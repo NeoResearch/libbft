@@ -1,16 +1,9 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_MULTI_CONTEXT_HPP
 #define LIBBFT_SRC_CPP_MULTI_CONTEXT_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <vector>
 
@@ -29,15 +22,17 @@ struct MachineContext;
 template<class Param = std::nullptr_t>
 struct MultiContext
 {
+   using TParam = std::shared_ptr<Param>;
+
    /** vector of machines */
    std::vector<MachineContext<Param>> vm;
 
-   Param* getParams(int id_me)
+   TParam getParams(int id_me)
    {
       return vm[id_me].params;
    }
 
-   std::vector<Event*> getEvents(int id_me)
+   std::vector<TEvent> getEvents(int id_me)
    {
       return vm[id_me].events;
    }
@@ -46,7 +41,7 @@ struct MultiContext
    void broadcast(std::string event, MachineId from, std::vector<std::string> eventParams)
    {
       std::cout << " -> BROADCASTING EVENT '" << event << "' from " << from.id << std::endl;
-      broadcast(new Event(event, from, std::move(eventParams)), from);
+      broadcast(std::shared_ptr<Event>(new Event(event, from, std::move(eventParams))), from);
    }
 
    /**
@@ -54,7 +49,7 @@ struct MultiContext
     * @param event
     * @param from
     */
-   void broadcast(Event* event, MachineId from)
+   void broadcast(TEvent event, MachineId from)
    {
       for (int i = 0; i < static_cast<int>(vm.size()); i++) {
          if (i != from.id) {
@@ -68,7 +63,7 @@ struct MultiContext
     * @param event
     * @param to should be valid (0 <= to <= R)
     */
-   void sendTo(Event* event, MachineId to)
+   void sendTo(TEvent event, MachineId to)
    {
       std::cout << " => SEND TO " << to.id << std::endl;
       assert((to.id >= 0) && (to.id < static_cast<int>(vm.size())));

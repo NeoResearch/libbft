@@ -1,16 +1,16 @@
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_DBFT2_DBFT2_RPC_MACHINE_HPP
 #define LIBBFT_SRC_CPP_DBFT2_DBFT2_RPC_MACHINE_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
 #include <algorithm>
 #include <cassert>
 #include <random>
+#include <thread>
 
 // standard Transition
 //#include "replicated/ReplicatedSTSM.hpp"
@@ -35,6 +35,9 @@ namespace libbft {
 class dBFT2RPCMachine : public SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>
 {
 public:
+   using TRPCMachineContext = std::shared_ptr<RPCMachineContext<dBFT2Context>>;
+   using TState = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>;
+
    /** max number of faulty nodes */
    int f;
    /** events server to receive info from other nodes */
@@ -45,9 +48,11 @@ public:
 
    /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
    explicit dBFT2RPCMachine(int _f = 0, int N = 1, MachineId _me = MachineId(),
-   		RPCMachineContext<dBFT2Context>* myCtx = nullptr, std::string _name = "dBFT2_RPC_machine",
-         std::string dbft_type = "Commit1", Clock* _clock = nullptr)
-     : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(new Timer("C", _clock), _me, _clock, std::move(_name))
+         TRPCMachineContext myCtx = nullptr, std::string _name = "dBFT2_RPC_machine",
+         std::string dbft_type = "Commit1", TClock _clock = nullptr)
+     : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(
+         std::unique_ptr<Timer>(new Timer("C", std::move(_clock))), _me, std::move(_clock), std::move(_name)
+       )
      , f(_f)
      , eventsServer(_me.id, myCtx)
    //Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name = "STSM"
@@ -86,21 +91,29 @@ public:
       // declaring dBFT states
       // ---------------------
 
-      auto preinitial = new State<RPCMachineContext<dBFT2Context>>(false, "PreInitial");
+      auto preinitial = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "PreInitial"));
       this->registerState(preinitial);
-      auto started = new State<RPCMachineContext<dBFT2Context>>(false, "Started");
+      auto started = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "Started"));
       this->registerState(started);
-      auto backup = new State<RPCMachineContext<dBFT2Context>>(false, "Backup");
+      auto backup = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "Backup"));
       this->registerState(backup);
-      auto primary = new State<RPCMachineContext<dBFT2Context>>(false, "Primary");
+      auto primary = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "Primary"));
       this->registerState(primary);
-      auto reqSentOrRecv = new State<RPCMachineContext<dBFT2Context>>(false, "RequestSentOrReceived");
+      auto reqSentOrRecv = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "RequestSentOrReceived"));
       this->registerState(reqSentOrRecv);
-      auto commitSent = new State<RPCMachineContext<dBFT2Context>>(false, "CommitSent");
+      auto commitSent = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "CommitSent"));
       this->registerState(commitSent);
-      auto viewChanging = new State<RPCMachineContext<dBFT2Context>>(false, "ViewChanging");
+      auto viewChanging = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(false, "ViewChanging"));
       this->registerState(viewChanging);
-      auto blockSent = new State<RPCMachineContext<dBFT2Context>>(true, "BlockSent");
+      auto blockSent = std::shared_ptr<State<RPCMachineContext<dBFT2Context>>>(
+         new State<RPCMachineContext<dBFT2Context>>(true, "BlockSent"));
       this->registerState(blockSent);
 
       // -------------------------
@@ -111,248 +124,248 @@ public:
       //int id = this->me.id;
 
       // preinitial -> started
-      preinitial->addTransition(
+      preinitial->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(
         (new Transition<RPCMachineContext<dBFT2Context>>(started))->add(Condition<RPCMachineContext<dBFT2Context>>(
-        		"OnStart()", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
+           "OnStart()", [](const Timer& t, TRPCMachineContext d, MachineId _me) -> bool {
            std::cout << "Waiting for OnStart..." << std::endl;
            return d->hasEvent("OnStart", std::vector<std::string>(0)); // no parameters on event
-        })));
+        }))));
 
       // initial -> backup
-      started->addTransition(
+      started->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(
         (new Transition<RPCMachineContext<dBFT2Context>>(backup))->add(Condition<RPCMachineContext<dBFT2Context>>(
-        		"not (H+v) mod R = i", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
+           "not (H+v) mod R = i", [](const Timer& t, TRPCMachineContext d, MachineId _me) -> bool {
            std::cout << "lambda1" << std::endl;
            return (d->params->H + d->params->v) % d->params->R != _me.id;
-        })));
+        }))));
 
       // initial -> primary
-      started->addTransition(
+      started->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(
         (new Transition<RPCMachineContext<dBFT2Context>>(primary))->add(Condition<RPCMachineContext<dBFT2Context>>(
-        		"(H+v) mod R = i", [](const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
+           "(H+v) mod R = i", [](const Timer& t, TRPCMachineContext d, MachineId _me) -> bool {
            std::cout << "lambda2 H=" << d->params->H << " v=" << d->params->v << " _me=" << _me.id << std::endl;
            return (d->params->H + d->params->v) % d->params->R == _me.id;
-        })));
+        }))));
 
       // backup -> reqSentOrRecv
       auto toReqSentOrRecv1 = new Transition<RPCMachineContext<dBFT2Context>>(reqSentOrRecv);
-      backup->addTransition(
+      backup->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(
         toReqSentOrRecv1->add(Condition<RPCMachineContext<dBFT2Context>>("OnPrepareRequest(v,H)", [](
-        		const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-                      std::cout << "waiting for event OnPrepareRequest at " << _me.id << " for view " << d->params->v
-                           << std::endl;
-							 // args: view and height
-                      std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							 return d->hasEvent("PrepareRequest", evArgs);
-						})
-				)->add(Condition<RPCMachineContext<dBFT2Context>>("ValidBlock", [](
-						const Timer& t, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-             // always good block right now
+            const Timer& t, TRPCMachineContext d, MachineId _me) -> bool {
+                   std::cout << "waiting for event OnPrepareRequest at " << _me.id << " for view " << d->params->v
+                        << std::endl;
+                   // args: view and height
+                   std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                   return d->hasEvent("PrepareRequest", evArgs);
+               })
+            )->add(Condition<RPCMachineContext<dBFT2Context>>("ValidBlock", [](
+               const Timer& t, TRPCMachineContext d, MachineId _me) -> bool {
+               // always good block right now
              return true;
-          	})
-				)->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareResponse(v, H)",
-						[](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
-                     std::cout << "sending PrepareResponse from " << _me.id << " for view " << d->params->v << std::endl;
-							// TODO: attach  block hash as well?
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							d->broadcast("PrepareResponse", evArgs);
-          	})
-				)
-			);
+            })
+            )->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareResponse(v, H)",
+                  [](Timer& C, TRPCMachineContext d, MachineId _me) -> void {
+               std::cout << "sending PrepareResponse from " << _me.id << " for view " << d->params->v << std::endl;
+               // TODO: attach  block hash as well?
+               std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+               d->broadcast("PrepareResponse", evArgs);
+            })
+            )
+         ));
 
       // primary -> reqSentOrRecv
       auto primToReqSentOrRecv1 = new Transition<RPCMachineContext<dBFT2Context>>(reqSentOrRecv);
-      primary->addTransition(
+      primary->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(
         primToReqSentOrRecv1->add(Condition<RPCMachineContext<dBFT2Context>>("C >= T?", [](
-        		const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-							 // C >= T?
-							 return C.elapsedTime() >= d->params->T;
-						})
-				)->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v, H)",
-						[](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
-                     std::cout << "sending PrepareRequest from " << _me.id << " for view " << d->params->v << std::endl;
-							// TODO: attach  block hash as well?
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							d->broadcast("PrepareRequest", evArgs);
-          	})
-				)->add(Action<RPCMachineContext<dBFT2Context>>("C := 0",
-						[](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
-            	C.reset();
-          	})
-				)
-			);
+            const Timer& C, TRPCMachineContext d, MachineId _me) -> bool {
+                // C >= T?
+                return C.elapsedTime() >= d->params->T;
+            })
+        )->add(Action<RPCMachineContext<dBFT2Context>>("send: PrepareRequest(v, H)",
+              [](Timer& C, TRPCMachineContext d, MachineId _me) -> void {
+                  std::cout << "sending PrepareRequest from " << _me.id << " for view " << d->params->v << std::endl;
+                  // TODO: attach  block hash as well?
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                  d->broadcast("PrepareRequest", evArgs);
+              })
+        )->add(Action<RPCMachineContext<dBFT2Context>>("C := 0",
+            [](Timer& C, TRPCMachineContext d, MachineId _me) -> void {
+               C.reset();
+            })
+        )
+      ));
 
       // primary -> viewChanging
       auto primToViewChanging = new Transition<RPCMachineContext<dBFT2Context>>(viewChanging);
-      primary->addTransition(
+      primary->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(
         primToViewChanging->add(Condition<RPCMachineContext<dBFT2Context>>("(C >= T exp(v+1))?", [](const Timer& C,
-        		RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
+        		TRPCMachineContext d, MachineId _me) -> bool {
 							 // C >= T?
 							 //cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
 							 return C.elapsedTime() >= (d->params->T * std::pow(2, d->params->v + 1));
 						})
 				)->add(Action<RPCMachineContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C,
-						RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
+						TRPCMachineContext d, MachineId _me) -> void {
                      std::cout << "sending ChangeView from " << _me.id << " for view " << d->params->v << std::endl;
 							// TODO: attach  block hash as well?
                      std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
 							d->broadcast("ChangeView", evArgs);
           	})
-				)->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+				)->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, TRPCMachineContext d,
 						MachineId _me) -> void {
             	C.reset();
 						})
 				)
-			);
+			));
 
       // backup -> viewChanging
       auto backpToViewChanging = new Transition<RPCMachineContext<dBFT2Context>>(viewChanging);
-      backup->addTransition(backpToViewChanging->add(Condition<RPCMachineContext<dBFT2Context>>("(C >= T exp(v+1))?",
-      		[](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
+      backup->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(backpToViewChanging->add(Condition<RPCMachineContext<dBFT2Context>>("(C >= T exp(v+1))?",
+      		[](const Timer& C, TRPCMachineContext d, MachineId _me) -> bool {
 						// C >= T?
 						//cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
 						return C.elapsedTime() >= (d->params->T * std::pow(2, d->params->v + 1));
 					}
 			))->add(Action<RPCMachineContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C,
-					RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
+					TRPCMachineContext d, MachineId _me) -> void {
              std::cout << "sending ChangeView from " << _me.id << " for view " << d->params->v << std::endl;
              // TODO: attach  block hash as well?
              std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
              d->broadcast("ChangeView", evArgs);
           }
-			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, TRPCMachineContext d,
 					MachineId _me) -> void {
              C.reset();
           }
-			)));
+			))));
 
       // reqSentOrRecv -> viewChanging
       auto reqsrToViewChanging = new Transition<RPCMachineContext<dBFT2Context>>(viewChanging);
-      reqSentOrRecv->addTransition(reqsrToViewChanging->add(Condition<RPCMachineContext<dBFT2Context>>(
-      		"(C >= T exp(v+1))?", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
+      reqSentOrRecv->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(reqsrToViewChanging->add(Condition<RPCMachineContext<dBFT2Context>>(
+      		"(C >= T exp(v+1))?", [](const Timer& C, TRPCMachineContext d, MachineId _me) -> bool {
 						// C >= T?
 						//cout << "evaluate primary view change... C = " << C.elapsedTime() << " ~ T_limit = " << (d->params->T * std::pow(2, d->params->v+1)) << std::endl;
 						return C.elapsedTime() >= (d->params->T * std::pow(2, d->params->v + 1));
 					}
 			))->add(Action<RPCMachineContext<dBFT2Context>>("send: ChangeView(v+1, H)", [](Timer& C,
-					RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
+					TRPCMachineContext d, MachineId _me) -> void {
              std::cout << "sending ChangeView from " << _me.id << " for view " << d->params->v << std::endl;
              // TODO: attach  block hash as well?
              std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
              d->broadcast("ChangeView", evArgs);
           }
-			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, TRPCMachineContext d,
 					MachineId _me) -> void {
              C.reset();
           }
-			)));
+			))));
 
       // reqSentOrRecv -> commitSent
       auto reqsrToCommitSent = new Transition<RPCMachineContext<dBFT2Context>>(commitSent);
-      reqSentOrRecv->addTransition(reqsrToCommitSent->add(Condition<RPCMachineContext<dBFT2Context>>(
-      		"EnoughPreparations", [](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-                     std::vector<Event*> events = d->getEvents();
-                     std::cout << "waiting for 2f+1 PrepareResponse" << std::endl;
-							// waiting for 2f+1 PrepareResponse(v,H)
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							int countPrepResp = 0;
-							for (int id = 0; id < d->params->R; id++) {
-								 for (auto & event : events) {
-										if (event->getFrom().id == id)
-											 if (event->isActivated("PrepareResponse", evArgs))
-													countPrepResp++;
-								 }
-							}
-                     std::cout << "count PrepareResponse = " << countPrepResp << " / " << (d->params->M() - 1) << std::endl;
-							// count >= 2f+1 (or M) -1 (because Prepare Request also counts)
-							return countPrepResp >= (d->params->M() - 1);
+      reqSentOrRecv->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(reqsrToCommitSent->add(Condition<RPCMachineContext<dBFT2Context>>(
+      		"EnoughPreparations", [](const Timer& C, TRPCMachineContext d, MachineId _me) -> bool {
+                  std::vector<TEvent> events = d->getEvents();
+                  std::cout << "waiting for 2f+1 PrepareResponse" << std::endl;
+                  // waiting for 2f+1 PrepareResponse(v,H)
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                  int countPrepResp = 0;
+                  for (int id = 0; id < d->params->R; id++) {
+                      for (auto & event : events) {
+                           if (event->getFrom().id == id)
+                               if (event->isActivated("PrepareResponse", evArgs))
+                                    countPrepResp++;
+                      }
+                  }
+                  std::cout << "count PrepareResponse = " << countPrepResp << " / " << (d->params->M() - 1) << std::endl;
+                  // count >= 2f+1 (or M) -1 (because Prepare Request also counts)
+                  return countPrepResp >= (d->params->M() - 1);
 					}
 			))->add(Action<RPCMachineContext<dBFT2Context>>("send: Commit(v, H)", [](Timer& C,
-					RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
+					TRPCMachineContext d, MachineId _me) -> void {
              std::cout << "sending Commit from " << _me.id << " for view " << d->params->v << std::endl;
              // TODO: attach  block hash as well?
              std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
              d->broadcast("Commit", evArgs);
           }
-			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, TRPCMachineContext d,
 					MachineId _me) -> void {
              C.reset();
           }
-			)));
+			))));
 
       // commitSent -> blockSent
       auto commitSentToBlockSent = new Transition<RPCMachineContext<dBFT2Context>>(blockSent);
-      commitSent->addTransition(commitSentToBlockSent->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughCommits",
-      		[](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-							std::vector<Event*> events = d->getEvents();
-                     std::cout << "waiting for 2f+1 Commits" << std::endl;
-							// waiting for 2f+1 Commit(v,H)
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
-							int count = 0;
-							for (int id = 0; id < d->params->R; id++) {
-								 for (auto & event : events) {
-										if (event->getFrom().id == id)
-											 if (event->isActivated("Commit", evArgs))
-													count++;
-								 }
-							}
-                     std::cout << "count Commit = " << count << " / " << d->params->M() << std::endl;
-							// count >= 2f+1 (or M)
-							return count >= d->params->M();
+      commitSent->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(commitSentToBlockSent->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughCommits",
+      		[](const Timer& C, TRPCMachineContext d, MachineId _me) -> bool {
+                  std::vector<TEvent> events = d->getEvents();
+                  std::cout << "waiting for 2f+1 Commits" << std::endl;
+                  // waiting for 2f+1 Commit(v,H)
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
+                  int count = 0;
+                  for (int id = 0; id < d->params->R; id++) {
+                      for (auto & event : events) {
+                           if (event->getFrom().id == id)
+                               if (event->isActivated("Commit", evArgs))
+                                    count++;
+                      }
+                  }
+                  std::cout << "count Commit = " << count << " / " << d->params->M() << std::endl;
+                  // count >= 2f+1 (or M)
+                  return count >= d->params->M();
 					}
 			))->add(Action<RPCMachineContext<dBFT2Context>>("send: BlockRelay(v, H)",
-					[](Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> void {
+					[](Timer& C, TRPCMachineContext d, MachineId _me) -> void {
              std::cout << "sending BlockRelay for H=" << d->params->H << std::endl;
              // TODO: attach  block hash as well?
              std::vector<std::string> evArgs = { std::to_string(d->params->v), std::to_string(d->params->H) };
              d->broadcast("BlockRelay", evArgs);
           }
-			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, TRPCMachineContext d,
 					MachineId _me) -> void {
              C.reset();
           }
-			)));
+			))));
 
       // viewChanging -> started
       auto viewChToStarted = new Transition<RPCMachineContext<dBFT2Context>>(started);
-      viewChanging->addTransition(viewChToStarted->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughViewChanges",
-      		[](const Timer& C, RPCMachineContext<dBFT2Context>* d, MachineId _me) -> bool {
-							std::vector<Event*> events = d->getEvents();
-                     std::cout << "waiting for 2f+1 View Changes" << std::endl;
-							// waiting for 2f+1 ChangeView(v+1,H)
-                     std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
-							int count = 0;
-							for (int id = 0; id < d->params->R; id++) {
-								 for (auto & event : events) {
-										if (event->getFrom().id == id)
-											 if (event->isActivated("ChangeView", evArgs))
-													count++;
-								 }
-							}
-                     std::cout << "count ChangeView = " << count << " / " << d->params->M() << std::endl;
-							// count >= 2f+1 (or M)
-							return count >= d->params->M();
+      viewChanging->addTransition(std::shared_ptr<Transition<RPCMachineContext<dBFT2Context>>>(viewChToStarted->add(Condition<RPCMachineContext<dBFT2Context>>("EnoughViewChanges",
+      		[](const Timer& C, TRPCMachineContext d, MachineId _me) -> bool {
+                  std::vector<TEvent> events = d->getEvents();
+                  std::cout << "waiting for 2f+1 View Changes" << std::endl;
+                  // waiting for 2f+1 ChangeView(v+1,H)
+                  std::vector<std::string> evArgs = { std::to_string(d->params->v + 1), std::to_string(d->params->H) };
+                  int count = 0;
+                  for (int id = 0; id < d->params->R; id++) {
+                      for (auto & event : events) {
+                           if (event->getFrom().id == id)
+                               if (event->isActivated("ChangeView", evArgs))
+                                    count++;
+                      }
+                  }
+                  std::cout << "count ChangeView = " << count << " / " << d->params->M() << std::endl;
+                  // count >= 2f+1 (or M)
+                  return count >= d->params->M();
 					 }
-			 ))->add(Action<RPCMachineContext<dBFT2Context>>("v := v + 1", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+			 ))->add(Action<RPCMachineContext<dBFT2Context>>("v := v + 1", [](Timer& C, TRPCMachineContext d,
 			 		MachineId _me) -> void {
              d->params->v = d->params->v + 1;
              std::cout << " ***** MOVING TO NEXT VIEW: " << d->params->v << std::endl;
           }
-			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, RPCMachineContext<dBFT2Context>* d,
+			))->add(Action<RPCMachineContext<dBFT2Context>>("C := 0", [](Timer& C, TRPCMachineContext d,
 					MachineId _me) -> void {
              C.reset();
           }
-			)));
+			))));
    }
 
 public: // real public
-   using Events = std::vector<Event*>;
+   using Events = std::vector<TEvent>;
 
    /** pending events (external queue may affect this one) */
    Events pendingEvents; // TODO: this should be concurrent safe (some std::concurrent_vector?)
 
    /** override beforeUpdateState to include pendingEvents */
-   bool beforeUpdateState(State<RPCMachineContext<dBFT2Context>>& current, RPCMachineContext<dBFT2Context>* p) override
+   bool beforeUpdateState(State<RPCMachineContext<dBFT2Context>>& current, TRPCMachineContext p) override
    {
       if (this->watchdog && this->watchdog->expired()) {
          std::cout << "dBFT2 RPC StateMachine FAILED: MAXTIME = " << this->watchdog->getCountdown() << std::endl;
@@ -380,7 +393,7 @@ private:
 
 public:
    /** TODO(@igormcoelho): 'runWithEventsServer' should become default 'run', as RPC is required here, not optional */
-   virtual void runWithEventsServer(State<RPCMachineContext<dBFT2Context>>* initial, RPCMachineContext<dBFT2Context>* ctx)
+   virtual void runWithEventsServer(TState initial, TRPCMachineContext ctx)
    {
       std::cout << "Starting thread to handle RPC messages:" << std::endl;
       runEventsServer(); // this will run on a dettached (background) thread
@@ -448,7 +461,7 @@ public:
 
    */
 
-   void OnInitialize(RPCMachineContext<dBFT2Context>* p) override
+   void OnInitialize(TRPCMachineContext p) override
    {
       //launchSchedEvents(p);
    }
@@ -486,7 +499,7 @@ public:
                << state->name << ";" << std::endl;
          }
          // default initial state transition
-         State<RPCMachineContext<dBFT2Context>>* defState = this->getDefaultState();
+         auto defState = this->getDefaultState();
          // will happen in an empty transition
          ss << "Empty -> " << defState->name << " [label = \"\"];" << std::endl;
          // begin regular transitions
@@ -509,6 +522,8 @@ public:
       return ss.str();
    }
 }; // class dBFT2RPCMachine
+
+using TdBFT2RPCMachine = std::shared_ptr<dBFT2RPCMachine>;
 
 } // libbft
 

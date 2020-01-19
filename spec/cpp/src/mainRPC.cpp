@@ -1,4 +1,5 @@
 // system
+#include <memory>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -20,7 +21,7 @@ using namespace libbft;
 
 // helper method: will send OnStart after 1 second
 void
-sendOnStart(shared_ptr<BFTEventsClient> myClient, int delayMS) {
+sendOnStart(TBFTEventsClient myClient, int delayMS) {
    std::this_thread::sleep_for(std::chrono::milliseconds(delayMS)); // 1000 ms -> 1 sec
    std::cout << " -x-x-> Will deliver message 'OnStart'" << std::endl;
    std::vector<std::string> eventArgs;
@@ -49,26 +50,28 @@ RPC_dbft_test_real_dbft2(
    cout << "will create RPC machine context!" << endl;
    // v = 0, H = 1501, T = 3 (secs), R = N (multi-node network)
    int v = 0;
-   dBFT2Context data(v, H, T, N, f); // 1500 -> primary (R=1)
+   // 1500 -> primary (R=1)
+   std::unique_ptr<dBFT2Context> data = std::unique_ptr<dBFT2Context>(new dBFT2Context(v, H, T, N, f));
    // dBFT2Context(int _v, int _H, int _T, int _R)
 
    // initialize my world: one RPC Client for every other node (including myself)
-   vector<shared_ptr<BFTEventsClient> > worldCom(N, nullptr);
+   vector<TBFTEventsClient> worldCom(N, nullptr);
    for (unsigned i = 0; i < worldCom.size(); i++) {
-      worldCom[i] = std::move((static_cast<shared_ptr<BFTEventsClient>>(new BFTEventsClient(i))));
+      worldCom[i] = std::move((static_cast<TBFTEventsClient>(new BFTEventsClient(i))));
    }
 
    // my own context: including my data, my name and my world
    // random 'seed' is added to '_me' identifier, to get independent (but deterministic) values on different nodes
-   RPCMachineContext<dBFT2Context> ctx(&data, me, worldCom, RANDOM + me);
+   auto ctx = std::shared_ptr<RPCMachineContext<dBFT2Context>>(new RPCMachineContext<dBFT2Context>(
+      std::move(data), me, worldCom, RANDOM + me));
    std::cout << " delayMS = " << RegularDelayMS << std::endl;
-   ctx.testSetRegularDelay(RegularDelayMS);
+   ctx->testSetRegularDelay(RegularDelayMS);
    std::cout << " dropRate = " << dropRate << std::endl;
-   ctx.testSetDropRate(dropRate);
+   ctx->testSetDropRate(dropRate);
 
    cout << "will create RPC machine!" << endl;
    // ctx is passed here just to initialize my server... ctx is not stored.
-   auto machine = new dBFT2RPCMachine(f, N, MachineId(me), &ctx);
+   auto machine = std::shared_ptr<dBFT2RPCMachine>(new dBFT2RPCMachine(f, N, MachineId(me), ctx));
    // limit execution time to W secs
    std::cout << "Setting watchdog to " << W << " seconds" << std::endl;
    machine->setWatchdog(W);
@@ -84,7 +87,7 @@ RPC_dbft_test_real_dbft2(
 
    // run dBFT on main thread and start RPC on background
    // TODO: 'runWithEventsServer' should become default 'run', as RPC is required here, not optional
-   machine->runWithEventsServer(nullptr, &ctx);
+   machine->runWithEventsServer(nullptr, ctx);
 
    cout << "FINISHED WORK ON MAIN THREAD... JUST JOIN OnStart THREAD" << endl;
 
@@ -105,8 +108,7 @@ RPC_dbft_test_real_dbft2(
    //system("dot -Tpng fgraph.dot -o fgraph.png && eog fgraph.png");
 }
 
-int
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
    if (argc < 5) {
       std::cout << "missing parameters! argc=" << argc << " and should be 5 or 6" << std::endl;
       std::cout << "requires: my_index N f scenario RANDOM" << std::endl;

@@ -1,14 +1,9 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_DBFT2_DBFT2MACHINE_HPP
 #define LIBBFT_SRC_CPP_DBFT2_DBFT2MACHINE_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -20,6 +15,7 @@
 #include "replicated/ReplicatedSTSM.hpp"
 #include "single/Transition.hpp"
 #include "timing/Timer.hpp"
+#include "utils/Pointer.hpp"
 
 #include "dBFT2Context.hpp"
 
@@ -28,26 +24,32 @@ namespace libbft {
 class dBFT2Machine : public ReplicatedSTSM<dBFT2Context>
 {
 public:
+   using TSingleTimerStateMachine = std::shared_ptr<SingleTimerStateMachine<MultiContext<dBFT2Context>>>;
+   using TMultiState = std::shared_ptr<MultiState<dBFT2Context>>;
+   using TMultiContext = std::shared_ptr<MultiContext<dBFT2Context>>;
+
    /** max number of faulty nodes */
    int f;
 
    /** it is recommended to have N = 3f+1 (e.g., f=0 -> N=1; f=1 -> N=4; f=2 -> N=7; ...) */
-   explicit dBFT2Machine(int _f = 0, int N = 1, Clock* _clock = nullptr, MachineId _me = MachineId(),
+   explicit dBFT2Machine(int _f = 0, int N = 1, TClock _clock = nullptr, MachineId _me = MachineId(),
                 std::string _name = "replicated_dBFT")
-     : ReplicatedSTSM<dBFT2Context>(_clock, std::move(_me), std::move(_name))
+     : ReplicatedSTSM<dBFT2Context>(std::move(_clock), std::move(_me), std::move(_name))
      , f(_f)
    {
       assert(f >= 0);
       assert(N >= 1);
       assert(f <= N);
       // create N machines
-      this->machines = std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*>(N, nullptr);
+      this->machines = std::vector<TSingleTimerStateMachine>(N, nullptr);
 
       // initialize independent machines (each one with its Timer, sharing same global Clock)
       // should never share Timers here, otherwise strange things may happen (TODO: protect from this... unique_ptr?)
       for (int i = 0; i < N; i++) {
-         this->machines[i] = new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
-            new Timer("C", this->clock), MachineId(i), this->clock, "dBFT");
+         this->machines[i] = std::shared_ptr<SingleTimerStateMachine<MultiContext<dBFT2Context>>>(
+               new SingleTimerStateMachine<MultiContext<dBFT2Context>>(
+               std::unique_ptr<Timer>(new Timer("C", clonePtr(*this->clock))), MachineId(i),
+               clonePtr(*this->clock), "dBFT"));
       }
 
       // fill states and transitions on each machine
@@ -65,9 +67,9 @@ public:
     * @param _me
     * @param _name
     */
-   dBFT2Machine(int _f, std::vector<SingleTimerStateMachine<MultiContext<dBFT2Context>>*> _machines,
-   		Clock* _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
-     : ReplicatedSTSM<dBFT2Context>(_clock, MachineId(_me), _name)
+   dBFT2Machine(int _f, std::vector<TSingleTimerStateMachine> _machines,
+                TClock _clock = nullptr, int _me = 0, std::string _name = "replicated_dBFT")
+     : ReplicatedSTSM<dBFT2Context>(std::move(_clock), MachineId(_me), _name)
      , f(_f)
    {
       this->machines = std::move(_machines);
@@ -89,21 +91,29 @@ public:
       // declaring dBFT states
       // ---------------------
 
-      auto preinitial = new State<MultiContext<dBFT2Context>>(false, "PreInitial");
+      auto preinitial = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "PreInitial"));
       this->machines[m]->registerState(preinitial);
-      auto started = new State<MultiContext<dBFT2Context>>(false, "Started");
+      auto started = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "Started"));
       this->machines[m]->registerState(started);
-      auto backup = new State<MultiContext<dBFT2Context>>(false, "Backup");
+      auto backup = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "Backup"));
       this->machines[m]->registerState(backup);
-      auto primary = new State<MultiContext<dBFT2Context>>(false, "Primary");
+      auto primary = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "Primary"));
       this->machines[m]->registerState(primary);
-      auto reqSentOrRecv = new State<MultiContext<dBFT2Context>>(false, "RequestSentOrReceived");
+      auto reqSentOrRecv = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "RequestSentOrReceived"));
       this->machines[m]->registerState(reqSentOrRecv);
-      auto commitSent = new State<MultiContext<dBFT2Context>>(false, "CommitSent");
+      auto commitSent = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "CommitSent"));
       this->machines[m]->registerState(commitSent);
-      auto viewChanging = new State<MultiContext<dBFT2Context>>(false, "ViewChanging");
+      auto viewChanging = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(false, "ViewChanging"));
       this->machines[m]->registerState(viewChanging);
-      auto blockSent = new State<MultiContext<dBFT2Context>>(true, "BlockSent");
+      auto blockSent = std::shared_ptr<State<MultiContext<dBFT2Context>>>(
+         new State<MultiContext<dBFT2Context>>(true, "BlockSent"));
       this->machines[m]->registerState(blockSent);
 
       // -------------------------
@@ -115,34 +125,34 @@ public:
 
       // preinitial -> started
       preinitial->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()",
-        		[](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+        std::shared_ptr<Transition<MultiContext<dBFT2Context>>>((new Transition<MultiContext<dBFT2Context>>(started))->add(Condition<MultiContext<dBFT2Context>>("OnStart()",
+           [](const Timer& t, TMultiContext d, MachineId _me) -> bool {
            std::cout << "Waiting for OnStart..." << std::endl;
            return d->hasEvent("OnStart", _me.id, std::vector<std::string>(0)); // no parameters on event
-        })));
+        }))));
 
       // initial -> backup
       started->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>(
-        		"not (H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+        std::shared_ptr<Transition<MultiContext<dBFT2Context>>>((new Transition<MultiContext<dBFT2Context>>(backup))->add(Condition<MultiContext<dBFT2Context>>(
+           "not (H+v) mod R = i", [](const Timer& t, TMultiContext d, MachineId _me) -> bool {
            std::cout << "lambda1" << std::endl;
            return (d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R != _me.id;
-        })));
+        }))));
 
       // initial -> primary
       started->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>(
-        		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+        std::shared_ptr<Transition<MultiContext<dBFT2Context>>>((new Transition<MultiContext<dBFT2Context>>(primary))->add(Condition<MultiContext<dBFT2Context>>(
+           "(H+v) mod R = i", [](const Timer& t, TMultiContext d, MachineId _me) -> bool {
            std::cout << "lambda2 H=" << d->vm[_me.id].params->H << " v=" << d->vm[_me.id].params->v << " _me="
                << _me.id << std::endl;
            return (d->vm[_me.id].params->H + d->vm[_me.id].params->v) % d->vm[_me.id].params->R == _me.id;
-        })));
+        }))));
 
       // backup -> reqSentOrRecv
       auto toReqSentOrRecv1 = new Transition<MultiContext<dBFT2Context>>(reqSentOrRecv);
       backup->addTransition(
-        toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)",
-        		[](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+        std::shared_ptr<Transition<MultiContext<dBFT2Context>>>(toReqSentOrRecv1->add(Condition<MultiContext<dBFT2Context>>("OnPrepareRequest(v)",
+           [](const Timer& t, TMultiContext d, MachineId _me) -> bool {
            std::cout << "waiting for event OnPrepareRequest at " << _me.id << " for view " << d->vm[_me.id].params->v
                << std::endl;
                std::stringstream ss;
@@ -150,23 +160,23 @@ public:
                std::vector<std::string> params(1, ss.str());
            //cout << "for " << ss.str() << endl;
            return d->hasEvent("OnPrepareRequest", _me.id, params);
-        })));
+        }))));
 
       // reqSentOrRecv -> commitSent
       reqSentOrRecv->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>(
-        		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+        std::shared_ptr<Transition<MultiContext<dBFT2Context>>>((new Transition<MultiContext<dBFT2Context>>(commitSent))->add(Condition<MultiContext<dBFT2Context>>(
+           "(H+v) mod R = i", [](const Timer& t, TMultiContext d, MachineId _me) -> bool {
            std::cout << "nothing to do... assuming all preparations were received!" << std::endl;
            return true;
-        })));
+        }))));
 
       // commitSent -> blockSent
       commitSent->addTransition(
-        (new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>(
-        		"(H+v) mod R = i", [](const Timer& t, MultiContext<dBFT2Context>* d, MachineId _me) -> bool {
+        std::shared_ptr<Transition<MultiContext<dBFT2Context>>>((new Transition<MultiContext<dBFT2Context>>(blockSent))->add(Condition<MultiContext<dBFT2Context>>(
+           "(H+v) mod R = i", [](const Timer& t, TMultiContext d, MachineId _me) -> bool {
            std::cout << "nothing to do... assuming all commits were received!" << std::endl;
            return true;
-        })));
+        }))));
    }
 
    /** official method */
@@ -176,12 +186,15 @@ public:
       fillSimpleCycle(m);
    }
 
-   MultiState<dBFT2Context>* initialize(MultiState<dBFT2Context>* current, MultiContext<dBFT2Context>* p) override
+   TMultiState initialize(TMultiState current, TMultiContext p) override
    {
-      if (!current)
-         current = new MultiState<dBFT2Context>(machines.size(), nullptr);
-      for (unsigned i = 0; i < machines.size(); i++)
-         current->at(i) = machines[i]->getDefaultState(); // first state is initial (default)
+      if (!current) {
+         current = std::shared_ptr<MultiState<dBFT2Context>>(new MultiState<dBFT2Context>(machines.size(), nullptr));
+      }
+      for (unsigned i = 0; i < machines.size(); i++) {
+         // first state is initial (default)
+         current->at(i) = machines[i]->getDefaultState();
+      }
 
       std::cout << std::endl;
       std::cout << "=================" << std::endl;
@@ -221,7 +234,7 @@ public:
                << state->name << ";" << std::endl;
          }
          // default initial state transition
-         State<MultiContext<dBFT2Context>>* defState = this->machines[0]->getDefaultState();
+         auto defState = this->machines[0]->getDefaultState();
          // will happen in an empty transition
          ss << "Empty -> " << defState->name << " [label = \"\"];" << std::endl;
          // begin regular transitions

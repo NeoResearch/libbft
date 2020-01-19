@@ -3,6 +3,8 @@
 #define LIBBFT_SRC_CPP_SINGLETIMERSTATEMACHINE_HPP
 
 // system includes
+#include <memory>
+#include <iostream>
 #include <cstddef>
 #include <vector>
 
@@ -14,6 +16,7 @@
 #include "timing/Timer.hpp"
 // default state
 #include "State.hpp"
+#include "utils/Pointer.hpp"
 
 namespace libbft {
 
@@ -21,16 +24,20 @@ template<class Param = std::nullptr_t>
 class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param>
 {
 public: // perhaps protect
+   using TParam = std::shared_ptr<Param>;
+   using TState = std::shared_ptr<State<Param>>;
+   using TTransition = std::shared_ptr<Transition<Param>>;
+
    /** state machine timer */
-   Timer* timer;
+   TTimer timer;
    /** states for the state machine */
-   std::vector<State<Param>*> states;
+   std::vector<TState> states;
    /** global transitions: may come from any state */
-   std::vector<Transition<Param>*> globalTransitions;
+   std::vector<TTransition> globalTransitions;
 
 protected:
    /** watchdog timer */
-   Timer* watchdog{ nullptr };
+   TTimer watchdog{ nullptr };
 
 public:
    /**
@@ -39,9 +46,7 @@ public:
     */
    void setWatchdog(double MaxTime)
    {
-      if (watchdog)
-         delete watchdog;
-      watchdog = (new Timer())->init(MaxTime);
+      watchdog = std::unique_ptr<Timer>((new Timer())->init(MaxTime));
    }
 
    /**
@@ -51,14 +56,16 @@ public:
     * @param _clock
     * @param _name
     */
-   explicit SingleTimerStateMachine(Timer* t = nullptr, MachineId _me = MachineId(0), Clock* _clock = nullptr,
+   explicit SingleTimerStateMachine(
+         TTimer t = nullptr, MachineId _me = MachineId(0), TClock _clock = nullptr,
          std::string _name = "STSM")
-     : TimedStateMachine<State<Param>, Param>(_clock, _me, _name)
-     , timer(t)
+     : TimedStateMachine<State<Param>, Param>(std::move(_clock), _me, _name)
+     , timer(std::move(t))
    {
       // timer must exist
-      if (!timer)
-         timer = new Timer("", this->clock);
+      if (!timer) {
+         timer = std::unique_ptr<Timer>(new Timer("", clonePtr(*this->clock)));
+      }
    }
 
    /**
@@ -67,7 +74,7 @@ public:
     */
    virtual ~SingleTimerStateMachine() = default;
 
-   State<Param>* getStateByName(std::string _name)
+   TState getStateByName(std::string _name)
    {
       for (unsigned i = 0; i < states.size(); i++)
          if (states[i]->name == _name)
@@ -78,30 +85,30 @@ public:
    /**
     * @return default state is 0, or null
     */
-   State<Param>* getDefaultState()
+   TState getDefaultState()
    {
       if (states.size() == 0)
          return nullptr;
       return states[0];
    }
 
-   void registerState(State<Param>* s)
+   void registerState(TState s)
    {
       assert(s != nullptr);
       states.push_back(s);
    }
 
-   void registerGlobal(Transition<Param>* t)
+   void registerGlobal(TTransition t)
    {
       assert(t != nullptr);
       globalTransitions.push_back(t);
    }
 
    /** unused method... TODO: put somewhere */
-   virtual Transition<Param>* findGlobalTransition(Param* p)
+   virtual TTransition findGlobalTransition(TParam p)
    {
       // TODO: shuffle global?
-      std::vector<Transition<Param>*> _transitions = globalTransitions;
+      auto _transitions = globalTransitions;
       for (unsigned i = 0; i < _transitions.size(); i++) {
          if (_transitions[i]->isValid(*timer, p, MachineId(this->me.id)))
             return _transitions[i];
@@ -109,7 +116,7 @@ public:
       return nullptr;
    }
 
-   void onEnterState(State<Param>& current, Param* p) override
+   void onEnterState(State<Param>& current, TParam p) override
    {
       std::cout << "entering state: " << current.toString() << std::endl;
 
@@ -117,7 +124,7 @@ public:
          watchdog->reset();
    }
 
-   bool isFinal(const State<Param>& current, Param* p) override
+   bool isFinal(const State<Param>& current, TParam p) override
    {
       return current.isFinal;
    }
@@ -129,12 +136,12 @@ public:
     * @param p
     * @return
     */
-   bool updateState(State<Param>*& outcurrent, Param* p) override
+   bool updateState(TState &outcurrent, TParam p) override
    {
-      State<Param>* current = outcurrent;
+      auto current = outcurrent;
       bool r = false;
       // find global transition
-      Transition<Param>* gt = findGlobalTransition(p);
+      auto gt = findGlobalTransition(p);
       if (gt) {
          // found global transition
          std::cout << "-> found valid global transition! " << gt->toString() << std::endl;
@@ -159,7 +166,7 @@ public:
     * just for inherited classes
     * @param p
     */
-   virtual void OnInitialize(Param* p)
+   virtual void OnInitialize(TParam p)
    {
    }
 
@@ -169,7 +176,7 @@ public:
     * @param p
     * @return
     */
-   State<Param>* initialize(State<Param>* current, Param* p) override
+   TState initialize(TState current, TParam p) override
    {
       // check if there's initial state available
       if (!current && states.size() == 0)
@@ -207,7 +214,7 @@ public:
     * @param final
     * @param p
     */
-   void OnFinished(const State<Param>& final, Param* p) override
+   void OnFinished(const State<Param> &final, TParam p) override
    {
       std::cout << std::endl;
       std::cout << "=================" << std::endl;
@@ -215,7 +222,7 @@ public:
       std::cout << "=================" << std::endl;
    }
 
-   bool beforeUpdateState(State<Param>& current, Param* p) override
+   bool beforeUpdateState(State<Param> &current, TParam p) override
    {
       if (watchdog && watchdog->expired()) {
          std::cout << "StateMachine FAILED: MAXTIME = " << watchdog->getCountdown() << std::endl;
@@ -240,14 +247,14 @@ public:
             ss << "node [shape = " << (this->states[i]->isFinal ? "doublecircle" : "circle") << "]; "
             << this->states[i]->name << ";" << std::endl;
          // default initial state transition
-         State<Param>* defState = this->getDefaultState();
+         auto defState = this->getDefaultState();
          // will happen in an empty transition
          ss << "Empty -> " << defState->name << " [label = \"\"];" << std::endl;
          // begin regular transitions
          //Initial -> Primary [ label = "(H + v) mod R = i" ];
          //      getDefaultState
          for (unsigned i = 0; i < this->states.size(); i++) {
-            State<Param>* state = this->states[i];
+            auto state = this->states[i];
             for (unsigned t = 0; t < state->transitions.size(); t++) {
                ss << state->name << " ";
                ss << state->transitions[t]->toString("graphviz") << std::endl;

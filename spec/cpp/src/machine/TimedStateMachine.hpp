@@ -1,9 +1,8 @@
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 #define LIBBFT_SRC_CPP_TIMEDSTATEMACHINE_HPP
 
+#include <memory>
 #include <cstddef>
 #include <unistd.h>
 
@@ -22,22 +21,26 @@ template<class StateType, class Param = std::nullptr_t>
 class TimedStateMachine
 {
 public:
+   using TParam = std::shared_ptr<Param>;
+   using TStateType = std::shared_ptr<StateType>;
+
    /** state machine clock */
-   Clock* clock;
+   TClock clock;
    /** an identifier for itself */
    MachineId me{ 0 };
    /** string name */
    std::string name{ "" };
 
    /** a Timed State Machine requires a global clock, and a unique personal identifier */
-   explicit TimedStateMachine(Clock* _clock = nullptr, MachineId _me = 0, std::string _name = "")
-     : clock(_clock)
+   explicit TimedStateMachine(TClock _clock = nullptr, MachineId _me = 0, std::string _name = "")
+     : clock(std::move(_clock))
      , me(std::move(_me))
      , name(std::move(_name))
    {
       // clock must exist
-      if (!clock)
-         clock = new Clock();
+      if (!clock) {
+         clock = std::unique_ptr<Clock>(new Clock());
+      }
    }
 
    /**
@@ -47,13 +50,13 @@ public:
    virtual ~TimedStateMachine() = default;
 
    /** triggers this, after state machine enters this state */
-   virtual void onEnterState(StateType& current, Param* p) = 0;
+   virtual void onEnterState(StateType& current, TParam p) = 0;
 
    /**
     * do global processing (return 'true' means 'break' process)
     * TODO: may use a global processing FLAG here, to break
     */
-   virtual bool beforeUpdateState(StateType& current, Param* p) = 0;
+   virtual bool beforeUpdateState(StateType& current, TParam p) = 0;
 
    /**
     * do global after-processing (return 'true' means 'break' process)
@@ -63,7 +66,7 @@ public:
     * @param updated
     * @return
     */
-   virtual bool afterUpdateState(StateType& current, Param* p, bool updated)
+   virtual bool afterUpdateState(StateType& current, TParam p, bool updated)
    {
       // sleeping a little bit if not updated (avoid wasting resources)
       if (!updated)
@@ -78,9 +81,9 @@ public:
     * @param p
     * @return
     */
-   virtual bool updateState(StateType*& current, Param* p) = 0;
+   virtual bool updateState(TStateType &current, TParam p) = 0;
 
-   virtual bool isFinal(const StateType& current, Param* p) = 0;
+   virtual bool isFinal(const StateType& current, TParam p) = 0;
 
    /**
     * initialize runtime states and timers, etc
@@ -89,14 +92,14 @@ public:
     * @param p
     * @return
     */
-   virtual StateType* initialize(StateType* current, Param* p) = 0;
+   virtual TStateType initialize(TStateType current, TParam p) = 0;
 
    /**
     * launch when machine is finished
     * @param final
     * @param p
     */
-   virtual void OnFinished(const StateType& final, Param* p) = 0;
+   virtual void OnFinished(const StateType &final, TParam p) = 0;
 
    /**
     * execute the state machine (returns final state, or nullptr if on failure)
@@ -104,9 +107,9 @@ public:
     * @param p
     * @return
     */
-   virtual StateType* run(StateType* initial = nullptr, Param* p = nullptr)
+   virtual TStateType run(TStateType initial = nullptr, TParam p = nullptr)
    {
-      StateType* current = this->initialize(initial, p);
+      auto current = this->initialize(initial, p);
       // if no state given, abort
       if (!current)
          return nullptr;

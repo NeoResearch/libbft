@@ -2,6 +2,7 @@
 #ifndef BFTEVENTSSERVER_HPP
 #define BFTEVENTSSERVER_HPP
 
+#include <memoryf>
 #include <cstddef>
 #include <sstream>
 #include <string>
@@ -18,6 +19,8 @@ namespace bft = bftevent;
 template<class Params = std::nullptr_t>
 class BFTEventsServer final : public bft::BFTEvent::Service
 {
+public:
+   using TRPCMachineContext = std::shared_ptr<RPCMachineContext<Params>>;
 private:
    grpc::Status informEvent(grpc::ServerContext* context, const bft::EventInform* request, bft::EventReply* reply) override
    {
@@ -53,12 +56,12 @@ private:
 
 public:
    // rpc machine context to serve event responses
-   RPCMachineContext<Params>* myMachine = nullptr;
+   TRPCMachineContext myMachine;
 
    // pair of server pointer and string address
    std::pair<std::unique_ptr<grpc::Server>, std::string> server;
 
-   explicit BFTEventsServer(int me, RPCMachineContext<Params>* _myMachine = nullptr)
+   explicit BFTEventsServer(int me, TRPCMachineContext _myMachine = nullptr)
      : myMachine(_myMachine)
      , server(setupServer(me))
    {

@@ -7,14 +7,12 @@
   <a href="https://github.com/NeoResearch/libbft/releases">
     <img src="https://badge.fury.io/gh/NeoResearch%2Flibbft.svg" alt="Current neo version.">
   </a>
-  <!--
   <a href='https://coveralls.io/github/NeoResearch/libbft'>
     <img src='https://coveralls.io/repos/github/NeoResearch/libbft/badge.svg' alt='Coverage Status' />
   </a>
-  -->
   <a href="https://github.com/NeoResearch/libbft">
-    <img src="https://tokei.rs/b1/github/NeoResearch/libbft?category=lines" alt="Current total lines.">
-  </a>
+      <img src="https://tokei.rs/b1/github/NeoResearch/libbft?category=lines" alt="Current total lines.">
+    </a>
   <a href="https://github.com/NeoResearch/libbft/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License.">
   </a>

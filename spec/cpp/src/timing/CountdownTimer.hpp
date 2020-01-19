@@ -1,10 +1,9 @@
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_COUNTDOWN_TIMER_HPP
 #define LIBBFT_SRC_CPP_COUNTDOWN_TIMER_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 
 // libbft includes
@@ -18,7 +17,7 @@ class CountdownTimer
 {
 protected:
    /** beware if clock precision is terrible */
-   Clock* clock;
+   TClock clock;
    /** nice precision timer */
    double mytime;
    /** object name */
@@ -27,9 +26,8 @@ protected:
    double countdown;
 
 public:
-   explicit CountdownTimer(double _countdown, std::string _name = "", Clock* _clock = nullptr)
-     : name(std::move(_name))
-     , clock(_clock)
+   explicit CountdownTimer(double _countdown, std::string _name = "", TClock _clock = nullptr)
+     : clock(std::move(_clock)), name(std::move(_name))
    {
       init(_countdown);
    }
@@ -41,8 +39,10 @@ public:
    {
       // update countdown
       countdown = _countdown;
-      if (!clock)
-         clock = new Clock(); // beware if it's a terrible clock
+      if (!clock) {
+         // beware if it's a terrible clock
+         clock = std::unique_ptr<Clock>(new Clock());
+      }
       // this should be a precision time
       mytime = clock->getTime();
    }
@@ -68,8 +68,9 @@ public:
       double newtime = clock->getTime();
       double elapsed = newtime - mytime;
       double remaining = 1000000000.0; // INF
-      if (countdown >= 0.0)
+      if (countdown >= 0.0) {
          remaining = std::max(0.0, countdown - elapsed);
+      }
 
       return remaining == 0.0;
    }

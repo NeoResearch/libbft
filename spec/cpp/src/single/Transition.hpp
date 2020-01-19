@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_TRANSITION_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <cassert>
 #include <functional>
@@ -33,10 +34,12 @@ class State;
 template<class Param = std::nullptr_t>
 struct Condition
 {
-   using TimedFunctionType = std::function<bool(const Timer&, Param*, MachineId)>;
+   using TParam = std::shared_ptr<Param>;
+   using TimedFunctionType = std::function<bool(const Timer&, TParam, MachineId)>;
+
    std::string name = "true";
    /** TODO Should not we avoid exposing it like this? */
-   TimedFunctionType timedFunction = [](const Timer& t, Param* p, const MachineId &) -> bool { return true; };
+   TimedFunctionType timedFunction = [](const Timer& t, TParam p, const MachineId &) -> bool { return true; };
 
    Condition(std::string _name, TimedFunctionType _timedFunction)
      : name(std::move(_name))
@@ -57,10 +60,12 @@ struct Condition
 template<class Param = std::nullptr_t>
 struct Action
 {
-   using TimedActionType = std::function<void(Timer&, Param*, MachineId)>;
+   using TParam = std::shared_ptr<Param>;
+   using TimedActionType = std::function<void(Timer&, TParam, MachineId)>;
+
    std::string name = "nop";
    /** TODO Should not we avoid exposing it like this? */
-   TimedActionType timedAction = [](Timer&, Param*, const MachineId &) -> void {};
+   TimedActionType timedAction = [](Timer&, TParam, const MachineId &) -> void {};
 
    Action(std::string _name, TimedActionType _timedAction)
      : name(std::move(_name))
@@ -77,23 +82,25 @@ struct Action
 template<class Param = std::nullptr_t>
 class Transition
 {
+public:
+   using TState = std::shared_ptr<State<Param>>;
+   using TParam = std::shared_ptr<Param>;
 private:
    /** state to go after executing this transition */
-   State<Param>* to;
+   TState to;
    /** transition name (not really useful) */
    std::string name;
    /** boolean conditions (if all are valid, transition is valid) */
    std::vector<Condition<Param>> conditions;
    /** actions to be performed during Transition execution (reset timers, etc) */
    std::vector<Action<Param>> actions;
-
 public:
    /**
     * a Transition goes to some state 'to'
     * @param _to
     * @param _name
     */
-   explicit Transition(State<Param>* _to, std::string _name = "")
+   explicit Transition(TState _to, std::string _name = "")
      : to(_to)
      , name(std::move(_name))
    {
@@ -129,7 +136,7 @@ public:
     * @param me
     * @return
     */
-   virtual bool isValid(const Timer& timer, Param* p, MachineId me)
+   virtual bool isValid(const Timer& timer, TParam p, MachineId me)
    {
       for (auto & condition : conditions) {
          if (!condition.timedFunction(timer, p, me)) {
@@ -146,7 +153,7 @@ public:
     * @param me
     * @return
     */
-   virtual State<Param>* execute(Timer& timer, Param* p, MachineId me)
+   virtual TState execute(Timer& timer, TParam p, MachineId me)
    {
       for (auto & action : actions) {
          action.timedAction(timer, p, me);

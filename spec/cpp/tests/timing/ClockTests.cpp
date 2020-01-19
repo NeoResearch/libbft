@@ -1,7 +1,5 @@
-#include <chrono>
-#include <memory>
-#include <gtest/gtest.h>
 #include <thread>
+#include <gtest/gtest.h>
 
 #include "timing/Clock.hpp"
 

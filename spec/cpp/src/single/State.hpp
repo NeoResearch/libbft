@@ -1,10 +1,9 @@
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_STATE_HPP
 #define LIBBFT_SRC_CPP_STATE_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <vector>
@@ -26,9 +25,11 @@ template<class Param = std::nullptr_t>
 class State
 {
 public:
-   /** should only access for get string, etc (on graphviz)... TODO: design better protection here */
-   std::vector<Transition<Param>*> transitions;
+   using TParam = std::shared_ptr<Param>;
+   using TTransition = std::shared_ptr<Transition<Param>>;
 
+   /** should only access for get string, etc (on graphviz)... TODO: design better protection here */
+   std::vector<TTransition> transitions;
 public:
    std::string name;
    bool isFinal;
@@ -39,17 +40,17 @@ public:
    {
    }
 
-   void addTransition(Transition<Param>* t)
+   void addTransition(TTransition t)
    {
       transitions.push_back(t);
    }
 
-   Transition<Param>* tryGetTransition(Timer& timer, Param* p, MachineId me)
+   TTransition tryGetTransition(Timer& timer, TParam p, MachineId me)
    {
       // cout << "Trying to Get Transition" << endl;
       // should be non-deterministic and asynchronous...
       // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
-      std::vector<Transition<Param>*> _transitions = transitions;
+      std::vector<TTransition> _transitions = transitions;
 
       auto rng = std::default_random_engine{};
       std::shuffle(std::begin(_transitions), std::end(_transitions), rng);

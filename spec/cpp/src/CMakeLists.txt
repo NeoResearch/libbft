@@ -4,18 +4,21 @@ list(FILTER project_sources INCLUDE REGEX "pp$")
 
 set(lib_name "${PROJECT_NAME}_${PROJECT_VERSION}")
 message(STATUS "${lib_name} - ${project_sources}")
-add_library(${lib_name} ${project_sources})
+add_library(${lib_name} ${project_sources} utils/Pointer.hpp)
+#set_source_files_properties(${project_sources} PROPERTIES LANGUAGE CXX)
 set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(app_test main.cpp ${project_sources})
-target_link_libraries(app_test ${lib_name})
 
-target_link_libraries(app_test protobuf)
-target_link_libraries(app_test grpc++)
-target_link_libraries(app_test grpc++_reflection)
-target_link_libraries(app_test dl)
-target_link_libraries(app_test pthread)
-
+target_link_libraries(
+    app_test
+    ${lib_name}
+    protobuf
+    grpc++
+    grpc++_reflection
+    dl
+    pthread
+)
 
 add_subdirectory(bftevents-grpc)
 
@@ -36,3 +39,8 @@ target_link_libraries(
     grpc++_reflection
     dl
 )
+
+if (build_type STREQUAL "debug")
+    target_link_libraries(app_test asan)
+    target_link_libraries(app_RPCtest asan)
+endif()

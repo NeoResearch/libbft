@@ -1,6 +1,7 @@
 #ifndef BFTEVENTSCLIENT_HPP
 #define BFTEVENTSCLIENT_HPP
 
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -81,5 +82,7 @@ public:
       */
    }
 };
+
+using TBFTEventsClient = std::shared_ptr<BFTEventsClient>;
 
 #endif // BFTEVENTSCLIENT_HPP

@@ -1,16 +1,9 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 #pragma once
 #ifndef LIBBFT_SRC_CPP_EVENT_HPP
 #define LIBBFT_SRC_CPP_EVENT_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -146,23 +139,25 @@ public:
    }
 };
 
+using TEvent = std::shared_ptr<Event>;
+using Events = std::vector<TEvent>;
+
 class TimedEvent : public Event
 {
 protected:
    /** Timer sent in countdown mode */
-   Timer* timer;
+   TTimer timer;
 
 public:
    TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
          std::vector<std::string> _parameters = std::vector<std::string>(0))
      : Event(std::move(_name), std::move(_from), std::move(_parameters))
    {
-      timer = (new Timer())->init(countdown);
+      timer = std::unique_ptr<Timer>((new Timer())->init(countdown));
    }
 
    virtual ~TimedEvent()
    {
-      delete timer;
    }
 
    bool isActivated(std::string _name, std::vector<std::string> pattern) const override
@@ -179,7 +174,8 @@ public:
          ss << comma << parameter;
          comma = ",";
       }
-      ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime(); // default suffix '()' (empty parameters)
+      // default suffix '()' (empty parameters)
+      ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime();
       return ss.str();
    }
 };
