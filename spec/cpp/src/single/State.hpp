@@ -29,7 +29,6 @@ public:
 
    /** should only access for get string, etc (on graphviz)... TODO: design better protection here */
    std::vector<TTransition> transitions;
-
 public:
    std::string name;
    bool isFinal;
