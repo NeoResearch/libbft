@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_CLOCK_HPP
 
 // system includes
+#include <memory>
 #include <chrono>
 #include <sstream>
 

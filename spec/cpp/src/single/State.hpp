@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_STATE_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <vector>

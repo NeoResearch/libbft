@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_EVENT_HPP
 
 // system includes
+#include <memory>
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -145,7 +146,7 @@ class TimedEvent : public Event
 {
 protected:
    /** Timer sent in countdown mode */
-   std::unique_ptr<Timer> timer;
+   TTimer timer;
 
 public:
    TimedEvent(double countdown, std::string _name, MachineId _from = MachineId(-1),
@@ -173,7 +174,8 @@ public:
          ss << comma << parameter;
          comma = ",";
       }
-      ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime(); // default suffix '()' (empty parameters)
+      // default suffix '()' (empty parameters)
+      ss << ") " << (timer->expired() ? "expired" : "notexpired") << " " << timer->remainingTime();
       return ss.str();
    }
 };

@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_TRANSITION_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <cassert>
 #include <functional>

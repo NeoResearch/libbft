@@ -2,6 +2,7 @@
 #ifndef BFTEVENTSSERVER_HPP
 #define BFTEVENTSSERVER_HPP
 
+#include <memoryf>
 #include <cstddef>
 #include <sstream>
 #include <string>

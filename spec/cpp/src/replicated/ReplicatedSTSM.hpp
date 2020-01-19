@@ -3,6 +3,7 @@
 #define LIBBFT_SRC_CPP_REPLICATED_STSM_HPP
 
 // system includes
+#include <memory>
 #include <cstddef>
 #include <vector>
 
