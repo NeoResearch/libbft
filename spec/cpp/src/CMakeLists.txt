@@ -41,6 +41,7 @@ target_link_libraries(
 )
 
 if (build_type STREQUAL "debug")
-    target_link_libraries(app_test asan)
-    target_link_libraries(app_RPCtest asan)
+    # Fix asan
+#    target_link_libraries(app_test asan)
+#    target_link_libraries(app_RPCtest asan)
 endif()
