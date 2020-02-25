@@ -82,6 +82,7 @@ set(GRPC_PLUGIN_CPP /usr/local/bin/grpc_cpp_plugin CACHE STRING grpc_bin)
 message(STATUS "BUILD_TESTS = ${BUILD_TESTS}")
 
 option(BUILD_TESTS "Build test programs" ON)
+set(CMAKE_CXX_CPPCHECK "cppcheck")
 
 include_directories(src)
 add_subdirectory(src)
