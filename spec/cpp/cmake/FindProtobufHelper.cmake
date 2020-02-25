@@ -30,3 +30,14 @@ MACRO(GENERATE_PROTO proto)
         RESULT_VARIABLE rv
     )
 ENDMACRO()
+
+MACRO(target_link_libraries_proto name)
+    target_link_libraries(
+        ${name}
+        protobuf
+        pthread
+        grpc++
+        grpc++_reflection
+        dl
+    )
+ENDMACRO()

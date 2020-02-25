@@ -1,6 +1,12 @@
 file(GLOB_RECURSE project_sources *)
 list(FILTER project_sources EXCLUDE REGEX "main.*\\.cpp$")
-list(FILTER project_sources INCLUDE REGEX "pp$")
+list(FILTER project_sources EXCLUDE REGEX "main.*\\.cc$")
+list(FILTER project_sources EXCLUDE REGEX "\\.txt$")
+list(FILTER project_sources EXCLUDE REGEX "\\.h$")
+list(FILTER project_sources EXCLUDE REGEX "\\.gitignore$")
+list(FILTER project_sources EXCLUDE REGEX "Makefile$")
+list(FILTER project_sources EXCLUDE REGEX "\\.proto$")
+#list(FILTER project_sources INCLUDE REGEX "pp$")
 
 set(lib_name "${PROJECT_NAME}_${PROJECT_VERSION}")
 message(STATUS "${lib_name} - ${project_sources}")
@@ -20,6 +26,7 @@ target_link_libraries(
     pthread
 )
 
+add_subdirectory(p2p)
 add_subdirectory(bftevents-grpc)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/local/lib")
@@ -31,14 +38,7 @@ add_executable(
     ${project_sources}
 )
 
-target_link_libraries(
-    app_RPCtest
-    protobuf
-    pthread
-    grpc++
-    grpc++_reflection
-    dl
-)
+target_link_libraries_proto(app_RPCtest)
 
 if (build_type STREQUAL "debug")
     # Fix asan

@@ -9,12 +9,12 @@ CXXFLAGS1 += -std=c++17
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
 
-all: bftclient bftserver
+all: mainBftclient mainBftserver
 
-bftclient: bftevent.pb.o bftevent.grpc.pb.o bftclient.o
+mainBftclient: bftevent.pb.o bftevent.grpc.pb.o mainBftclient.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-bftserver: bftevent.pb.o bftevent.grpc.pb.o bftserver.o
+mainBftserver: bftevent.pb.o bftevent.grpc.pb.o mainBftserver.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 %.grpc.pb.cc: %.proto
@@ -24,4 +24,4 @@ bftserver: bftevent.pb.o bftevent.grpc.pb.o bftserver.o
 	protoc --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h bftclient bftserver
+	rm -f *.o *.pb.cc *.pb.h mainBftclient mainBftserver
