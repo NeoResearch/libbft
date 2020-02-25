@@ -5,6 +5,13 @@ set(PROJECT_VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
+if (EXISTS /usr/bin/gcc-9)
+    if (EXISTS /usr/bin/g++-9)
+        set(CMAKE_C_COMPILER /usr/bin/gcc-9)
+        set(CMAKE_CXX_COMPILER /usr/bin/g++-9)
+    endif()
+endif()
+
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
 # https://developers.redhat.com/blog/2018/03/21/compiler-and-linker-flags-gcc/
@@ -79,14 +86,15 @@ endif ()
 #set(PROTOBUF_GENERATED_PATH src CACHE STRING proto_gen)
 set(GRPC_PLUGIN_CPP /usr/local/bin/grpc_cpp_plugin CACHE STRING grpc_bin)
 
+option(BUILD_TESTS "Build test programs" ON)
 message(STATUS "BUILD_TESTS = ${BUILD_TESTS}")
 
-option(BUILD_TESTS "Build test programs" ON)
 set(CMAKE_CXX_CPPCHECK "cppcheck")
 
 include_directories(src)
 add_subdirectory(src)
-if (test)
+if (BUILD_TESTS)
+    message(STATUS "Building the tests")
     enable_testing()
     SET(COVERAGE OFF CACHE BOOL "Coverage")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
@@ -96,4 +104,6 @@ if (test)
     #find_package(GTest REQUIRED)
     #include_directories(${GTEST_INCLUDE_DIRS})
     add_subdirectory(tests)
+else()
+    message(STATUS "Ignoring the tests")
 endif()
