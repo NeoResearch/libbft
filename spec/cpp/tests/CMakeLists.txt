@@ -1,5 +1,6 @@
 if (build_type STREQUAL "debug")
     message(STATUS "--- Debug build ---")
+    message(STATUS "Adding sanitizer")
     add_definitions(-fsanitize=address)
     add_definitions(-fsanitize=alignment)
     add_definitions(-fsanitize=bool)
