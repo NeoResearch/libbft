@@ -10,5 +10,5 @@ vendor/
 *.dot
 *.png
 *.o
-*.pb.cc
-*.pb.h
+#*.pb.cc
+#*.pb.h
