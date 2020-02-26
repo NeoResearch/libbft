@@ -1,4 +1,3 @@
-#include <memory>
 #include <vector>
 #include <string>
 #include <gtest/gtest.h>
@@ -12,14 +11,17 @@ TEST(Utils, Parse) {
    auto argv = std::vector<std::string>{
       "--oi",
       "2",
-      "-a"
+      "-a",
+      "--dado",
+      "12"
    };
    ArgumentParser parser(argv);
    auto oi = Argument('o', true, "oi");
    auto a = Argument('a');
    auto b = Argument('b');
    auto c = Argument('c', true, "casa", "casinha");
-   parser.addArguments(std::vector<Argument>{oi, a, b, c});
+   auto d = Argument('d', true, "dado", "123");
+   parser.addArguments(std::vector<Argument>{oi, a, b, c, d});
    parser.parse();
 
    EXPECT_TRUE(parser.isPresent(oi));
@@ -29,4 +31,7 @@ TEST(Utils, Parse) {
 
    EXPECT_TRUE(parser.isPresent(c));
    EXPECT_EQ("casinha", parser.getValue(c));
+
+   EXPECT_TRUE(parser.isPresent(d));
+   EXPECT_EQ("12", parser.getValue(d));
 }

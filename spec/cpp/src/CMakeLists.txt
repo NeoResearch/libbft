@@ -1,3 +1,5 @@
+find_package(ProtobufHelper REQUIRED)
+
 file(GLOB_RECURSE project_sources *)
 list(FILTER project_sources EXCLUDE REGEX "main.*\\.cpp$")
 list(FILTER project_sources EXCLUDE REGEX "main.*\\.cc$")
@@ -11,19 +13,16 @@ list(FILTER project_sources EXCLUDE REGEX "\\.proto$")
 set(lib_name "${PROJECT_NAME}_${PROJECT_VERSION}")
 message(STATUS "${lib_name} - ${project_sources}")
 add_library(${lib_name} ${project_sources})
+target_link_libraries_proto(${lib_name})
 #set_source_files_properties(${project_sources} PROPERTIES LANGUAGE CXX)
 set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(app_test main.cpp ${project_sources})
 
+target_link_libraries_proto(app_test)
 target_link_libraries(
     app_test
     ${lib_name}
-    protobuf
-    grpc++
-    grpc++_reflection
-    dl
-    pthread
 )
 
 add_subdirectory(p2p)

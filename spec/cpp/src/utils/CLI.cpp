@@ -51,7 +51,7 @@ ArgumentParser::ArgumentParser(int argc, char **argv) {
    }
 }
 
-ArgumentParser::ArgumentParser(std::vector<std::string>& argv) {
+ArgumentParser::ArgumentParser(std::vector<std::string> &argv) {
    for (auto &arg: argv) {
       args.emplace_back(arg);
    }
@@ -64,16 +64,16 @@ void ArgumentParser::addArguments(const std::vector<Argument> &arguments) {
 }
 
 void ArgumentParser::addArgument(const Argument &arg) {
-   shortArgument.emplace(arg.getShortNameParam(), arg);
+   shortArgument[arg.getShortNameParam()] = arg;
    if (arg.hasLongName()) {
-      longArgument.emplace(arg.getLongNameParam(), arg);
+      longArgument[arg.getLongNameParam()] = arg;
    }
 }
 
 void ArgumentParser::parse() {
    for (auto &kv: shortArgument) {
       if (kv.second.hasDefaultValue()) {
-         argumentValue.emplace(kv.first, kv.second.getDefaultValue());
+         argumentValue[kv.first] = kv.second.getDefaultValue();
       }
    }
 
@@ -83,23 +83,23 @@ void ArgumentParser::parse() {
          auto arg = shortArgument.find(args[i]);
          if (arg->second.hasValue()) {
             if (i < size - 1) {
-               argumentValue.emplace(arg->second.getShortNameParam(), args[i++ + 1]);
+               argumentValue[arg->second.getShortNameParam()] = args[i++ + 1];
             } else {
                // It should treat the error
             }
          } else {
-            argumentValue.emplace(arg->second.getShortNameParam(), "");
+            argumentValue[arg->second.getShortNameParam()] = "";
          }
       } else if (longArgument.find(args[i]) != longArgument.end()) {
          auto arg = longArgument.find(args[i]);
          if (arg->second.hasValue()) {
             if (i < size - 1) {
-               argumentValue.emplace(arg->second.getShortNameParam(), args[i++ + 1]);
+               argumentValue[arg->second.getShortNameParam()] = args[i++ + 1];
             } else {
                // It should treat the error
             }
          } else {
-            argumentValue.emplace(arg->second.getShortNameParam(), "");
+            argumentValue[arg->second.getShortNameParam()] = "";
          }
       } else {
          // It was not found

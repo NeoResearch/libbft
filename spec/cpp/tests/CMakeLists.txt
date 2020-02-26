@@ -1,5 +1,3 @@
-ADD_TEST_DEFINITIONS()
-
 add_subdirectory(libgtest)
 
 find_package(Helper REQUIRED)

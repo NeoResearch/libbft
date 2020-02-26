@@ -1,4 +1,7 @@
 #include "P2PServer.h"
+#include <iostream>
+
+using namespace std;
 
 P2PServiceImpl::P2PServiceImpl(const ::p2p::Url *urlMe) {
    me = urlToString(urlMe);
@@ -6,7 +9,10 @@ P2PServiceImpl::P2PServiceImpl(const ::p2p::Url *urlMe) {
 
 grpc::Status P2PServiceImpl::register_me(
    ::grpc::ServerContext *context, const ::p2p::Url *request, ::grpc::ServerWriter<::p2p::Url> *writer) {
-   servers.emplace(urlToString(request));
+   const string registered = urlToString(request);
+   servers.emplace(registered);
+   cout << me << " is registering: " << registered << endl;
+
 
    writer->Write(stringToUrl(me));
    for (auto &server : servers) {

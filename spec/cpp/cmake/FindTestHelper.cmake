@@ -1,5 +1,12 @@
-MACRO(ADD_TEST_ALL_FILES)
+MACRO(ADD_TEST_ALL_FILES asan)
     get_filename_component(test_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
+    if (${asan} STREQUAL "ON")
+        message(STATUS "Adding address sanitizer to ${test_name}")
+        ADD_TEST_DEFINITIONS()
+    else ()
+        message(STATUS "No address sanitizer to ${test_name}")
+    endif ()
     message(STATUS "Creating test ${test_name}")
 
     file(GLOB_RECURSE test_sources *)
@@ -19,7 +26,8 @@ MACRO(ADD_TEST_ALL_FILES)
         gtest_main
         ${CMAKE_THREAD_LIBS_INIT}
     )
-    if (build_type STREQUAL "debug")
+
+    if (${asan} STREQUAL "ON")
         target_link_libraries("${test_name}_test" asan)
     endif ()
 

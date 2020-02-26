@@ -14,7 +14,7 @@ namespace libbft {
       std::string defaultValue;
    public:
       explicit Argument(
-         char shortName, bool itHasValue = false, std::string longName = "", std::string defaultValue = "");
+         char shortName = '\0', bool itHasValue = false, std::string longName = "", std::string defaultValue = "");
 
       char getShortName() const;
       bool hasValue() const;
