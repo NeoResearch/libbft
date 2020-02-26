@@ -5,17 +5,24 @@ MACRO(ADD_TEST_ALL_FILES)
     file(GLOB_RECURSE test_sources *)
     list(FILTER test_sources INCLUDE REGEX "cpp$")
 
-    add_executable("${test_name}_test" ${test_sources})
+    set(lib_name "${PROJECT_NAME}_${PROJECT_VERSION}")
+
+    add_executable(
+        "${test_name}_test"
+        ${test_sources}
+    )
 
     target_link_libraries(
-            "${test_name}_test"
-            gtest
-            gtest_main
-            ${CMAKE_THREAD_LIBS_INIT}
+        "${test_name}_test"
+        ${lib_name}
+        gtest
+        gtest_main
+        ${CMAKE_THREAD_LIBS_INIT}
     )
     if (build_type STREQUAL "debug")
         target_link_libraries("${test_name}_test" asan)
-    endif()
+    endif ()
+
     target_link_libraries("${test_name}_test" ${lib_name})
     include_directories(${CMAKE_SOURCE_DIR}/src)
 
