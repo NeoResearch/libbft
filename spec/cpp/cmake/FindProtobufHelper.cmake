@@ -32,13 +32,13 @@ MACRO(GENERATE_PROTO proto)
 ENDMACRO()
 
 MACRO(target_link_libraries_proto name)
-    find_package(gRPC CONFIG REQUIRED)
-    find_package(Protobuf REQUIRED)
+#    find_package(gRPC CONFIG REQUIRED)
+#    find_package(Protobuf REQUIRED)
     target_link_libraries(
         ${name}
         protobuf
         pthread
-        gRPC::grpc++
+#        gRPC::grpc++
         grpc++
         grpc++_reflection
         dl
