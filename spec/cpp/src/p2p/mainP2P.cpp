@@ -49,13 +49,16 @@ int main(int argc, char **argv) {
          const unsigned long thePeersSize = thePeers.size();
          for (unsigned long i = 0; i < thePeersSize;) {
             auto comma = thePeers.find(',', i);
-            peersList.emplace_back(thePeers.substr(i, comma));
-            if (comma == -1ul) {
+            if (comma != -1ul) {
+               peersList.emplace_back(thePeers.substr(i, comma - i));
+            } else {
+               peersList.emplace_back(thePeers.substr(i));
                break;
             }
             i = comma + 1;
          }
 
+         cout << "Connecting to " << peersList.size() << " addresses" << endl;
          for (auto &peerName: peersList) {
             cout << peerName << endl;
             auto stub = P2P::NewStub(CreateChannel(peerName, InsecureChannelCredentials()));

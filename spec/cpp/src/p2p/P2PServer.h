@@ -15,7 +15,7 @@ inline ::p2p::Url stringToUrl(const std::string& server) {
    p2p::Url resp;
    auto pos = server.find(':');
    resp.set_domain(server.substr(0, pos));
-   resp.set_port(std::stoi(server.substr(0, pos)));
+   resp.set_port(std::stoi(server.substr(pos + 1)));
    return resp;
 }
 
