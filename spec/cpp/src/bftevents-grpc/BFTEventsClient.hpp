@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-#include "bftevent.grpc.pb.h" // generate by protoc (see "bftp2p.proto")
+#include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
 #include <grpcpp/grpcpp.h>
 
 using grpc::Channel;

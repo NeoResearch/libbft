@@ -8,7 +8,7 @@
 #include <string>
 
 #include <grpcpp/grpcpp.h>
-#include "bftevent.grpc.pb.h" // generate by protoc (see "bftp2p.proto")
+#include "bftevent.grpc.pb.h" // generate by protoc (see "bftevent.proto")
 
 // machine using this server
 #include "rpc-replicated/RPCMachineContext.hpp"
