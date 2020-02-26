@@ -1,6 +1,8 @@
 #include<memory>
 #include<iostream>
 #include<thread>
+#include<unordered_set>
+#include<queue>
 
 #include <grpc/grpc.h>
 #include <grpcpp/grpcpp.h>
@@ -12,13 +14,13 @@
 #include "bftp2p.grpc.pb.h"
 #include "bftp2p.pb.h"
 
-using namespace std;
-using namespace libbft;
 using namespace grpc;
+using namespace libbft;
 using namespace p2p;
+using namespace std;
 
-using grpc::ServerBuilder;
 using grpc::Server;
+using grpc::ServerBuilder;
 
 
 int main(int argc, char **argv) {
@@ -29,41 +31,66 @@ int main(int argc, char **argv) {
    parser.addArguments(std::vector<Argument>{domain, port, peers});
    parser.parse();
 
-   string server_address(parser.getValue(domain) + ":" + parser.getValue(port));
-   const p2p::Url url = stringToUrl(server_address);
+   string serverAddress(parser.getValue(domain) + ":" + parser.getValue(port));
+   const p2p::Url url = stringToUrl(serverAddress);
+
    P2PServiceImpl p2p(&url);
 
-   thread serverThread([&server_address, &p2p] {
+   thread serverThread([&serverAddress, &p2p] {
       ServerBuilder builder;
-      builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+      builder.AddListeningPort(serverAddress, grpc::InsecureServerCredentials());
       builder.RegisterService(&p2p);
       unique_ptr<Server> server(builder.BuildAndStart());
-      cout << "Starting server: " << server_address << endl;
+      cout << "Starting server: " << serverAddress << endl;
       server->Wait();
    });
 
-   thread clientThread([&parser, &peers, &url] {
+   thread clientThread([&parser, &peers, &url, &serverAddress] {
       if (parser.isPresent(peers)) {
          auto thePeers = parser.getValue(peers);
-         vector<string> peersList;
+         unordered_set<string> peersSet;
+         queue<string> peersQueue;
          const unsigned long thePeersSize = thePeers.size();
+
+         auto addPeer = [&peersSet, &peersQueue, &serverAddress](string name) {
+            if (name != serverAddress) {
+               if (peersSet.emplace(name).second) {
+                  peersQueue.emplace(name);
+               }
+            }
+         };
+
          for (unsigned long i = 0; i < thePeersSize;) {
             auto comma = thePeers.find(',', i);
+            bool shouldBreak = false;
+            string thePeerName;
             if (comma != -1ul) {
-               peersList.emplace_back(thePeers.substr(i, comma - i));
+               thePeerName = thePeers.substr(i, comma - i);
             } else {
-               peersList.emplace_back(thePeers.substr(i));
+               thePeerName = thePeers.substr(i);
+               shouldBreak = true;
+            }
+
+            addPeer(thePeerName);
+            if (shouldBreak) {
                break;
             }
             i = comma + 1;
          }
 
-         cout << "Connecting to " << peersList.size() << " addresses" << endl;
-         for (auto &peerName: peersList) {
-            cout << peerName << endl;
+         cout << "Connecting to " << peersSet.size() << " addresses" << endl;
+         while (!peersQueue.empty()) {
+            auto &peerName = peersQueue.front();
+            peersQueue.pop();
+            cout << "Connecting to " << peerName << endl;
+
             auto stub = P2P::NewStub(CreateChannel(peerName, InsecureChannelCredentials()));
             ClientContext context;
-            stub->register_me(&context, url);
+            auto reader = stub->register_me(&context, url);
+            p2p::Url peerUrl;
+            while (reader->Read(&peerUrl)) {
+               addPeer(urlToString(&peerUrl));
+            }
          }
       }
    });
