@@ -91,6 +91,20 @@ int main(int argc, char **argv) {
             while (reader->Read(&peerUrl)) {
                addPeer(urlToString(&peerUrl));
             }
+            if (!reader->Finish().ok()) {
+               cout << "There was a problem connecting to " << peerName << endl;
+               peersSet.erase(peerName);
+            }
+         }
+
+         if (!peersSet.empty()) {
+            auto stub = P2P::NewStub(CreateChannel(serverAddress, InsecureChannelCredentials()));
+            ClientContext context;
+            auto stream = stub->update_services(&context);
+            for (auto &peerName: peersSet) {
+               stream->Write(stringToUrl(peerName));
+            }
+            stream->Finish();
          }
       }
    });

@@ -13,7 +13,6 @@ grpc::Status P2PServiceImpl::register_me(
    servers.emplace(registered);
    cout << me << " is registering: " << registered << endl;
 
-
    writer->Write(stringToUrl(me));
    for (auto &server : servers) {
       writer->Write(stringToUrl(server));
@@ -24,6 +23,7 @@ grpc::Status P2PServiceImpl::register_me(
 
 grpc::Status P2PServiceImpl::update_services(
    ::grpc::ServerContext *context, ::grpc::ServerReaderWriter<::p2p::Url, ::p2p::Url> *stream) {
+   cout << me << " is updating its services " << endl;
    p2p::Url url;
    while (stream->Read(&url)) {
       servers.emplace(urlToString(&url));
