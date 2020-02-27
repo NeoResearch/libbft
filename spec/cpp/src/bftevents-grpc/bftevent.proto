@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option java_package = "ex.grpc";
+option java_package = "com.github.com.neoresearch.libbft.bftevent";
 
 package bftevent;
 

@@ -90,7 +90,8 @@ const char descriptor_table_protodef_bftevent_2eproto[] =
   "args\030\003 \003(\t\022\r\n\005delay\030\004 \001(\005\"\033\n\nEventReply\022"
   "\r\n\005gotit\030\001 \001(\0052H\n\010BFTEvent\022<\n\013informEven"
   "t\022\025.bftevent.EventInform\032\024.bftevent.Even"
-  "tReply\"\000B\t\n\007ex.grpcb\006proto3"
+  "tReply\"\000B,\n*com.github.com.neoresearch.l"
+  "ibbft.bfteventb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_bftevent_2eproto_deps[1] = {
 };
@@ -101,7 +102,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_bft
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_bftevent_2eproto_once;
 static bool descriptor_table_bftevent_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_bftevent_2eproto = {
-  &descriptor_table_bftevent_2eproto_initialized, descriptor_table_protodef_bftevent_2eproto, "bftevent.proto", 227,
+  &descriptor_table_bftevent_2eproto_initialized, descriptor_table_protodef_bftevent_2eproto, "bftevent.proto", 262,
   &descriptor_table_bftevent_2eproto_once, descriptor_table_bftevent_2eproto_sccs, descriptor_table_bftevent_2eproto_deps, 2, 0,
   schemas, file_default_instances, TableStruct_bftevent_2eproto::offsets,
   file_level_metadata_bftevent_2eproto, 2, file_level_enum_descriptors_bftevent_2eproto, file_level_service_descriptors_bftevent_2eproto,
