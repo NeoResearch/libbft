@@ -12,3 +12,5 @@ vendor/
 *.o
 #*.pb.cc
 #*.pb.h
+
+bazel-*
