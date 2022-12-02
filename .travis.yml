@@ -57,7 +57,7 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}/spec/cpp
         - mkdir build
         - cd build
-        - cmake -Dtest=ON -DCOVERAGE=1 ..
+        - cmake -DBUILD_TESTS=ON -DCOVERAGE=1 ..
         - make
         - GTEST_COLOR=1 ctest --extra-verbose
 
@@ -66,7 +66,7 @@ jobs:
 #        - cd ${TRAVIS_BUILD_DIR}/spec/cpp
 #          - mkdir build
 #          - cd build
-#          - cmake -Dtest=ON ..
+#          - cmake -DBUILD_TESTS=ON ..
 #          - make
 #          - GTEST_COLOR=1 ctest --extra-verbose
 

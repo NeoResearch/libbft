@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_package = "com.github.com.neoresearch.libbft.p2p";
+
+package p2p;
+
+message Url {
+    string domain = 1;
+    int32 port = 2;
+}
+
+// Defines the service
+service P2P {
+    // Function invoked to send the request
+    rpc register_me (Url) returns (stream Url) {}
+    rpc update_services (stream Url) returns (stream Url) {}
+}
