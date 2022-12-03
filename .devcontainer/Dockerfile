@@ -56,3 +56,5 @@ RUN chmod +x /tmp/install-cmake.sh && /tmp/install-cmake.sh && rm -f /tmp/instal
 COPY ./install-grpc.sh /tmp/
 RUN chmod +x /tmp/install-grpc.sh && /tmp/install-grpc.sh && rm -f /tmp/install-grpc.sh
 
+# make shortcut to grpc_cpp_plugin
+RUN ln -s /opt/bin/grpc_cpp_plugin /usr/local/bin/grpc_cpp_plugin

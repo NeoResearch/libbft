@@ -17,6 +17,7 @@ mkdir -p cmake/build
 pushd cmake/build
 /opt/bin/cmake -DgRPC_INSTALL=ON \
       -DgRPC_BUILD_TESTS=OFF \
+      -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR \
       ../..
 make -j 4
