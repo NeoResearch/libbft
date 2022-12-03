@@ -1,0 +1,22 @@
+##### Protobuf Rules for Bazel
+##### See https://github.com/bazelbuild/rules_proto
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+##### gRPC Rules for Bazel
+##### See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
+
+# https://github.com/grpc/grpc/commit/de893acb6aef88484a427e64b96727e4926fdcfd
+# v1.51.1 0a82c02a9b817a53574994374dcff53f2e961df2
+# Requires >= c++14 (in this case, c++17). Please check .bazelrc file.
+
+http_archive(
+    name = "com_github_grpc_grpc",
+    urls = [
+        "https://github.com/grpc/grpc/archive/0a82c02a9b817a53574994374dcff53f2e961df2.tar.gz",
+    ],
+    strip_prefix = "grpc-0a82c02a9b817a53574994374dcff53f2e961df2",
+)
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+grpc_deps()
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+grpc_extra_deps()

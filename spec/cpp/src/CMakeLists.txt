@@ -17,7 +17,7 @@ target_link_libraries_proto(${lib_name})
 #set_source_files_properties(${project_sources} PROPERTIES LANGUAGE CXX)
 set_target_properties(${lib_name} PROPERTIES LINKER_LANGUAGE CXX)
 
-add_executable(app_test main.cpp ${project_sources})
+add_executable(app_test demo/main.cpp ${project_sources})
 
 target_link_libraries_proto(app_test)
 target_link_libraries(
@@ -27,11 +27,12 @@ target_link_libraries(
 
 add_subdirectory(p2p)
 add_subdirectory(bftevents-grpc)
+##add_subdirectory(demo)
+##add_subdirectory(demo-bft-rpc)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/local/lib -L/opt/lib")
-add_executable(
-    app_RPCtest
-    mainRPC.cpp
+add_executable(app_RPCtest 
+    demo-bft-rpc/mainRPC.cpp
     bftevents-grpc/bftevent.pb.cc
     bftevents-grpc/bftevent.grpc.pb.cc
     ${project_sources}

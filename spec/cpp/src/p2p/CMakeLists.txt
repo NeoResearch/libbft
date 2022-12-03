@@ -13,7 +13,7 @@ add_executable(
     bftp2p.pb.cc
     bftp2p.grpc.pb.cc
     P2PServer.cpp
-    ../utils/CLI.cpp
+    ../../include/libbft/utils/CLI.cpp
 )
 
 target_link_libraries_proto(p2p)
