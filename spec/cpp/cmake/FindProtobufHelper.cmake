@@ -3,7 +3,10 @@
 #================================================================#
 find_package(Protobuf REQUIRED)
 
+#find_library(PROTOBUF_LIBRARY protobuf HINTS /opt)
 #include_directories(protos)
+include_directories(/opt/include)
+##link_directories(/opt/lib)
 
 #file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR} PROTOMODEL_PATH)
 #file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_GENERATED_PATH} PROTOBINDING_PATH)
@@ -32,8 +35,9 @@ MACRO(GENERATE_PROTO proto)
 ENDMACRO()
 
 MACRO(target_link_libraries_proto name)
-#    find_package(gRPC CONFIG REQUIRED)
-#    find_package(Protobuf REQUIRED)
+    #find_package(gRPC CONFIG REQUIRED)
+    #find_package(Protobuf REQUIRED)
+    ###find_library(PROTOBUF_AND_GRPC protobuf grpc++ grpc++_reflection HINTS /opt/lib)
     target_link_libraries(
         ${name}
         protobuf
@@ -44,6 +48,7 @@ MACRO(target_link_libraries_proto name)
         dl
         m
         rt
+        ###${PROTOBUF_AND_GRPC}
         ${_GRPC_GRPCPP_UNSECURE}
         ${_PROTOBUF_LIBPROTOBUF}
     )

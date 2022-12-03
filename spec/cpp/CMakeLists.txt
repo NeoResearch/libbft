@@ -7,12 +7,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
-if (EXISTS /usr/bin/gcc-9)
-    if (EXISTS /usr/bin/g++-9)
-        set(CMAKE_C_COMPILER /usr/bin/gcc-9)
-        set(CMAKE_CXX_COMPILER /usr/bin/g++-9)
-    endif()
-endif()
+#if (EXISTS /usr/bin/gcc-11)
+#    if (EXISTS /usr/bin/g++-11)
+#        set(CMAKE_C_COMPILER /usr/bin/gcc-11)
+#        set(CMAKE_CXX_COMPILER /usr/bin/g++-11)
+#    endif()
+#endif()
 
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -26,6 +26,12 @@ ADD_MY_DEFINITIONS()
 #message(STATUS "Ignoring extensios ${CMAKE_CXX_IGNORE_EXTENSIONS}")
 
 #set(PROTOBUF_GENERATED_PATH src CACHE STRING proto_gen)
+#
+#
+#set(Protobuf_INCLUDE_DIRS /opt/include)
+#
+#
+# IMPORTANT: ln -s /opt/bin/grpc_cpp_plugin /usr/local/bin/grpc_cpp_plugin
 set(GRPC_PLUGIN_CPP /usr/local/bin/grpc_cpp_plugin CACHE STRING grpc_bin)
 
 option(BUILD_TESTS "Build test programs" ON)

@@ -7,25 +7,23 @@
 #include "bftp2p.pb.h"
 
 #include <functional>
-#include <grpcpp/impl/codegen/async_generic_service.h>
-#include <grpcpp/impl/codegen/async_stream.h>
-#include <grpcpp/impl/codegen/async_unary_call.h>
+#include <grpcpp/generic/async_generic_service.h>
+#include <grpcpp/support/async_stream.h>
+#include <grpcpp/support/async_unary_call.h>
 #include <grpcpp/impl/codegen/client_callback.h>
-#include <grpcpp/impl/codegen/method_handler_impl.h>
+#include <grpcpp/impl/codegen/client_context.h>
+#include <grpcpp/impl/codegen/completion_queue.h>
+#include <grpcpp/impl/codegen/message_allocator.h>
+#include <grpcpp/impl/codegen/method_handler.h>
 #include <grpcpp/impl/codegen/proto_utils.h>
 #include <grpcpp/impl/codegen/rpc_method.h>
 #include <grpcpp/impl/codegen/server_callback.h>
+#include <grpcpp/impl/codegen/server_callback_handlers.h>
+#include <grpcpp/impl/codegen/server_context.h>
 #include <grpcpp/impl/codegen/service_type.h>
 #include <grpcpp/impl/codegen/status.h>
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
-
-namespace grpc {
-class CompletionQueue;
-class Channel;
-class ServerCompletionQueue;
-class ServerContext;
-}  // namespace grpc
 
 namespace p2p {
 
@@ -57,15 +55,17 @@ class P2P final {
     std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::p2p::Url, ::p2p::Url>> PrepareAsyncupdate_services(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::p2p::Url, ::p2p::Url>>(PrepareAsyncupdate_servicesRaw(context, cq));
     }
-    class experimental_async_interface {
+    class async_interface {
      public:
-      virtual ~experimental_async_interface() {}
+      virtual ~async_interface() {}
       // Function invoked to send the request
-      virtual void register_me(::grpc::ClientContext* context, ::p2p::Url* request, ::grpc::experimental::ClientReadReactor< ::p2p::Url>* reactor) = 0;
-      virtual void update_services(::grpc::ClientContext* context, ::grpc::experimental::ClientBidiReactor< ::p2p::Url,::p2p::Url>* reactor) = 0;
+      virtual void register_me(::grpc::ClientContext* context, const ::p2p::Url* request, ::grpc::ClientReadReactor< ::p2p::Url>* reactor) = 0;
+      virtual void update_services(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::p2p::Url,::p2p::Url>* reactor) = 0;
     };
-    virtual class experimental_async_interface* experimental_async() { return nullptr; }
-  private:
+    typedef class async_interface experimental_async_interface;
+    virtual class async_interface* async() { return nullptr; }
+    class async_interface* experimental_async() { return async(); }
+   private:
     virtual ::grpc::ClientReaderInterface< ::p2p::Url>* register_meRaw(::grpc::ClientContext* context, const ::p2p::Url& request) = 0;
     virtual ::grpc::ClientAsyncReaderInterface< ::p2p::Url>* Asyncregister_meRaw(::grpc::ClientContext* context, const ::p2p::Url& request, ::grpc::CompletionQueue* cq, void* tag) = 0;
     virtual ::grpc::ClientAsyncReaderInterface< ::p2p::Url>* PrepareAsyncregister_meRaw(::grpc::ClientContext* context, const ::p2p::Url& request, ::grpc::CompletionQueue* cq) = 0;
@@ -75,7 +75,7 @@ class P2P final {
   };
   class Stub final : public StubInterface {
    public:
-    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
+    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
     std::unique_ptr< ::grpc::ClientReader< ::p2p::Url>> register_me(::grpc::ClientContext* context, const ::p2p::Url& request) {
       return std::unique_ptr< ::grpc::ClientReader< ::p2p::Url>>(register_meRaw(context, request));
     }
@@ -94,22 +94,22 @@ class P2P final {
     std::unique_ptr<  ::grpc::ClientAsyncReaderWriter< ::p2p::Url, ::p2p::Url>> PrepareAsyncupdate_services(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderWriter< ::p2p::Url, ::p2p::Url>>(PrepareAsyncupdate_servicesRaw(context, cq));
     }
-    class experimental_async final :
-      public StubInterface::experimental_async_interface {
+    class async final :
+      public StubInterface::async_interface {
      public:
-      void register_me(::grpc::ClientContext* context, ::p2p::Url* request, ::grpc::experimental::ClientReadReactor< ::p2p::Url>* reactor) override;
-      void update_services(::grpc::ClientContext* context, ::grpc::experimental::ClientBidiReactor< ::p2p::Url,::p2p::Url>* reactor) override;
+      void register_me(::grpc::ClientContext* context, const ::p2p::Url* request, ::grpc::ClientReadReactor< ::p2p::Url>* reactor) override;
+      void update_services(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::p2p::Url,::p2p::Url>* reactor) override;
      private:
       friend class Stub;
-      explicit experimental_async(Stub* stub): stub_(stub) { }
+      explicit async(Stub* stub): stub_(stub) { }
       Stub* stub() { return stub_; }
       Stub* stub_;
     };
-    class experimental_async_interface* experimental_async() override { return &async_stub_; }
+    class async* async() override { return &async_stub_; }
 
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
-    class experimental_async async_stub_{this};
+    class async async_stub_{this};
     ::grpc::ClientReader< ::p2p::Url>* register_meRaw(::grpc::ClientContext* context, const ::p2p::Url& request) override;
     ::grpc::ClientAsyncReader< ::p2p::Url>* Asyncregister_meRaw(::grpc::ClientContext* context, const ::p2p::Url& request, ::grpc::CompletionQueue* cq, void* tag) override;
     ::grpc::ClientAsyncReader< ::p2p::Url>* PrepareAsyncregister_meRaw(::grpc::ClientContext* context, const ::p2p::Url& request, ::grpc::CompletionQueue* cq) override;
@@ -132,7 +132,7 @@ class P2P final {
   template <class BaseClass>
   class WithAsyncMethod_register_me : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_register_me() {
       ::grpc::Service::MarkMethodAsync(0);
@@ -141,7 +141,7 @@ class P2P final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status register_me(::grpc::ServerContext* context, const ::p2p::Url* request, ::grpc::ServerWriter< ::p2p::Url>* writer) override {
+    ::grpc::Status register_me(::grpc::ServerContext* /*context*/, const ::p2p::Url* /*request*/, ::grpc::ServerWriter< ::p2p::Url>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -152,7 +152,7 @@ class P2P final {
   template <class BaseClass>
   class WithAsyncMethod_update_services : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_update_services() {
       ::grpc::Service::MarkMethodAsync(1);
@@ -161,7 +161,7 @@ class P2P final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status update_services(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* stream)  override {
+    ::grpc::Status update_services(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* /*stream*/)  override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -171,54 +171,56 @@ class P2P final {
   };
   typedef WithAsyncMethod_register_me<WithAsyncMethod_update_services<Service > > AsyncService;
   template <class BaseClass>
-  class ExperimentalWithCallbackMethod_register_me : public BaseClass {
+  class WithCallbackMethod_register_me : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithCallbackMethod_register_me() {
-      ::grpc::Service::experimental().MarkMethodCallback(0,
-        new ::grpc::internal::CallbackServerStreamingHandler< ::p2p::Url, ::p2p::Url>(
-          [this] { return this->register_me(); }));
+    WithCallbackMethod_register_me() {
+      ::grpc::Service::MarkMethodCallback(0,
+          new ::grpc::internal::CallbackServerStreamingHandler< ::p2p::Url, ::p2p::Url>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::p2p::Url* request) { return this->register_me(context, request); }));
     }
-    ~ExperimentalWithCallbackMethod_register_me() override {
+    ~WithCallbackMethod_register_me() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status register_me(::grpc::ServerContext* context, const ::p2p::Url* request, ::grpc::ServerWriter< ::p2p::Url>* writer) override {
+    ::grpc::Status register_me(::grpc::ServerContext* /*context*/, const ::p2p::Url* /*request*/, ::grpc::ServerWriter< ::p2p::Url>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerWriteReactor< ::p2p::Url, ::p2p::Url>* register_me() {
-      return new ::grpc::internal::UnimplementedWriteReactor<
-        ::p2p::Url, ::p2p::Url>;}
+    virtual ::grpc::ServerWriteReactor< ::p2p::Url>* register_me(
+      ::grpc::CallbackServerContext* /*context*/, const ::p2p::Url* /*request*/)  { return nullptr; }
   };
   template <class BaseClass>
-  class ExperimentalWithCallbackMethod_update_services : public BaseClass {
+  class WithCallbackMethod_update_services : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithCallbackMethod_update_services() {
-      ::grpc::Service::experimental().MarkMethodCallback(1,
-        new ::grpc::internal::CallbackBidiHandler< ::p2p::Url, ::p2p::Url>(
-          [this] { return this->update_services(); }));
+    WithCallbackMethod_update_services() {
+      ::grpc::Service::MarkMethodCallback(1,
+          new ::grpc::internal::CallbackBidiHandler< ::p2p::Url, ::p2p::Url>(
+            [this](
+                   ::grpc::CallbackServerContext* context) { return this->update_services(context); }));
     }
-    ~ExperimentalWithCallbackMethod_update_services() override {
+    ~WithCallbackMethod_update_services() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status update_services(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* stream)  override {
+    ::grpc::Status update_services(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* /*stream*/)  override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerBidiReactor< ::p2p::Url, ::p2p::Url>* update_services() {
-      return new ::grpc::internal::UnimplementedBidiReactor<
-        ::p2p::Url, ::p2p::Url>;}
+    virtual ::grpc::ServerBidiReactor< ::p2p::Url, ::p2p::Url>* update_services(
+      ::grpc::CallbackServerContext* /*context*/)
+      { return nullptr; }
   };
-  typedef ExperimentalWithCallbackMethod_register_me<ExperimentalWithCallbackMethod_update_services<Service > > ExperimentalCallbackService;
+  typedef WithCallbackMethod_register_me<WithCallbackMethod_update_services<Service > > CallbackService;
+  typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_register_me : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_register_me() {
       ::grpc::Service::MarkMethodGeneric(0);
@@ -227,7 +229,7 @@ class P2P final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status register_me(::grpc::ServerContext* context, const ::p2p::Url* request, ::grpc::ServerWriter< ::p2p::Url>* writer) override {
+    ::grpc::Status register_me(::grpc::ServerContext* /*context*/, const ::p2p::Url* /*request*/, ::grpc::ServerWriter< ::p2p::Url>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -235,7 +237,7 @@ class P2P final {
   template <class BaseClass>
   class WithGenericMethod_update_services : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_update_services() {
       ::grpc::Service::MarkMethodGeneric(1);
@@ -244,7 +246,7 @@ class P2P final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status update_services(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* stream)  override {
+    ::grpc::Status update_services(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* /*stream*/)  override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -252,7 +254,7 @@ class P2P final {
   template <class BaseClass>
   class WithRawMethod_register_me : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_register_me() {
       ::grpc::Service::MarkMethodRaw(0);
@@ -261,7 +263,7 @@ class P2P final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status register_me(::grpc::ServerContext* context, const ::p2p::Url* request, ::grpc::ServerWriter< ::p2p::Url>* writer) override {
+    ::grpc::Status register_me(::grpc::ServerContext* /*context*/, const ::p2p::Url* /*request*/, ::grpc::ServerWriter< ::p2p::Url>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -272,7 +274,7 @@ class P2P final {
   template <class BaseClass>
   class WithRawMethod_update_services : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_update_services() {
       ::grpc::Service::MarkMethodRaw(1);
@@ -281,7 +283,7 @@ class P2P final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status update_services(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* stream)  override {
+    ::grpc::Status update_services(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* /*stream*/)  override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -290,64 +292,72 @@ class P2P final {
     }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_register_me : public BaseClass {
+  class WithRawCallbackMethod_register_me : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithRawCallbackMethod_register_me() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(0,
-        new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-          [this] { return this->register_me(); }));
+    WithRawCallbackMethod_register_me() {
+      ::grpc::Service::MarkMethodRawCallback(0,
+          new ::grpc::internal::CallbackServerStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const::grpc::ByteBuffer* request) { return this->register_me(context, request); }));
     }
-    ~ExperimentalWithRawCallbackMethod_register_me() override {
+    ~WithRawCallbackMethod_register_me() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status register_me(::grpc::ServerContext* context, const ::p2p::Url* request, ::grpc::ServerWriter< ::p2p::Url>* writer) override {
+    ::grpc::Status register_me(::grpc::ServerContext* /*context*/, const ::p2p::Url* /*request*/, ::grpc::ServerWriter< ::p2p::Url>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerWriteReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* register_me() {
-      return new ::grpc::internal::UnimplementedWriteReactor<
-        ::grpc::ByteBuffer, ::grpc::ByteBuffer>;}
+    virtual ::grpc::ServerWriteReactor< ::grpc::ByteBuffer>* register_me(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/)  { return nullptr; }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_update_services : public BaseClass {
+  class WithRawCallbackMethod_update_services : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithRawCallbackMethod_update_services() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(1,
-        new ::grpc::internal::CallbackBidiHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-          [this] { return this->update_services(); }));
+    WithRawCallbackMethod_update_services() {
+      ::grpc::Service::MarkMethodRawCallback(1,
+          new ::grpc::internal::CallbackBidiHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context) { return this->update_services(context); }));
     }
-    ~ExperimentalWithRawCallbackMethod_update_services() override {
+    ~WithRawCallbackMethod_update_services() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status update_services(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* stream)  override {
+    ::grpc::Status update_services(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::p2p::Url, ::p2p::Url>* /*stream*/)  override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerBidiReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* update_services() {
-      return new ::grpc::internal::UnimplementedBidiReactor<
-        ::grpc::ByteBuffer, ::grpc::ByteBuffer>;}
+    virtual ::grpc::ServerBidiReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* update_services(
+      ::grpc::CallbackServerContext* /*context*/)
+      { return nullptr; }
   };
   typedef Service StreamedUnaryService;
   template <class BaseClass>
   class WithSplitStreamingMethod_register_me : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithSplitStreamingMethod_register_me() {
       ::grpc::Service::MarkMethodStreamed(0,
-        new ::grpc::internal::SplitServerStreamingHandler< ::p2p::Url, ::p2p::Url>(std::bind(&WithSplitStreamingMethod_register_me<BaseClass>::Streamedregister_me, this, std::placeholders::_1, std::placeholders::_2)));
+        new ::grpc::internal::SplitServerStreamingHandler<
+          ::p2p::Url, ::p2p::Url>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerSplitStreamer<
+                     ::p2p::Url, ::p2p::Url>* streamer) {
+                       return this->Streamedregister_me(context,
+                         streamer);
+                  }));
     }
     ~WithSplitStreamingMethod_register_me() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status register_me(::grpc::ServerContext* context, const ::p2p::Url* request, ::grpc::ServerWriter< ::p2p::Url>* writer) override {
+    ::grpc::Status register_me(::grpc::ServerContext* /*context*/, const ::p2p::Url* /*request*/, ::grpc::ServerWriter< ::p2p::Url>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }

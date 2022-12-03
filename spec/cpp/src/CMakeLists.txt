@@ -28,7 +28,7 @@ target_link_libraries(
 add_subdirectory(p2p)
 add_subdirectory(bftevents-grpc)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/local/lib")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/local/lib -L/opt/lib")
 add_executable(
     app_RPCtest
     mainRPC.cpp

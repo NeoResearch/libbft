@@ -32,13 +32,27 @@ It may also help the development of other ecosystem tools, protocols, and even d
 
 Currently, C++ spec is the reference one. After that, focus will be on Go, Python and C# ports.
 
+For stability, try with VSCode and DevContainers Extension (see .devcontainers and Dockerfile).
+
+### Bazel is the first try (for C++)
+
+If using DevContainers, you already have Bazel (otherwise, it's quite simple to install it).
+Just type `make`.
+
+### CMake is the second official one (for C++)
+
+Currently, CMake is likely broken, due to advances in grpc/protobuf projects.
+We will try to fix it as soon as possible.
+
+If using DevContainers, some working grpc version is already available (just need to fix CMakeLists.txt).
+Remember to: `ln -s /opt/bin/grpc_cpp_plugin /usr/local/bin/grpc_cpp_plugin`
+
+#### Old instructions
 `cmake` is your friend! Please install latest version (you can use Snappy to ensure that!):
 ```sh
 sudo snap install cmake --classic
 ```
-
-(If you don't have snap, you can install it on debian-based using: `sudo apt install snapd`)
-
+Image on DevContainer already manually a supported cmake version (installed on `/opt` together with grpc)
 
 ### Builds for C++
 Existing frameworks use high-level languages that may not be suitable for very lightweight architectures,

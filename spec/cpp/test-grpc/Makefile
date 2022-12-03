@@ -1,4 +1,4 @@
-LDFLAGS = -L/usr/local/lib `pkg-config --libs protobuf grpc++`\
+LDFLAGS = -L/usr/local/lib -L/opt/lib `pkg-config --libs protobuf grpc++`\
            -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed\
            -ldl
 

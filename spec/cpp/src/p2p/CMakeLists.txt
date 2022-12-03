@@ -6,7 +6,7 @@ foreach(proto ${DATAMODEL_PROTOS})
     GENERATE_PROTO(${proto})
 endforeach(proto)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/local/lib")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/usr/local/lib -L/opt/lib")
 add_executable(
     p2p
     mainP2P.cpp
