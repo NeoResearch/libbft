@@ -2,13 +2,15 @@
 // Copyright (C) 2019-2022 - LibBFT developers
 // https://github.com/neoresearch/libbft
 
-#ifndef INCLUDE_LIBBFT_SINGLE_SINGLETIMERSTATEMACHINE_HPP_
+#ifndef INCLUDE_LIBBFT_SINGLE_SINGLETIMERSTATEMACHINE_HPP_  // NOLINT
 #define INCLUDE_LIBBFT_SINGLE_SINGLETIMERSTATEMACHINE_HPP_
 
 // system includes
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 // libbft includes
@@ -63,7 +65,9 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param> {
         timer(std::move(t)) {
     // timer must exist
     if (!timer) {
-      timer = std::unique_ptr<Timer>(new Timer("", clonePtr(*this->clock)));
+      // timer = std::unique_ptr<Timer>(new Timer("", clonePtr(*this->clock)));
+      // ABOVE: Is this Casting?
+      timer = std::unique_ptr<Timer>{new Timer("", clonePtr(*this->clock))};
     }
   }
 
@@ -109,7 +113,7 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param> {
   }
 
   void onEnterState(State<Param>& current, TParam p) override {
-    std::cout << "entering state: " << current.toString() << std::endl;
+    std::cout << "entering state: " << current.toStringR(true) << std::endl;
 
     if (watchdog) watchdog->reset();
   }
@@ -218,9 +222,9 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param> {
     return false;
   }
 
-  std::string toString(std::string format = "") override {
+  std::string toStringFormat(StringFormat format) override {
     std::stringstream ss;
-    if (format == "graphviz") {
+    if (format == StringFormat::Graphviz) {
       ss << "digraph " << this->name << " {" << std::endl;
       ss << "//graph [bgcolor=lightgoldenrodyellow]" << std::endl;
       ss << "//rankdir=LR;" << std::endl;
@@ -243,7 +247,8 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param> {
         auto state = this->states[i];
         for (unsigned t = 0; t < state->transitions.size(); t++) {
           ss << state->name << " ";
-          ss << state->transitions[t]->toString("graphviz") << std::endl;
+          ss << state->transitions[t]->toStringFormat(StringFormat::Graphviz)
+             << std::endl;
         }
       }
 
@@ -256,7 +261,7 @@ class SingleTimerStateMachine : public TimedStateMachine<State<Param>, Param> {
       ss << "Timer='" << timer->toString() << "';";
       ss << "States=[";
       for (unsigned i = 0; i < states.size(); i++)
-        ss << states[i]->toString() << ";";
+        ss << states[i]->toStringR(true) << ";";
       ss << "]";
       ss << "}";
     }

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2022 - LibBFT developers
 // https://github.com/neoresearch/libbft
 
-#ifndef INCLUDE_LIBBFT_TIMING_CLOCK_HPP_
+#ifndef INCLUDE_LIBBFT_TIMING_CLOCK_HPP_  // NOLINT
 #define INCLUDE_LIBBFT_TIMING_CLOCK_HPP_
 
 // system includes
@@ -11,6 +11,9 @@
 #include <sstream>
 #include <string>
 #include <utility>
+
+//
+#include <libbft/utils/Shortcuts.hpp>
 
 // standard Timer for a TSM
 
@@ -26,10 +29,16 @@ class Clock {
 
  public:
   explicit Clock(std::string _name = "") : name{std::move(_name)} {}
+  // keep this as non-default (for clarity)
   Clock(const Clock& other) : name{other.name} {}
 
   // MANDATORY PACK
-  virtual ~Clock() {}
+  virtual ~Clock() = default;
+
+  // Mandatory?
+  Clock(Clock&& corpse) noexcept = default;
+  Clock& operator=(const Clock& other) = default;
+  Clock& operator=(Clock&& corpse) = default;
 
  public:
   /**
@@ -54,8 +63,8 @@ class Clock {
   }
 };
 
-using TClock = std::unique_ptr<Clock>;
+using TClock = uptr<Clock>;
 
 }  // namespace libbft
 
-#endif  // INCLUDE_LIBBFT_TIMING_CLOCK_HPP_
+#endif  // INCLUDE_LIBBFT_TIMING_CLOCK_HPP_ // NOLINT

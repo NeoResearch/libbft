@@ -6,6 +6,8 @@
 #define INCLUDE_LIBBFT_EVENTS_SCHEDULEDEVENT_HPP_
 
 // C++
+#include <string>
+#include <utility>
 #include <vector>
 
 // libbft includes

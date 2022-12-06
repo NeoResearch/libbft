@@ -1,5 +1,10 @@
 # requires >= c++14
 build --cxxopt='-std=c++20'
+build --cxxopt='-Wno-macro-redefined'
+build --cxxopt='-Wno-builtin-macro-redefined'
+#### https://github.com/llvm/llvm-project/issues/56709
+#### https://github.com/erenon/bazel_clang_tidy/issues/29
+#
 # build --cxxopt='-Wfatal-errors'
 build --client_env=CC=clang
 build --copt=-DGRPC_BAZEL_BUILD

@@ -5,14 +5,19 @@
 #ifndef INCLUDE_LIBBFT_MACHINE_TIMEDSTATEMACHINE_HPP_
 #define INCLUDE_LIBBFT_MACHINE_TIMEDSTATEMACHINE_HPP_
 
+// C
 #include <unistd.h>
 
+// C++
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <utility>
 
 // default clock
 #include <libbft/machine/MachineId.hpp>
 #include <libbft/timing/Clock.hpp>
+#include <libbft/utils/IPrintable.hpp>
 
 namespace libbft {
 
@@ -23,7 +28,7 @@ namespace libbft {
  * @tparam Param
  */
 template <class StateType, class Param = std::nullptr_t>
-class TimedStateMachine {
+class TimedStateMachine : public IFPrintable {
  public:
   using TParam = std::shared_ptr<Param>;
   using TStateType = std::shared_ptr<StateType>;
@@ -110,7 +115,13 @@ class TimedStateMachine {
    * @param p
    * @return
    */
-  virtual TStateType run(TStateType initial = nullptr, TParam p = nullptr) {
+  // virtual TStateType run(TStateType initial = nullptr, TParam p = nullptr) {
+  virtual TStateType run(op<TStateType> _initial, op<TParam> _p) {
+    TStateType initial;
+    TParam p;
+    if (_initial) initial = *_initial;
+    if (_p) p = *_p;
+
     auto current = this->initialize(initial, p);
     // if no state given, abort
     if (!current) return nullptr;
@@ -136,9 +147,9 @@ class TimedStateMachine {
     return current;
   }
 
-  virtual std::string toString(std::string format = "") {
+  std::string toStringFormat(StringFormat format) override {
     std::stringstream ss;
-    if (format == "graphviz") {
+    if (format == StringFormat::Graphviz) {
     } else {
       // standard text
 

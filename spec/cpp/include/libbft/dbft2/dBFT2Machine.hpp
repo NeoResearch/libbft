@@ -11,6 +11,7 @@
 #include <memory>
 #include <random>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -91,7 +92,7 @@ class dBFT2Machine : public ReplicatedSTSM<dBFT2Context> {
    * unique_ptr the clock perhaps? shared_ptr?
    * very dangerous to delete like this... clock may be shared.
    */
-  virtual ~dBFT2Machine() = default;
+  ~dBFT2Machine() override = default;
 
   void fillSimpleCycle(int m) {
     // ---------------------
@@ -219,7 +220,8 @@ class dBFT2Machine : public ReplicatedSTSM<dBFT2Context> {
   }
 
   /** official method */
-  virtual void fillStatesForMachine(int m) {
+  // NO VIRTUAL HERE!
+  void fillStatesForMachine(int m) {
     // method for a simple dbft cycle (single height considered)
     fillSimpleCycle(m);
   }
@@ -253,10 +255,10 @@ class dBFT2Machine : public ReplicatedSTSM<dBFT2Context> {
     return current;
   }
 
-  std::string toString(std::string format = "") override {
+  std::string toStringFormat(StringFormat format) override {
     std::stringstream ss;
 
-    if (format == "graphviz") {
+    if (format == StringFormat::Graphviz) {
       // will do this only for machine 0 (the others should be replicated)
       if (this->machines.empty()) return "";
       ss << "digraph " << this->machines[0]->name << " {" << std::endl;
@@ -280,7 +282,7 @@ class dBFT2Machine : public ReplicatedSTSM<dBFT2Context> {
       for (auto& state : this->machines[0]->states) {
         for (auto& transition : state->transitions) {
           ss << state->name << " ";
-          ss << transition->toString("graphviz") << std::endl;
+          ss << transition->toStringFormat(StringFormat::Graphviz) << std::endl;
         }
       }
 

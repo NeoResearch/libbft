@@ -6,8 +6,11 @@
 #define INCLUDE_LIBBFT_TIMING_COUNTDOWNTIMER_HPP_
 
 // system includes
+#include <algorithm>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <utility>
 
 // libbft includes
 #include <libbft/timing/Clock.hpp>
@@ -30,7 +33,10 @@ class CountdownTimer {
  public:
   explicit CountdownTimer(double _countdown, std::string _name = "",
                           TClock _clock = nullptr)
-      : clock(std::move(_clock)), name(std::move(_name)) {
+      : clock{std::move(_clock)},
+        mytime{0.0},
+        name{std::move(_name)},
+        countdown{0.0} {
     init(_countdown);
   }
 

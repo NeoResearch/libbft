@@ -34,16 +34,15 @@ class BFTEventsClient {
  public:
   int me{0};
 
-  BFTEventsClient(int _me, std::string toAddress)
-      : stub_(BFTEvent::NewStub(std::shared_ptr<Channel>(grpc::CreateChannel(
-            toAddress, grpc::InsecureChannelCredentials())))),
-        me(_me) {
-    //
-  }
-
   explicit BFTEventsClient(int _me)
       : stub_(BFTEvent::NewStub(std::shared_ptr<Channel>(grpc::CreateChannel(
             getAddress(_me), grpc::InsecureChannelCredentials())))),
+        me(_me) {
+    //
+  }
+  BFTEventsClient(int _me, std::string toAddress)
+      : stub_(BFTEvent::NewStub(std::shared_ptr<Channel>(grpc::CreateChannel(
+            toAddress, grpc::InsecureChannelCredentials())))),
         me(_me) {
     //
   }

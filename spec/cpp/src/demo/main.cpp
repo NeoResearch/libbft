@@ -5,9 +5,8 @@
 // C++
 #include <iostream>
 #include <memory>
+#include <thread>  // NOLINT
 #include <vector>
-// C++11 unnaproved
-#include <thread>
 
 // lib
 
@@ -61,17 +60,18 @@ void simpleExample() {
   cout << "Machine => " << machine.toString() << endl;
 
   cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
-  string graphviz = machine.toString("graphviz");
+  string graphviz = machine.toStringFormat(StringFormat::Graphviz);
   cout << graphviz << endl;
 
   // set set machine watchdog - 5 seconds - Default disabled
   machine.setWatchdog(5);
 
-  machine.run();  // initial state is given by default first
+  machine.run(std::nullopt,
+              std::nullopt);  // initial state is given by default first
 
-  FILE* fgraph = fopen("fgraph_STSM.dot", "w");
-  fprintf(fgraph, "%s\n", graphviz.c_str());
-  fclose(fgraph);
+  FILE* fgraph = fopen("fgraph_STSM.dot", "w");  // NOLINT
+  fprintf(fgraph, "%s\n", graphviz.c_str());     // NOLINT
+  fclose(fgraph);                                // NOLINT
   cout << "Generating image 'fgraph_STSM.png'" << endl;
   if (!system("dot -Tpng fgraph_STSM.dot -o fgraph_STSM.png")) {
     cout << "Problem generating graph" << endl;
@@ -210,16 +210,16 @@ void dbft_test_real_dbft2_primary() {
 
   cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
 
-  string graphviz = machine->toString("graphviz");
+  string graphviz = machine->toStringFormat(StringFormat::Graphviz);
 
   cout << graphviz << endl;
 
   machine->run(nullptr, ctx);
 
   // show
-  FILE* fgraph = fopen("fgraph.dot", "w");
-  fprintf(fgraph, "%s\n", graphviz.c_str());
-  fclose(fgraph);
+  FILE* fgraph = fopen("fgraph.dot", "w");    // NOLINT
+  fprintf(fgraph, "%s\n", graphviz.c_str());  // NOLINT
+  fclose(fgraph);                             // NOLINT
   cout << "Generating image 'fgraph.png'" << endl;
   if (!system("dot -Tpng fgraph.dot -o fgraph.png")) {
     cout << "Problem generating graph" << endl;
@@ -657,11 +657,11 @@ SingleTimerStateMachine<McDBFT>* commit_phase_dbft2(int id_me) {
               [](Timer& C, TMcDBFT d, MachineId me) -> void { C.reset(); }))));
 
   // cout << "Machine => " << machine->toString() << endl;
-  string graphviz = machine->toString("graphviz");
+  string graphviz = machine->toStringFormat(StringFormat::Graphviz);
 
-  FILE* fgraph = fopen("fgraph.dot", "w");
-  fprintf(fgraph, "%s\n", graphviz.c_str());
-  fclose(fgraph);
+  FILE* fgraph = fopen("fgraph.dot", "w");    // NOLINT
+  fprintf(fgraph, "%s\n", graphviz.c_str());  // NOLINT
+  fclose(fgraph);                             // NOLINT
   cout << "Generating image 'fgraph.png'" << endl;
   if (!system("dot -Tpng fgraph.dot -o fgraph.png")) {
     cout << "Problem generating graph" << endl;
@@ -701,8 +701,6 @@ int main() {
   machine.run(minitial, ctx0);
   // machine0->run(machine0->states[0], &ctx0); // explicitly passing first
   // state as default
-
-  int arr[] = {1, 2, 3};
 
   return 0;
 }

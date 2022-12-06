@@ -2,14 +2,15 @@
 // Copyright (C) 2019-2022 - LibBFT developers
 // https://github.com/neoresearch/libbft
 
+#include <span>  // C++20
 #include <sstream>
 #include <string>
 #include <utility>
 
 //
-#include <libbft/utils/CLI.h>
+#include "CLI.h"
 
-using namespace libbft;
+using namespace libbft;  // NOLINT
 
 Argument::Argument(char _shortName, bool _itHasValue, std::string _longName,
                    std::string _defaultValue)
@@ -39,8 +40,10 @@ std::string Argument::getShortNameParam() const {
 std::string Argument::getLongNameParam() const { return "--" + getLongName(); }
 
 ArgumentParser::ArgumentParser(int argc, char** argv) {
+  auto span_args = std::span(argv, static_cast<size_t>(argc));
+
   for (auto i = 0; i < argc; ++i) {
-    args.emplace_back(std::string(argv[i]));
+    args.emplace_back(std::string(span_args[i]));
   }
 }
 

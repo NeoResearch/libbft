@@ -8,6 +8,8 @@
 // system includes
 #include <memory>
 #include <sstream>
+#include <string>
+#include <utility>
 
 // libbft includes
 #include <libbft/timing/Clock.hpp>
@@ -30,7 +32,7 @@ class CountdownNotifyTimer : public CountdownTimer {
     init(_countdown);
   }
 
-  virtual ~CountdownNotifyTimer() = default;
+  ~CountdownNotifyTimer() override = default;
 
  public:
   void init(double _countdown) override {

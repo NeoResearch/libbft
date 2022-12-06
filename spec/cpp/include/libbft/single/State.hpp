@@ -6,13 +6,14 @@
 #define INCLUDE_LIBBFT_SINGLE_STATE_HPP_
 
 // system includes
+#include <algorithm>
 #include <cstddef>
 #include <memory>
-#include <sstream>
-#include <vector>
-// simulate non-deterministic nature
-#include <algorithm>
 #include <random>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 // standard Transition
 #include <libbft/single/Transition.hpp>
@@ -59,7 +60,7 @@ class State {
     return nullptr;
   }
 
-  std::string toString(bool recursive = true) const {
+  std::string toStringR(bool recursive) const {
     std::stringstream ss;
     ss << "state:{";
     ss << "name='" << name << "';";
@@ -70,8 +71,9 @@ class State {
       for (unsigned i = 0; i < transitions.size(); i++)
         ss << transitions[i]->toString() << ";";
       ss << "]";
-    } else
+    } else {
       ss << "...";
+    }
     ss << "}";
     return ss.str();
   }

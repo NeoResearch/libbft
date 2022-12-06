@@ -3,7 +3,15 @@
 Trying to stick to these rules:
 https://www.acodersjourney.com/top-25-cplusplus-api-design-mistakes-and-how-to-avoid-them/
 
-## Basic build
+## NEW: basic build
+
+Just type `make` (it will use Bazel build).
+
+Or execute: `bazel build ... --config clang-tidy`
+
+You can remove `--config clang-tidy` to prevent strict checking, but it's necessary to keep it for contributions.
+
+## OLD: Basic build
 
 Just enter `build` and use cmake.
 

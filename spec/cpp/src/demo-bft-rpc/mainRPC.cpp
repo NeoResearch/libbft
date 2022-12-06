@@ -7,7 +7,8 @@
 // C++
 #include <iostream>
 #include <memory>
-#include <thread>
+#include <span>    // c++20
+#include <thread>  // NOLINT
 #include <vector>
 
 // lib
@@ -19,8 +20,8 @@
 #include <libbft/single/SingleTimerStateMachine.hpp>
 #include <libbft/single/State.hpp>
 
-using namespace std;
-using namespace libbft;
+using namespace std;     // NOLINT
+using namespace libbft;  // NOLINT
 
 // helper method: will send OnStart after 1 second
 void sendOnStart(TBFTEventsClient myClient, int delayMS) {
@@ -62,9 +63,8 @@ void RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W,
 
   // initialize my world: one RPC Client for every other node (including myself)
   vector<TBFTEventsClient> worldCom(N, nullptr);
-  for (unsigned i = 0; i < worldCom.size(); i++) {
-    worldCom[i] =
-        std::move((static_cast<TBFTEventsClient>(new BFTEventsClient(i))));
+  for (int i = 0; i < worldCom.size(); i++) {
+    worldCom[i] = static_cast<TBFTEventsClient>(new BFTEventsClient{i});
   }
 
   // my own context: including my data, my name and my world
@@ -89,7 +89,7 @@ void RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W,
   cout << "RPC Machine => " << machine->toString() << endl;
 
   cout << "BEFORE RUN, WILL PRINT AS GRAPHVIZ!" << endl;
-  string graphviz = machine->toString("graphviz");
+  string graphviz = machine->toStringFormat(StringFormat::Graphviz);
   cout << graphviz << endl;
 
   // send OnStart event, after 1 second
@@ -109,7 +109,7 @@ void RPC_dbft_test_real_dbft2(int me, int N, int f, int H, int T, int W,
   {
     shared_ptr<std::FILE> fgraph =
         shared_ptr<std::FILE>(fopen(ssimage.str().c_str(), "w"), std::fclose);
-    fprintf(fgraph.get(), "%s\n", graphviz.c_str());
+    fprintf(fgraph.get(), "%s\n", graphviz.c_str());  // NOLINT
   }
 
   cout << "Generating image '" << ssimage.str() << ".png'" << endl;
@@ -128,6 +128,8 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  auto span_args = std::span(argv, static_cast<size_t>(argc));
+
   std::cout << std::endl
             << "=======================================" << std::endl
             << "Welcome to libbft RPC testing for dbft2" << std::endl
@@ -135,13 +137,13 @@ int main(int argc, char* argv[]) {
             << std::endl;
 
   // parameter 0 is program itself
-  int my_index = stoi(std::string(argv[1]));  // 1. GET FROM MAIN()
-  int N = stoi(std::string(argv[2]));         // 2. total number of nodes
-  int f = stoi(std::string(argv[3]));         // 3. number of max faulty nodes
-  std::string scenario(argv[4]);              // 4. test scenario
+  int my_index = stoi(std::string(span_args[1]));  // 1. GET FROM MAIN()
+  int N = stoi(std::string(span_args[2]));         // 2. total number of nodes
+  int f = stoi(std::string(span_args[3]));  // 3. number of max faulty nodes
+  std::string scenario(span_args[4]);       // 4. test scenario
   int RANDOM = 99;
   if (argc == 6)
-    RANDOM = stoi(std::string(argv[5]));  // 5. random (usually 2-bytes)
+    RANDOM = stoi(std::string(span_args[5]));  // 5. random (usually 2-bytes)
 
   // show random seed (shared among all instances)
   // this is good to reproduce nearly-deterministic behavior (some small race

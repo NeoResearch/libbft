@@ -6,28 +6,25 @@
 #define INCLUDE_LIBBFT_DBFT2_DBFT2RPCMACHINE_HPP_
 
 // system includes
-#include <memory>
-#include <sstream>
-#include <vector>
-// simulate non-deterministic nature
 #include <algorithm>
 #include <cassert>
+#include <memory>
 #include <random>
-#include <thread>
+#include <sstream>
+#include <string>
+#include <thread>  // NOLINT
+#include <utility>
+#include <vector>
 
 // standard Transition
 // #include "replicated/ReplicatedSTSM.hpp"
+#include <bftevents-grpc/BFTEventsServer.hpp>
+#include <libbft/dbft2/dBFT2Context.hpp>
+#include <libbft/events/ScheduledEvent.hpp>
+#include <libbft/rpc-replicated/RPCMachineContext.hpp>
 #include <libbft/single/SingleTimerStateMachine.hpp>
 #include <libbft/single/Transition.hpp>
 #include <libbft/timing/Timer.hpp>
-
-// dbft specific
-#include <libbft/dbft2/dBFT2Context.hpp>
-
-// rpc part
-#include <bftevents-grpc/BFTEventsServer.hpp>
-#include <libbft/events/ScheduledEvent.hpp>
-#include <libbft/rpc-replicated/RPCMachineContext.hpp>
 
 namespace libbft {
 
@@ -57,16 +54,16 @@ class dBFT2RPCMachine
                            std::string dbft_type = "Commit1",
                            TClock _clock = nullptr)
       : SingleTimerStateMachine<RPCMachineContext<dBFT2Context>>(
-            std::unique_ptr<Timer>(new Timer("C", std::move(_clock))), _me,
+            std::unique_ptr<Timer>(new Timer{"C", std::move(_clock)}), _me,
             std::move(_clock), std::move(_name)),
         f(_f),
         eventsServer(_me.id, myCtx)
   // Timer* t = nullptr, int me = 0, Clock* _clock = nullptr, string name =
   // "STSM"
   {
-    assert(f >= 0);
-    assert(N >= 1);
-    assert(f <= N);
+    assert(f >= 0);  // NOLINT
+    assert(N >= 1);  // NOLINT
+    assert(f <= N);  // NOLINT
     // create 'world' here? TODO:
 
     // create N machines
@@ -95,7 +92,7 @@ class dBFT2RPCMachine
    * unique_ptr the clock perhaps? shared_ptr?
    * very dangerous to delete like this... clock may be shared.
    */
-  virtual ~dBFT2RPCMachine() = default;
+  ~dBFT2RPCMachine() override = default;
 
   void fillSimpleCycle() {
     // ---------------------
@@ -613,10 +610,10 @@ private:
 */
 
  public:
-  std::string toString(std::string format = "") override {
+  std::string toStringFormat(StringFormat format) override {
     std::stringstream ss;
 
-    if (format == "graphviz") {
+    if (format == StringFormat::Graphviz) {
       // will do this only for machine 0 (the others should be replicated)
       ss << "digraph " << this->name << " {" << std::endl;
       ss << "//graph [bgcolor=lightgoldenrodyellow]" << std::endl;
@@ -639,7 +636,7 @@ private:
       for (auto& state : this->states) {
         for (auto& transition : state->transitions) {
           ss << state->name << " ";
-          ss << transition->toString("graphviz") << std::endl;
+          ss << transition->toStringFormat(StringFormat::Graphviz) << std::endl;
         }
       }
 

@@ -11,12 +11,16 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 // libbft
 // #include "State.h" // forward declaration
 #include <libbft/machine/MachineId.hpp>
 #include <libbft/timing/Timer.hpp>
-////#include "Event.hpp"
+#include <libbft/utils/IPrintable.hpp>
+//// #include "Event.hpp"
 
 // standard Transition
 // Every transition may or may not be a timed transition
@@ -74,8 +78,8 @@ struct Action {
 template <class Param = std::nullptr_t>
 class Transition {
  public:
-  using TState = std::shared_ptr<State<Param>>;
-  using TParam = std::shared_ptr<Param>;
+  using TState = sptr<State<Param>>;
+  using TParam = sptr<Param>;
 
  private:
   /** state to go after executing this transition */
@@ -94,9 +98,11 @@ class Transition {
    * @param _name
    */
   explicit Transition(TState _to, std::string _name = "")
-      : to(_to), name(std::move(_name)) {
+      : to{_to}, name{std::move(_name)} {
     assert(to != nullptr);
   }
+
+  virtual ~Transition() = default;
 
   /**
    * add a new boolean Condition (returns pointer to itself, to allow cascading
@@ -154,9 +160,12 @@ class Transition {
    * @param format
    * @return
    */
-  std::string toString(std::string format = "") const {
+
+  std::string toString() const { return toStringFormat(StringFormat::Default); }
+
+  std::string toStringFormat(StringFormat format) const {
     std::stringstream ss;
-    if (format == "graphviz") {
+    if (format == StringFormat::Graphviz) {
       ss << " -> " << this->to->name;
       ss << " [ label = \"";
 
@@ -177,7 +186,7 @@ class Transition {
     } else {
       // default print
       ss << "t() => {name = '" << name << "',";
-      ss << "to='" << to->toString(false) << "',";
+      ss << "to='" << to->toStringR(false) << "',";
       ss << "conditions=[";
       for (unsigned i = 0; i < conditions.size(); i++)
         ss << conditions[i].toString() << ";";

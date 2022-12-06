@@ -6,12 +6,13 @@
 #define INCLUDE_LIBBFT_EVENTS_EVENT_HPP_
 
 // system includes
-#include <memory>
-#include <sstream>
-#include <vector>
-// simulate non-deterministic nature
 #include <algorithm>
+#include <memory>
 #include <random>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 // standard Transition
 #include <libbft/machine/MachineId.hpp>
@@ -157,7 +158,7 @@ class TimedEvent : public Event {
     timer = std::unique_ptr<Timer>((new Timer())->init(countdown));
   }
 
-  virtual ~TimedEvent() {}
+  ~TimedEvent() override = default;
 
   bool isActivated(std::string _name,
                    std::vector<std::string> pattern) const override {

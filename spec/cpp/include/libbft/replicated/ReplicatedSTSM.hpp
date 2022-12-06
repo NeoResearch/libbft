@@ -8,6 +8,8 @@
 // system includes
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 // libbft includes
@@ -223,7 +225,7 @@ class ReplicatedSTSM
       bool r = machines[i]->updateState(states->at(i), p);
       if (r) {
         std::cout << "machine " << i
-                  << " moved to state: " << states->at(i)->toString()
+                  << " moved to state: " << states->at(i)->toStringR(true)
                   << std::endl;
         // states->at(i)->onEnter(p); // really useful?
         ret = true;
@@ -236,7 +238,7 @@ class ReplicatedSTSM
   void onEnterState(MultiState<Param>& current, TMultiContext p) override {
     std::cout << "updating multi state! STATES:" << std::endl;
     for (unsigned i = 0; i < current.size(); i++) {
-      std::cout << "Machine " << i << " => " << current[i]->toString()
+      std::cout << "Machine " << i << " => " << current[i]->toStringR(true)
                 << std::endl;
     }
 
@@ -268,9 +270,9 @@ class ReplicatedSTSM
     return false;
   }
 
-  std::string toString(std::string format = "") override {
+  std::string toStringFormat(StringFormat format) override {
     std::stringstream ss;
-    if (format == "graphviz") {
+    if (format == StringFormat::Graphviz) {
     } else {
       // standard text
 

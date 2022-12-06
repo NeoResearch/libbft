@@ -6,8 +6,11 @@
 #define INCLUDE_LIBBFT_TIMING_TIMER_HPP_
 
 // system includes
+#include <algorithm>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <utility>
 
 // libbft includes
 #include <libbft/timing/Clock.hpp>
@@ -29,7 +32,10 @@ class Timer {
 
  public:
   explicit Timer(std::string _name = "", TClock _clock = nullptr)
-      : name(std::move(_name)), clock(std::move(_clock)) {
+      : name{std::move(_name)},
+        clock{std::move(_clock)},
+        mytime{0.0},
+        countdown{0.0} {
     init();
   }
 
