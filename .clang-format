@@ -1,0 +1,8 @@
+---
+# clang-format -style=google -dump-config > .clang-format
+Language:        Cpp
+BasedOnStyle:  Google
+ReferenceAlignment: Left
+DerivePointerAlignment: false
+...
+

@@ -1,10 +1,13 @@
-#pragma once
-#ifndef LIBBFT_SRC_CPP_STATE_HPP
-#define LIBBFT_SRC_CPP_STATE_HPP
+// SPDX-License-Identifier:  MIT
+// Copyright (C) 2019-2022 - LibBFT developers
+// https://github.com/neoresearch/libbft
+
+#ifndef INCLUDE_LIBBFT_SINGLE_STATE_HPP_
+#define INCLUDE_LIBBFT_SINGLE_STATE_HPP_
 
 // system includes
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <sstream>
 #include <vector>
 // simulate non-deterministic nature
@@ -12,8 +15,8 @@
 #include <random>
 
 // standard Transition
-#include "timing/Timer.hpp"
-#include "Transition.hpp"
+#include <libbft/single/Transition.hpp>
+#include <libbft/timing/Timer.hpp>
 
 // standard State
 
@@ -21,67 +24,59 @@
 
 namespace libbft {
 
-template<class Param = std::nullptr_t>
-class State
-{
-public:
-   using TParam = std::shared_ptr<Param>;
-   using TTransition = std::shared_ptr<Transition<Param>>;
+template <class Param = std::nullptr_t>
+class State {
+ public:
+  using TParam = std::shared_ptr<Param>;
+  using TTransition = std::shared_ptr<Transition<Param>>;
 
-   /** should only access for get string, etc (on graphviz)... TODO: design better protection here */
-   std::vector<TTransition> transitions;
-public:
-   std::string name;
-   bool isFinal;
+  /** should only access for get string, etc (on graphviz)... TODO: design
+   * better protection here */
+  std::vector<TTransition> transitions;
 
-   explicit State(bool _isFinal = false, std::string _name = "")
-     : name(std::move(_name))
-     , isFinal(_isFinal)
-   {
-   }
+ public:
+  std::string name;
+  bool isFinal;
 
-   void addTransition(TTransition t)
-   {
-      transitions.push_back(t);
-   }
+  explicit State(bool _isFinal = false, std::string _name = "")
+      : name(std::move(_name)), isFinal(_isFinal) {}
 
-   TTransition tryGetTransition(Timer& timer, TParam p, MachineId me)
-   {
-      // cout << "Trying to Get Transition" << endl;
-      // should be non-deterministic and asynchronous...
-      // TODO: simulate this with random, at least, to avoid getting stuck on tests by chance
-      std::vector<TTransition> _transitions = transitions;
+  void addTransition(TTransition t) { transitions.push_back(t); }
 
-      auto rng = std::default_random_engine{};
-      std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
+  TTransition tryGetTransition(Timer& timer, TParam p, MachineId me) {
+    // cout << "Trying to Get Transition" << endl;
+    // should be non-deterministic and asynchronous...
+    // TODO: simulate this with random, at least, to avoid getting stuck on
+    // tests by chance
+    std::vector<TTransition> _transitions = transitions;
 
-      for (unsigned i = 0; i < _transitions.size(); i++) {
-         if (_transitions[i]->isValid(timer, p, me))
-            return _transitions[i];
-      }
-      return nullptr;
-   }
+    auto rng = std::default_random_engine{};
+    std::shuffle(std::begin(_transitions), std::end(_transitions), rng);
 
-   std::string toString(bool recursive = true) const
-   {
-      std::stringstream ss;
-      ss << "state:{";
-      ss << "name='" << name << "';";
-      if (isFinal)
-         ss << "FINAL";
-      ss << ";";
-      if (recursive) {
-         ss << "transitions=[";
-         for (unsigned i = 0; i < transitions.size(); i++)
-            ss << transitions[i]->toString() << ";";
-         ss << "]";
-      } else
-         ss << "...";
-      ss << "}";
-      return ss.str();
-   }
+    for (unsigned i = 0; i < _transitions.size(); i++) {
+      if (_transitions[i]->isValid(timer, p, me)) return _transitions[i];
+    }
+    return nullptr;
+  }
+
+  std::string toString(bool recursive = true) const {
+    std::stringstream ss;
+    ss << "state:{";
+    ss << "name='" << name << "';";
+    if (isFinal) ss << "FINAL";
+    ss << ";";
+    if (recursive) {
+      ss << "transitions=[";
+      for (unsigned i = 0; i < transitions.size(); i++)
+        ss << transitions[i]->toString() << ";";
+      ss << "]";
+    } else
+      ss << "...";
+    ss << "}";
+    return ss.str();
+  }
 };
 
-} // libbft
+}  // namespace libbft
 
-#endif // LIBBFT_SRC_CPP_STATE_HPP
+#endif  // INCLUDE_LIBBFT_SINGLE_STATE_HPP_

@@ -1,0 +1,70 @@
+
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library")
+load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+
+# proto deps
+
+proto_library(
+    name = "bftevent_lib_proto",
+    srcs = ["bftevent.proto"],
+)
+
+cc_proto_library(
+    name = "bftevent_cclib_proto",
+    deps = [":bftevent_lib_proto"],
+)
+
+cc_grpc_library(
+    name = "bftevent_cclib_grpc",
+    srcs = [":bftevent_lib_proto"],
+    grpc_only = True,
+    deps = [":bftevent_cclib_proto"],
+)
+
+
+####################
+# library:  *.hpp
+####################
+
+cc_library(
+    name = "cc_bftclientserver_impl",
+    hdrs = glob([
+        "**/*.hpp",
+    ]),
+    include_prefix = "bftevents-grpc/",
+    defines = ["BAZEL_BUILD"],
+    deps = [
+        "//include:LibBFT",
+        ":bftevent_cclib_grpc",
+    ],
+)
+
+####################
+# binary:  bftevents
+####################
+
+
+cc_binary(
+    name = "cc_bftclient",
+    srcs = ["mainBftclient.cc"],
+    defines = ["BAZEL_BUILD"],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        ":cc_bftclientserver_impl",
+    ],
+)
+
+cc_binary(
+    name = "cc_bftserver",
+    srcs = ["mainBftserver.cc"],
+    defines = ["BAZEL_BUILD"],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        #"@com_github_grpc_grpc//:grpc++_reflection",
+        #":bftevent_cclib_grpc",
+        ":cc_bftclientserver_impl"
+    ],
+)

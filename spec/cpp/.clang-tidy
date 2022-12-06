@@ -1,0 +1,19 @@
+UseColor: true
+
+Checks: >
+    cppcoreguidelines-*,
+    google-*,
+    performance-*,
+    -cppcoreguidelines-avoid-magic-numbers,
+HeaderFilterRegex: ".*"
+# disable: cppcoreguidelines-pro-type-union-access
+# how to disable: bugprone-easily-swappable-parameters
+# bugprone-*,
+#    -cppcoreguidelines-pro-type-union-access,
+#    -bugprone-easily-swappable-parameters
+
+WarningsAsErrors: "*"
+
+# ignore protobuf and gRPC generated header (bug in union impl)
+# Code '(?<!' will start a negative look behind expression
+HeaderFilterRegex: 'bftevent.*(?<!\.pb\.h)$'

@@ -1,0 +1,16 @@
+
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+
+cc_binary(
+    name = "main_test_rpc",
+    srcs = ["mainRPC.cpp"],
+    defines = ["BAZEL_BUILD"],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        "//include/libbft:libbft_hpp",
+        "//src/bftevents-grpc:cc_bftclientserver_impl"
+    ],
+)

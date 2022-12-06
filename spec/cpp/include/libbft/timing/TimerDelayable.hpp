@@ -1,18 +1,19 @@
-#pragma once
-#ifndef LIBBFT_SRC_CPP_TIMERDELAYABLE_HPP
-#define LIBBFT_SRC_CPP_TIMERDELAYABLE_HPP
+// SPDX-License-Identifier:  MIT
+// Copyright (C) 2019-2022 - LibBFT developers
+// https://github.com/neoresearch/libbft
+
+#ifndef INCLUDE_LIBBFT_TIMING_TIMERDELAYABLE_HPP_
+#define INCLUDE_LIBBFT_TIMING_TIMERDELAYABLE_HPP_
 
 // standard Timer for a TSM
-#include "Timer.hpp"
+#include <libbft/timing/Timer.hpp>
 
 // This Timer allows for non-negative delays
 
 namespace libbft {
 
-class TimerDelayable : public Timer
-{
-};
+class TimerDelayable : public Timer {};
 
-} // libbft
+}  // namespace libbft
 
-#endif // LIBBFT_SRC_CPP_TIMERDELAYABLE_HPP
+#endif  // INCLUDE_LIBBFT_TIMING_TIMERDELAYABLE_HPP_

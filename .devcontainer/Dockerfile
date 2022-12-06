@@ -58,3 +58,7 @@ RUN chmod +x /tmp/install-grpc.sh && /tmp/install-grpc.sh && rm -f /tmp/install-
 
 # make shortcut to grpc_cpp_plugin
 RUN ln -s /opt/bin/grpc_cpp_plugin /usr/local/bin/grpc_cpp_plugin
+
+# MOVE UP:
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+     && apt-get -y install --no-install-recommends clang-tidy clang-format clangd

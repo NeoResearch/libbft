@@ -1,49 +1,49 @@
-#pragma once
-#ifndef LIBBFT_SRC_CPP_MACHINE_CONTEXT_HPP
-#define LIBBFT_SRC_CPP_MACHINE_CONTEXT_HPP
+// SPDX-License-Identifier:  MIT
+// Copyright (C) 2019-2022 - LibBFT developers
+// https://github.com/neoresearch/libbft
+
+#ifndef INCLUDE_LIBBFT_REPLICATED_MACHINECONTEXT_HPP_
+#define INCLUDE_LIBBFT_REPLICATED_MACHINECONTEXT_HPP_
 
 // system includes
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 // libbft includes
 
 // Prototype?
-#include "events/Event.hpp"
-#include "machine/TimedStateMachine.hpp"
-#include "single/SingleTimerStateMachine.hpp"
+#include <libbft/events/Event.hpp>
+#include <libbft/machine/TimedStateMachine.hpp>
+#include <libbft/single/SingleTimerStateMachine.hpp>
 
 namespace libbft {
 
-template<class Param>
+template <class Param>
 struct MultiContext;
 
-template<class Param = std::nullptr_t>
-struct MachineContext
-{
-   using TParam = std::shared_ptr<Param>;
-   using TSingleTimerStateMachine = std::shared_ptr<SingleTimerStateMachine<MultiContext<Param>>>;
+template <class Param = std::nullptr_t>
+struct MachineContext {
+  using TParam = std::shared_ptr<Param>;
+  using TSingleTimerStateMachine =
+      std::shared_ptr<SingleTimerStateMachine<MultiContext<Param>>>;
 
-   TParam params;
-   TSingleTimerStateMachine machine;
-   Events events;
+  TParam params;
+  TSingleTimerStateMachine machine;
+  Events events;
 
-   //void addEvent(Event<MultiContext<Param>>* e)
-   //{
-   //   events.push_back(e);
-   //}
+  // void addEvent(Event<MultiContext<Param>>* e)
+  //{
+  //    events.push_back(e);
+  // }
 
-   MachineContext(TParam _params, TSingleTimerStateMachine _machine)
-     : params(_params)
-     , machine(_machine)
-   {
-   }
+  MachineContext(TParam _params, TSingleTimerStateMachine _machine)
+      : params(_params), machine(_machine) {}
 };
 
-} // libbft
+}  // namespace libbft
 
 // forward declaration
-#include "MultiContext.hpp"
+#include <libbft/replicated/MultiContext.hpp>
 
-#endif // LIBBFT_SRC_CPP_MACHINE_CONTEXT_HPP
+#endif  // INCLUDE_LIBBFT_REPLICATED_MACHINECONTEXT_HPP_

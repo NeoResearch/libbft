@@ -6,7 +6,7 @@ all: cpp
 
 cpp:
 	#export BFTEVENTS=`pwd`/spec/cpp/src/bftevents-grpc
-	(mkdir -p $(projects_folder)/cpp/build && cd $(projects_folder)/cpp/build && cmake .. && make)
+	(mkdir -p $(projects_folder)/cpp/build && cd $(projects_folder)/cpp/build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. && make)
 
 cpp_test: cpp
 	@echo "Performing basic tests now"

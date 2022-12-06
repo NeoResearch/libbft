@@ -1,0 +1,12 @@
+
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+
+filegroup(
+  name = "libbft_cc_app_test",
+  srcs = [
+    "@LibBFT//:app_test",
+  ]
+)
