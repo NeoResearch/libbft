@@ -15,6 +15,7 @@
 #include <libbft/replicated/ReplicatedSTSM.hpp>
 #include <libbft/single/SingleTimerStateMachine.hpp>
 #include <libbft/single/State.hpp>
+#include <libbft/utils/Shortcuts.hpp>
 
 using namespace std;     // NOLINT
 using namespace libbft;  // NOLINT
@@ -66,8 +67,7 @@ void simpleExample() {
   // set set machine watchdog - 5 seconds - Default disabled
   machine.setWatchdog(5);
 
-  machine.run(std::nullopt,
-              std::nullopt);  // initial state is given by default first
+  machine.run(nullptr, nullptr);  // initial state is given by default first
 
   FILE* fgraph = fopen("fgraph_STSM.dot", "w");  // NOLINT
   fprintf(fgraph, "%s\n", graphviz.c_str());     // NOLINT
@@ -698,6 +698,7 @@ int main() {
 
   // run for 5.0 seconds max (watchdog limit)
   machine.setWatchdog(5.0);
+  //
   machine.run(minitial, ctx0);
   // machine0->run(machine0->states[0], &ctx0); // explicitly passing first
   // state as default

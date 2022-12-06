@@ -1,12 +1,17 @@
 projects_folder=spec
 
-all: cpp
-	valgrind ./$(projects_folder)/cpp/build/app_test
+all: cpp_bazel # cpp_cmake
+	
 #	(cd ~/go/src/github.com/NeoResearch/libbft && dep ensure && go run main.go)
 
-cpp:
+cpp_bazel:
+	(cd $(projects_folder)/cpp/ && bazel build ...)
+	valgrind $(projects_folder)/cpp/bazel-bin/app_test   # bazel run //:app_test
+
+cpp_cmake:
 	#export BFTEVENTS=`pwd`/spec/cpp/src/bftevents-grpc
 	(mkdir -p $(projects_folder)/cpp/build && cd $(projects_folder)/cpp/build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. && make)
+	valgrind ./$(projects_folder)/cpp/build/app_test
 
 cpp_test: cpp
 	@echo "Performing basic tests now"

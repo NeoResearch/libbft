@@ -116,12 +116,8 @@ class TimedStateMachine : public IFPrintable {
    * @return
    */
   // virtual TStateType run(TStateType initial = nullptr, TParam p = nullptr) {
-  virtual TStateType run(op<TStateType> _initial, op<TParam> _p) {
-    TStateType initial;
-    TParam p;
-    if (_initial) initial = *_initial;
-    if (_p) p = *_p;
-
+  virtual TStateType run(TStateType initial, TParam p) {
+    //
     auto current = this->initialize(initial, p);
     // if no state given, abort
     if (!current) return nullptr;
