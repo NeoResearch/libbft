@@ -1,0 +1,11 @@
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    commit = "daae6f40adfa5fdb7c89684cbe4d88b691c63b2d",
+)
+# bazel run @hedron_compile_commands//:refresh_all
+
+# From BCR: https://registry.bazel.build/modules/grpc/1.48.1.bcr.3
+# Example from: https://github.com/rendezqueue/rendezqueue
+bazel_dep(name = "grpc", version = "1.48.1.bcr.3", repo_name = "com_github_grpc_grpc")

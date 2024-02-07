@@ -1,5 +1,7 @@
 all: build_with_clang_tidy
 
+build:
+	bazel build //...
 
 build_with_clang_tidy:
 	# bazel build //:app_test --config clang-tidy # --verbose_failures
